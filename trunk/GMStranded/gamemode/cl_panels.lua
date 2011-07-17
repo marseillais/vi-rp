@@ -11,41 +11,40 @@ Active = false
 /*---------------------------------------------------------
   Spawnpanel
 ---------------------------------------------------------*/
-function GM:OnSpawnMenuOpen( )
-	if LocalPlayer():GetNWString( "AFK" ) != 1 then
-		if MENU == nil or not MENU:IsValid( ) then
-			vgui.Create( "GMS_menu" )
+function GM:OnSpawnMenuOpen()
+	if (LocalPlayer():GetNWString("AFK") != 1) then
+		if (MENU == nil or not MENU:IsValid()) then
+			vgui.Create("GMS_menu")
 		else
-			MENU:SetVisible( true )
+			MENU:SetVisible(true)
 		end
-		gui.EnableScreenClicker( true )
-		RestoreCursorPosition( )
+		gui.EnableScreenClicker(true)
+		RestoreCursorPosition()
 	end
 end
 
-function GM:OnSpawnMenuClose( )
-	if MENU and MENU:IsValid( ) and MENU:IsVisible( ) then
-			MENU:SetVisible( false )
-		end
-		RememberCursorPosition( )
-		gui.EnableScreenClicker( false )
+function GM:OnSpawnMenuClose()
+	if (MENU and MENU:IsValid() and MENU:IsVisible()) then
+		MENU:SetVisible(false)
+	end
+	RememberCursorPosition()
+	gui.EnableScreenClicker(false)
 end
 
-local PANEL = { }
+local PANEL = {}
 
-function PANEL:Init( )
-
+function PANEL:Init()
 	MENU = self
-	self:SetTitle( "Stranded Menu" )
-	self.ContentPanel = vgui.Create( "DPropertySheet", self )
-	self:ShowCloseButton( false )
-	self.ContentPanel:AddSheet( "Construction", vgui.Create( "stranded_PropSpawn", self ), "gui/silkicons/brick_add", true, true )
-	self.ContentPanel:AddSheet( "ToolMenu", vgui.Create( "stranded_ToolMenu", self ), "gui/silkicons/wrench", true, true )
-	self.ContentPanel:AddSheet( "Planting", vgui.Create( "stranded_PlantSpawn", self ), "gui/silkicons/box", true, true )
-	self.ContentPanel:AddSheet( "Tribes", vgui.Create( "stranded_TribesMenu", self ), "gui/silkicons/group", true, true )
-	self.ContentPanel:AddSheet( "Commands", vgui.Create( "stranded_Commands", self ), "gui/silkicons/application", true, true )
-	self.ContentPanel:AddSheet( "Options", vgui.Create( "stranded_Options", self ), "gui/silkicons/application", true, true )
-	self.ContentPanel:AddSheet( "Prop Protection", vgui.Create( "stranded_SPPMenu", self ), "gui/silkicons/shield", true, true )
+	self:SetTitle("Stranded Menu")
+	self.ContentPanel = vgui.Create("DPropertySheet", self)
+	self:ShowCloseButton(false)
+	self.ContentPanel:AddSheet("Construction", vgui.Create( "stranded_PropSpawn", self ), "gui/silkicons/brick_add", true, true)
+	self.ContentPanel:AddSheet("ToolMenu", vgui.Create( "stranded_ToolMenu", self ), "gui/silkicons/wrench", true, true)
+	self.ContentPanel:AddSheet("Planting", vgui.Create( "stranded_PlantSpawn", self ), "gui/silkicons/box", true, true)
+	self.ContentPanel:AddSheet("Tribes", vgui.Create( "stranded_TribesMenu", self ), "gui/silkicons/group", true, true)
+	self.ContentPanel:AddSheet("Commands", vgui.Create( "stranded_Commands", self ), "gui/silkicons/application", true, true)
+	self.ContentPanel:AddSheet("Options", vgui.Create( "stranded_Options", self ), "gui/silkicons/application", true, true)
+	self.ContentPanel:AddSheet("Prop Protection", vgui.Create( "stranded_SPPMenu", self ), "gui/silkicons/shield", true, true)
 end
 
 function PANEL:Close( )

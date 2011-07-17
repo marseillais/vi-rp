@@ -1112,9 +1112,9 @@ function GM:PlayerInitialSpawn(ply)
 	for _, v in ipairs(ents.GetAll()) do
 		if (v:GetClass() == "gms_resourcedrop") then
 			umsg.Start("gms_SetResourceDropInfo", ply)
-			umsg.String(v:EntIndex())
-			umsg.String(string.gsub(v.Type, "_", " "))
-			umsg.Short(v.Amount)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Type, "_", " "))
+				umsg.Short(v.Amount)
 			umsg.End()
 		end
 	end
