@@ -1,4 +1,4 @@
-if CLIENT then
+if (CLIENT) then
 	include("pigeon.lua")
 	SWEP.PrintName = "Crow Pill"
 	SWEP.Slot = 5
@@ -42,7 +42,7 @@ end
 
 function SWEP:Deploy()
 	CROW.Enable(self.Owner)
-	if CLIENT then return end
+	if (CLIENT) then return end
 	self.Owner:DrawViewModel(false)
 	timer.Create("viewmodel" .. self.Owner:UniqueID(), 0.01, 1, self.Owner.DrawViewModel, self.Owner, false)
 	self.Owner:DrawWorldModel(false)
@@ -53,8 +53,8 @@ end
 
 function SWEP:Holster()
 	CROW.Disable(self.Owner)
-	if CLIENT then return end
-	if self.Owner:Health() <= 0 then
+	if (CLIENT) then return end
+	if (self.Owner:Health() <= 0) then
 		umsg.Start("CROW.disable", self.Owner)
 		umsg.End()
 	end
@@ -62,27 +62,26 @@ function SWEP:Holster()
 end
 
 function SWEP:Reload()
-	if CLIENT then return false end
+	if (CLIENT) then return false end
 	CROW.Idle(self.Owner)
 end
 
 function SWEP:SecondaryAttack()
-	if CLIENT then return false end
+	if (CLIENT) then return false end
 	CROW.Burrow(self.Owner)
 end
 
 function SWEP:Think()
-	if CLIENT then return end
+	if (CLIENT) then return end
 	
-	if not self.Owner:Crouching() then
+	if (!self.Owner:Crouching()) then
 		self.Owner:ConCommand("+duck\n")
 	end
 	
 	CROW.AttackThink(self.Owner)
 	CROW.BurrowThink(self.Owner)
 	
-	if self.Owner:Health() < 60 then
+	if (self.Owner:Health() < 60) then
 		self.Owner:SetMoveType(2)
 	end
-
 end

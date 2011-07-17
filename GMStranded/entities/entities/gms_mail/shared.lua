@@ -1,27 +1,20 @@
 ENT.Type = "Anim"
 ENT.Base = "base_gmodentity"
 
-ENT.PrintName = "Mail" --The name of the SENT.
-ENT.Author = "Stranded Team" --Your name.
-ENT.Contact = "" --EMail address.
-ENT.Purpose = "Pick up to read." --The purpose of this SENT.
-ENT.Instructions = "" --Instructions
+ENT.PrintName = "Mail"
+ENT.Author = "Stranded Team"
+ENT.Contact = ""
+ENT.Purpose = "Pick up to read."
+ENT.Instructions = ""
 
-ENT.Spawnable = false --Can the clients spawn this SENT?
-ENT.AdminSpawnable = false --Can the admins spawn this SENT?
+ENT.Spawnable = false
+ENT.AdminSpawnable = false
 
---Called when the SENT is removed
---Return: Nothing
 function ENT:OnRemove()
 end
 
---Controls what a scripted entity does during a collison.
---Return: Nothing
---Notes: tblData contains: HitEntity (Entity), HitPos (Vector), OurOldVelocity (Vector), HitObject (PhysObj), DeltaTime (number), TheirOldVelocity (Vector), Speed (number?) and HitNormal (Vector).
 function ENT:PhysicsCollide(tblData)
 end
 
---Called when physics are updated?
---Return: Nothing
 function ENT:PhysicsUpdate(pobPhysics)
 end
