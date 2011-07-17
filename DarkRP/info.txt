@@ -1,6 +1,6 @@
 "Gamemode"
 {
-    "name"  "CustomRP ololo"
+    "name"  "CustomRP"
     "version"   "1.0"
 
     "author_name"   "Vlad, Ava, Gred"
