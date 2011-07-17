@@ -1,10 +1,10 @@
 -- The Q Menu
-if SERVER then
-	AddCSLuaFile( "QMenu/Qmenu.lua" )
+if (SERVER) then
+	AddCSLuaFile("QMenu/Qmenu.lua")
 	return
 end
 
-include( "QMenu/Qmenu.lua" )
+include("QMenu/Qmenu.lua")
 
 Active = false
 
@@ -774,71 +774,67 @@ vgui.Register("GMS_TribesList", PANEL, "DFrame")
 local PANEL = {}
 
 function PANEL:Init()
-         self:SetPos(0,0)
-         self:SetSize(ScrW() / 6,ScrH() / 12)
-         
-         self:SetVisible(true)
+    self:SetPos(0, 0)
+    self:SetSize(ScrW() / 6, 4 * 13 + 5)
+    self:SetVisible(true)
 end
 
 function PANEL:Paint()
-         local col = StrandedColorTheme
-         local bordcol = StrandedBorderTheme
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
 
-         surface.SetDrawColor(col.r,col.g,col.b,math.Clamp(col.a - 60,1,255))
-         surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 
-         surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,math.Clamp(bordcol.a - 60,1,255))
-         surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	
+    local w = self:GetWide() - 10
 
-         local line = self:GetTall() / 10
+    //Health
+    local h = (LocalPlayer():Health() / 200) * w
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 5, w, 8)
 
-         //Health
-         local h = (LocalPlayer():Health() / 200) * (self:GetWide() - ((self:GetWide() / 14) * 2))
-         surface.SetDrawColor(0,0,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, self:GetWide() - ((self:GetWide() / 14) * 2), self:GetTall() / 8)
+    surface.SetDrawColor(170,0,0,255)
+	surface.DrawRect(5, 5, h, 8)
 
-         surface.SetDrawColor(170,0,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, h, self:GetTall() / 8)
-		 
-		 draw.SimpleTextOutlined("Health","DefaultSmall",self:GetWide() / 2,line+4,Color(255,255,255,255),1,1,0.5,Color(100,100,100,140))
-         local line = line + (self:GetTall() / 8) + (self:GetTall() / 10)
+	draw.SimpleTextOutlined("Health", "DefaultSmall", self:GetWide() / 2, 9, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
 
-         //Hunger
-         local h = (Hunger / 1000) * (self:GetWide() - ((self:GetWide() / 14) * 2))
-         surface.SetDrawColor(0,0,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, self:GetWide() - ((self:GetWide() / 14) * 2), self:GetTall() / 8)
+    //Hunger
+    local h = (Hunger / 1000) * w
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 18, w, 8)
 
-         surface.SetDrawColor(0,170,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, h, self:GetTall() / 8)
-		 
-		 draw.SimpleTextOutlined("Hunger","DefaultSmall",self:GetWide() / 2,line+4,Color(255,255,255,255),1,1,0.5,Color(100,100,100,140))
-         local line = line + (self:GetTall() / 8) + (self:GetTall() / 10)
-         
-         //Thirst
-         local h = (Thirst / 1000) * (self:GetWide() - ((self:GetWide() / 14) * 2))
-         surface.SetDrawColor(0,0,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, self:GetWide() - ((self:GetWide() / 14) * 2), self:GetTall() / 8)
-         
-         surface.SetDrawColor(0,0,170,255)
-         surface.DrawRect(self:GetWide() / 14, line, h, self:GetTall() / 8)
-		 
-		 draw.SimpleTextOutlined("Thirst","DefaultSmall",self:GetWide() / 2,line+4,Color(255,255,255,255),1,1,0.5,Color(100,100,100,140))
-         local line = line + (self:GetTall() / 8) + (self:GetTall() / 10)
-         
-         //Sleepiness
-         local h = (Sleepiness / 1000) * (self:GetWide() - ((self:GetWide() / 14) * 2))
-         surface.SetDrawColor(0,0,0,255)
-         surface.DrawRect(self:GetWide() / 14, line, self:GetWide() - ((self:GetWide() / 14) * 2), self:GetTall() / 8)
-         
-         surface.SetDrawColor(170,0,140,255)
-         surface.DrawRect(self:GetWide() / 14, line, h, self:GetTall() / 8)
-		 
-		 draw.SimpleTextOutlined("Fatigue","DefaultSmall",self:GetWide() / 2,line+4,Color(255,255,255,255),1,1,0.5,Color(100,100,100,140))
-         local line = line + (self:GetTall() / 8) + (self:GetTall() / 10)
-         return true
+    surface.SetDrawColor(0, 170, 0, 255)
+    surface.DrawRect(5, 18, h, 8)
+
+	draw.SimpleTextOutlined("Hunger","DefaultSmall",self:GetWide() / 2, 22, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+
+    //Thirst
+    local h = (Thirst / 1000) * w
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 31, w, 8)
+
+    surface.SetDrawColor(0, 0, 170, 255)
+    surface.DrawRect(5, 31, h, 8)
+
+	draw.SimpleTextOutlined("Thirst", "DefaultSmall", self:GetWide() / 2, 35, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+
+    //Sleepiness
+    local h = (Sleepiness / 1000) * w
+    surface.SetDrawColor(0,0,0,255)
+    surface.DrawRect(5, 44, w, 8)
+
+    surface.SetDrawColor(170,0,140,255)
+    surface.DrawRect(5, 44, h, 8)
+
+	draw.SimpleTextOutlined("Fatigue", "DefaultSmall", self:GetWide() / 2, 48, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	return true
 end
 
-vgui.Register("gms_NeedHud",PANEL,"DPanel")
+vgui.Register("gms_NeedHud", PANEL, "DPanel")
 
 /*---------------------------------------------------------
   Skills panel
@@ -846,87 +842,87 @@ vgui.Register("gms_NeedHud",PANEL,"DPanel")
 local PANEL = {}
 
 function PANEL:Init()
-         self:SetPos(0,GAMEMODE.NeedHud:GetTall())
-         self:SetSize(ScrW() / 6,ScrH() / 20)
+    self:SetPos(0, GAMEMODE.NeedHud:GetTall())
+    self:SetSize(ScrW() / 6, ScrH() / 22)
 
-         self:SetVisible(true)
-         
-         self.Extended = false
-         self.SkillLabels = {}
+    self:SetVisible(true)
+
+    self.Extended = false
+    self.SkillLabels = {}
 end
 
 function PANEL:Paint()
-         local col = StrandedColorTheme
-         local bordcol = StrandedBorderTheme
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
 
-         surface.SetDrawColor(col.r,col.g,col.b,math.Clamp(col.a - 60,1,255))
-         surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+	surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+	
+	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	surface.DrawLine(0, ScrH() / 22 - 2, self:GetWide(), ScrH() / 22 - 2)
 
-         surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,math.Clamp(bordcol.a - 60,1,255))
-         surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-         
-         draw.SimpleText("Skills (F1)","ScoreboardSub",5,5,Color(255,255,255,255))
-         return true
+	draw.SimpleText("Skills (F1)", "ScoreboardSub", 5, 5, Color(255, 255, 255, 255))
+	return true
 end
 
 function PANEL:RefreshSkills()
-         for k,v in pairs(self.SkillLabels) do
-             v:Remove()
-         end
-         
-         self.SkillLabels = {}
-         self.Line = ScrH() / 20
-         self.Tab = 0
+	for k, v in pairs(self.SkillLabels) do
+		v:Remove()
+	end
 
-         for k,v in pairs(Skills) do
-             local lbl = vgui.Create("gms_SkillPanel",self)
-             lbl:SetPos(self.Tab,self.Line)
-             lbl:SetSize( self:GetWide(), ScrH() / 15)
-             local val = string.gsub(k,"_"," ")
-             lbl:SetSkill(val)
+	self.SkillLabels = {}
+	self.Line = ScrH() / 22 + 5
 
-             self.Line = self.Line + lbl:GetTall()
-             table.insert(self.SkillLabels,lbl)
-             if !self.Extended then lbl:SetVisible(false) end
-         end
+	for k, v in pairs(Skills) do
+		local lbl = vgui.Create("gms_SkillPanel", self)
+		lbl:SetPos(0, self.Line)
+		lbl:SetSize(self:GetWide(), 16)
+		local val = string.gsub(k, "_", " ")
+		lbl:SetSkill(val)
 
-         if self.Extended then 
-            self:SetSize(ScrW() / 6, ScrH() / 20 + (table.Count(Skills) * ScrH() / 15)) 
-            GAMEMODE:RecalculateHUDPos()
-         end
+		self.Line = self.Line + lbl:GetTall() + 5
+		table.insert(self.SkillLabels, lbl)
+		if (!self.Extended) then lbl:SetVisible(false) end
+	end
+
+	if (self.Extended) then 
+		self:SetSize(ScrW() / 6, ScrH() / 22 + (table.Count(Skills) * 21) + 6) 
+		GAMEMODE:RecalculateHUDPos()
+    end
 end
 
 function PANEL:ToggleExtend()
-         if !self.Extended then
+	if (!self.Extended) then
+		self:SetSize(ScrW() / 6, ScrH() / 22 + (table.Count(Skills) * 21) + 6)
+		self.Extended = true
 
-            self:SetSize(ScrW() / 6, ScrH() / 20 + (table.Count(Skills) * ScrH() / 15))
-            self.Extended = true
+		GAMEMODE:RecalculateHUDPos()
+		for k, v in pairs(self.SkillLabels) do
+			v:SetVisible(true)
+		end
+	else
+		self:SetSize(ScrW() / 6, ScrH() / 22)
+		self.Extended = false
 
-            GAMEMODE:RecalculateHUDPos()
-            for k,v in pairs(self.SkillLabels) do
-                v:SetVisible(true)
-            end
-         else
-            self:SetSize(ScrW() / 6, ScrH() / 20)
-            self.Extended = false
-
-            GAMEMODE:RecalculateHUDPos()
-            for k,v in pairs(self.SkillLabels) do
-                v:SetVisible(false)
-            end
-         end
+		GAMEMODE:RecalculateHUDPos()
+		for k, v in pairs(self.SkillLabels) do
+			v:SetVisible(false)
+		end
+	end
 end
 
 function PANEL:OnMousePressed(mc)
-         if mc == 107 then
-            self:ToggleExtend()
-         end
+	if (mc == 107) then
+		self:ToggleExtend()
+	end
 end
 
-vgui.Register("gms_SkillsHud",PANEL,"Panel")
+vgui.Register("gms_SkillsHud", PANEL, "Panel")
 
 function GM:RecalculateHUDPos()
-         GAMEMODE.ResourcesHud:SetPos(0,GAMEMODE.NeedHud:GetTall() + GAMEMODE.SkillsHud:GetTall())
+    GAMEMODE.ResourcesHud:SetPos(0, GAMEMODE.NeedHud:GetTall() + GAMEMODE.SkillsHud:GetTall())
 end
 
 /*---------------------------------------------------------
@@ -938,35 +934,23 @@ function PANEL:Init()
 end
 
 function PANEL:Paint()
-         draw.SimpleText(self.TxtSkill..": "..Skills[self.Skill],"ScoreboardText",5,0,Color(255,255,255,255))
-         
-         //XP bar background
-         surface.SetDrawColor(00,0,00,170)
-         surface.DrawRect(10, self:GetTall() / 2, self:GetWide() - 20, self:GetTall() / 2 - 10)
+	surface.SetDrawColor(0, 0, 0, 178) -- XP bar background
+	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
 
-         //XP bar
-         local XP = Experience[self.Skill] / 100 * (self:GetWide() - 20)
-         surface.SetDrawColor(10,255,10,255)
-         surface.DrawRect(10, self:GetTall() / 2, XP , self:GetTall() / 2 - 10)
-         
-         //Draw XP
-         draw.SimpleText(Experience[self.Skill].." / 100","Default",self:GetWide() / 2, self:GetTall() / 2 + ((self:GetTall() / 2 - 10) / 2),Color(255,255,255,255),1,1)
+	local XP = Experience[self.Skill] / 100 * (self:GetWide() - 10)
+	surface.SetDrawColor(0, 128, 0, 220) -- XP bar
+	surface.DrawRect(5, 0, XP, self:GetTall())
 
-         //XP bar outline
-         surface.SetDrawColor(0,0,0,140)
-         surface.DrawOutlinedRect(10, self:GetTall() / 2, self:GetWide() - 20, self:GetTall() / 2 - 10)
-
-         //Box outline
-         surface.SetDrawColor(0,0,0,140)
-         surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-         return true
+	draw.SimpleText(self.TxtSkill .. ": " .. Skills[self.Skill] .. " (" .. Experience[self.Skill] .. " / 100)", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	return true
 end
 
 function PANEL:SetSkill(str)
     self.TxtSkill = str
-    self.Skill = string.gsub(str," ","_")
+    self.Skill = string.gsub(str, " ", "_")
 end
-vgui.Register("gms_SkillPanel",PANEL,"Panel")
+
+vgui.Register("gms_SkillPanel", PANEL, "Panel")
 
 /*---------------------------------------------------------
   Resource panel
@@ -974,8 +958,8 @@ vgui.Register("gms_SkillPanel",PANEL,"Panel")
 local PANEL = {}
 
 function PANEL:Init()
-    self:SetPos(0,GAMEMODE.NeedHud:GetTall() + ScrH() / 20)
-    self:SetSize(ScrW() / 6,ScrH() / 20)
+    self:SetPos(0, GAMEMODE.NeedHud:GetTall() + ScrH() / 22)
+    self:SetSize(ScrW() / 6, ScrH() / 22)
     self:SetVisible(true)
     self.Extended = false
     self.ResourceLabels = {}
@@ -984,81 +968,86 @@ end
 function PANEL:Paint()
     local col = StrandedColorTheme
     local bordcol = StrandedBorderTheme
-    surface.SetDrawColor(col.r,col.g,col.b,math.Clamp(col.a - 60,1,255))
+
+    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
     surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-    surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,math.Clamp(bordcol.a - 60,1,255))
-    surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-    draw.SimpleText("Resources (F2)","ScoreboardSub",5,5,Color(255,255,255,255))
+
+    surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	surface.DrawLine(0, ScrH() / 22 - 2, self:GetWide(), ScrH() / 22 - 2)
+
+    draw.SimpleText("Resources (F2)", "ScoreboardSub", 5, 5, Color(255, 255, 255, 255))
     return true
 end
 
 function PANEL:RefreshResources()
-    for k,v in pairs(self.ResourceLabels) do
-        v:Remove()
+	for k, v in pairs(self.ResourceLabels) do
+		v:Remove()
 	end
     self.ResourceLabels = {}
     self.Line = ScrH() / 20
     self.Tab = 5
     self.IntResources = 0
     local count = 0
-    for k,v in pairs(Resources) do
-        if v > 0 then
-            local lbl = vgui.Create("Label",self)
-            lbl:SetPos(self.Tab,self.Line)
-            lbl:SetSize(self:GetWide(),20)
-            local val = string.gsub(k,"_"," ")
-            lbl:SetText(val..":  "..v)
+    for k, v in pairs(Resources) do
+        if (v > 0) then
+            local lbl = vgui.Create("Label", self)
+            lbl:SetPos(self.Tab, self.Line)
+            lbl:SetSize(self:GetWide(), 20)
+            local val = string.gsub(k, "_", " ")
+            lbl:SetText(val .. ":  " .. v)
             lbl:SetFont("ScoreboardText")
             self.IntResources = self.IntResources + v
             self.Line = self.Line + 20
-            table.insert(self.ResourceLabels,lbl)
-            if !self.Extended then 
+            table.insert(self.ResourceLabels, lbl)
+            if (!self.Extended) then 
 				lbl:SetVisible(false) 
 			end
         end
 		count = count + 1
     end
-    local lbl = vgui.Create("Label",self)
-	lbl:SetPos(self.Tab,self.Line + 20)
-    lbl:SetSize(self:GetWide(),20)
-    lbl:SetText("Total:  "..self.IntResources.." / "..MaxResources)
+    local lbl = vgui.Create("Label", self)
+	lbl:SetPos(self.Tab, self.Line + 20)
+    lbl:SetSize(self:GetWide(), 20)
+    lbl:SetText("Total:  " .. self.IntResources .. " / " .. MaxResources)
     lbl:SetFont("ScoreboardText")
-    table.insert(self.ResourceLabels,lbl)
+    table.insert(self.ResourceLabels, lbl)
 	
-    if !self.Extended then 
+    if (!self.Extended) then 
 		lbl:SetVisible(false) 
 	end
 	
-    if self.Extended then
-        self:SetSize(ScrW() / 6, ScrH() / 20 + (count * 20) + 60)
+    if (self.Extended) then
+        self:SetSize(ScrW() / 6, ScrH() / 22 + (count * 20) + 60)
         GAMEMODE:RecalculateHUDPos()
     end
 end
 
 function PANEL:ToggleExtend()
     if !self.Extended then
-        self:SetSize(ScrW() / 6, ScrH() / 20 + (table.Count(Resources) * 20) + 60)
+        self:SetSize(ScrW() / 6, ScrH() / 22 + (table.Count(Resources) * 20) + 60)
         self.Extended = true
         GAMEMODE:RecalculateHUDPos()
 		for k,v in pairs(self.ResourceLabels) do
 			v:SetVisible(true)
 		end
     else
-		self:SetSize(ScrW() / 6, ScrH() / 20)
+		self:SetSize(ScrW() / 6, ScrH() / 22)
         self.Extended = false
         GAMEMODE:RecalculateHUDPos()
-		for k,v in pairs(self.ResourceLabels) do
+		for k, v in pairs(self.ResourceLabels) do
 			v:SetVisible(false)
 		end
     end
 end
 
 function PANEL:OnMousePressed(mc)
-    if mc == 107 then
+    if (mc == 107) then
         self:ToggleExtend()
     end
 end
-vgui.Register("gms_ResourcesHud",PANEL,"Panel")
+vgui.Register("gms_ResourcesHud", PANEL, "Panel")
 
 /*---------------------------------------------------------
   Command button
@@ -1287,932 +1276,3 @@ function PANEL:OnCursorExited()
 end
 
 vgui.Register("GMS_CombiIcon",PANEL,"DPanel")
-
-/*---------------------------------------------------------
-   Derma Stranded Theme LOL
----------------------------------------------------------*/
-local SKIN = {}
-
-SKIN.bg_color 					= Color( 0, 0, 0, 180 )
-SKIN.bg_color_dark				= Color( 0, 0, 0, 170 )
-
-SKIN.fontFrame					= "ScoreboardText"
-
-SKIN.control_color 				= Color( 0, 0, 0, 180 )
-SKIN.control_color_highlight	= Color(65, 65, 65, 255)
-SKIN.control_color_active 		= Color( 0, 0, 0, 180 )
-SKIN.control_color_bright 		= Color( 0, 0, 0, 180 )
-SKIN.control_color_dark 		= Color( 0, 0, 0, 180 )
-
-SKIN.texGradientUp				= Material( "gui/gradient_up" )
-SKIN.texGradientDown			= Material( "gui/gradient_down" )
-
-SKIN.combobox_selected			= SKIN.listview_selected
-
-SKIN.panel_transback			= Color( 160, 160, 160, 90 )
-SKIN.tooltip					= Color( 255, 245, 175, 255 )
-
-SKIN.colPropertySheet 			= Color( 0, 0, 0, 180 )
-SKIN.colTab			 			= SKIN.colPropertySheet
-SKIN.colTabInactive				= Color( 0, 0, 0, 180 )
-SKIN.colTabShadow				= Color( 0, 0, 0, 255)
-SKIN.colTabText		 			= Color( 255, 255, 255, 255 )
-SKIN.colTabTextInactive			= Color( 255, 255, 255, 255 )
-SKIN.fontTab					= "ScoreboardText"
-
-SKIN.colCollapsibleCategory		= Color( 0, 0, 0, 180 )
-
-SKIN.colCategoryText			= Color( 255, 255, 255, 255 )
-SKIN.colCategoryTextInactive	= Color( 255, 255, 255, 255 )
-SKIN.fontCategoryHeader			= "ScoreboardText"
-
-SKIN.colNumberWangBG			= Color( 0, 0, 0, 180 )
-SKIN.colTextEntryBG				= Color( 0, 0, 0, 255 )
-SKIN.colTextEntryBorder			= Color( 0, 0, 0, 255 )
-SKIN.colTextEntryText			= Color( 255, 255, 255, 255 )
-SKIN.colTextEntryTextHighlight	= Color( 255, 255, 255, 180 )
-SKIN.colTextEntryTextHighlight	= Color( 255, 255, 255, 180 )
-
-SKIN.colMenuBG					= Color( 255, 255, 255, 180 )
-SKIN.colMenuBorder				= Color( 255, 255, 255, 180 )
-
-SKIN.colButtonText				= Color( 255, 255, 255, 255 )
-SKIN.colButtonTextDisabled		= Color( 255, 255, 255, 255 )
-SKIN.colButtonBorder			= Color( 0, 0, 0, 180 )
-SKIN.colButtonBorderHighlight	= Color(65, 65, 65, 255)
-SKIN.colButtonBorderShadow		= Color( 0, 0, 0, 100 )
-SKIN.fontButton					= "ScoreboardText"
-
-
-/*---------------------------------------------------------
-   DrawGenericBackground
----------------------------------------------------------*/
-function SKIN:DrawGenericBackground( x, y, w, h, color )
-
-	draw.RoundedBox( 4, x, y, w, h, color )
-
-end
-
-/*---------------------------------------------------------
-   DrawButtonBorder
----------------------------------------------------------*/
-function SKIN:DrawButtonBorder( x, y, w, h, depressed )
-
-	if ( !depressed ) then
-	
-		// Highlight
-		surface.SetDrawColor( self.colButtonBorderHighlight )
-		surface.DrawRect( x+1, y+1, w-2, 1 )
-		surface.DrawRect( x+1, y+1, 1, h-2 )
-		
-		// Corner
-		surface.DrawRect( x+2, y+2, 1, 1 )
-	
-		// Shadow
-		surface.SetDrawColor( self.colButtonBorderShadow )
-		surface.DrawRect( w-2, y+2, 1, h-2 )
-		surface.DrawRect( x+2, h-2, w-2, 1 )
-		
-	else
-	
-		local col = self.colButtonBorderShadow
-	
-		for i=1, 5 do
-		
-			surface.SetDrawColor( col.r, col.g, col.b, (255 - i * (255/5) ) )
-			surface.DrawOutlinedRect( i, i, w-i, h-i )
-		
-		end
-		
-	end	
-
-	surface.SetDrawColor( self.colButtonBorder )
-	surface.DrawOutlinedRect( x, y, w, h )
-
-end
-
-/*---------------------------------------------------------
-   DrawDisabledButtonBorder
----------------------------------------------------------*/
-function SKIN:DrawDisabledButtonBorder( x, y, w, h, depressed )
-
-	surface.SetDrawColor( 0, 0, 0, 150 )
-	surface.DrawOutlinedRect( x, y, w, h )
-	
-end
-
-/*---------------------------------------------------------
-	Frame
----------------------------------------------------------*/
-function SKIN:PaintFrame( panel )
-
-	local color = self.bg_color
-
-	self:DrawGenericBackground( 0, 0, panel:GetWide(), panel:GetTall(), color )
-	
-	surface.SetDrawColor( 0, 0, 0, 150 )
-	surface.DrawRect( 0, 22, panel:GetWide(), 1 )
-
-end
-
-function SKIN:LayoutFrame( panel )
-
-	panel.lblTitle:SetFont( self.fontFrame )
-	
-	panel.btnClose:SetPos( panel:GetWide() - 22, 4 )
-	panel.btnClose:SetSize( 18, 18 )
-	
-	panel.lblTitle:SetPos( 8, 2 )
-	panel.lblTitle:SetSize( panel:GetWide() - 25, 20 )
-
-end
-
-/*---------------------------------------------------------
-	Button
----------------------------------------------------------*/
-function SKIN:PaintButton( panel )
-
-	local w, h = panel:GetSize()
-
-	if ( panel.m_bBackground ) then
-	
-		local col = self.control_color
-		
-		if ( panel:GetDisabled() ) then
-			col = self.control_color_dark
-		elseif ( panel.Depressed || panel:GetSelected() ) then
-			col = self.control_color_active
-		elseif ( panel.Hovered ) then
-			col = self.control_color_highlight
-		end
-		
-		surface.SetDrawColor( col.r, col.g, col.b, col.a )
-		panel:DrawFilledRect()
-	
-	end
-
-end
-function SKIN:PaintOverButton( panel )
-
-	local w, h = panel:GetSize()
-	
-	if ( panel.m_bBorder ) then
-		if ( panel:GetDisabled() ) then
-			self:DrawDisabledButtonBorder( 0, 0, w, h )
-		else
-			self:DrawButtonBorder( 0, 0, w, h, panel.Depressed || panel:GetSelected() )
-		end
-	end
-
-end
-
-
-function SKIN:SchemeButton( panel )
-
-	panel:SetFont( self.fontButton )
-	
-	if ( panel:GetDisabled() ) then
-		panel:SetTextColor( self.colButtonTextDisabled )
-	else
-		panel:SetTextColor( self.colButtonText )
-	end
-	
-	DLabel.ApplySchemeSettings( panel )
-
-end
-
-/*---------------------------------------------------------
-	SysButton
----------------------------------------------------------*/
-function SKIN:PaintPanel( panel )
-
-	if ( panel.m_bPaintBackground ) then
-	
-		local w, h = panel:GetSize()
-		self:DrawGenericBackground( 0, 0, w, h, self.panel_transback )
-		
-	end	
-
-end
-
-/*---------------------------------------------------------
-	SysButton
----------------------------------------------------------*/
-function SKIN:PaintSysButton( panel )
-
-	self:PaintButton( panel )
-	self:PaintOverButton( panel ) // Border
-
-end
-
-function SKIN:SchemeSysButton( panel )
-
-	panel:SetFont( "Marlett" )
-	DLabel.ApplySchemeSettings( panel )
-	
-end
-
-/*---------------------------------------------------------
-	PaneList
----------------------------------------------------------*/
-function SKIN:PaintPanelList( panel )
-
-	if ( panel.m_bBackground ) then
-		draw.RoundedBox( 4, 0, 0, panel:GetWide(), panel:GetTall(), self.bg_color_dark )
-	end
-
-end
-
-/*---------------------------------------------------------
-	ScrollBar
----------------------------------------------------------*/
-function SKIN:PaintVScrollBar( panel )
-
-	surface.SetDrawColor( self.bg_color.r, self.bg_color.g, self.bg_color.b, self.bg_color.a )
-	surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() )
-
-end
-
-function SKIN:LayoutVScrollBar( panel )
-
-	local Wide = panel:GetWide()
-	local Scroll = panel:GetScroll() / panel.CanvasSize
-	local BarSize = panel:BarScale() * (panel:GetTall() - (Wide * 2))
-	local Track = panel:GetTall() - (Wide * 2) - BarSize
-	Track = Track + 1
-	
-	Scroll = Scroll * Track
-	
-	panel.btnGrip:SetPos( 0, Wide + Scroll )
-	panel.btnGrip:SetSize( Wide, BarSize )
-	
-	panel.btnUp:SetPos( 0, 0, Wide, Wide )
-	panel.btnUp:SetSize( Wide, Wide )
-	
-	panel.btnDown:SetPos( 0, panel:GetTall() - Wide, Wide, Wide )
-	panel.btnDown:SetSize( Wide, Wide )
-
-end
-
-/*---------------------------------------------------------
-	ScrollBarGrip
----------------------------------------------------------*/
-function SKIN:PaintScrollBarGrip( panel )
-
-	surface.SetDrawColor( self.control_color.r, self.control_color.g, self.control_color.b, self.control_color.a )
-	surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() )
-
-	self:DrawButtonBorder( 0, 0, panel:GetWide(), panel:GetTall() )
-
-end
-
-/*---------------------------------------------------------
-	ScrollBar
----------------------------------------------------------*/
-function SKIN:PaintMenu( panel )
-
-	surface.SetDrawColor( self.colMenuBG )
-	panel:DrawFilledRect( 0, 0, w, h )
-
-end
-
-function SKIN:PaintOverMenu( panel )
-
-	surface.SetDrawColor( self.colMenuBorder )
-	panel:DrawOutlinedRect( 0, 0, w, h )
-
-end
-
-function SKIN:LayoutMenu( panel )
-
-	local w = panel:GetMinimumWidth()
-	
-	// Find the widest one
-	for k, pnl in pairs( panel.Panels ) do
-	
-		pnl:PerformLayout()
-		w = math.max( w, pnl:GetWide() )
-	
-	end
-
-	panel:SetWide( w )
-	
-	local y = 0
-	
-	for k, pnl in pairs( panel.Panels ) do
-	
-		pnl:SetWide( w )
-		pnl:SetPos( 0, y )
-		pnl:InvalidateLayout( true )
-		
-		y = y + pnl:GetTall()
-	
-	end
-	
-	panel:SetTall( y )
-
-end
-
-/*---------------------------------------------------------
-	ScrollBar
----------------------------------------------------------*/
-function SKIN:PaintMenuOption( panel )
-
-	if ( panel.m_bBackground && panel.Hovered ) then
-	
-		local col = nil
-		
-		if ( panel.Depressed ) then
-			col = self.control_color_bright
-		else
-			col = self.control_color_active
-		end
-		
-		surface.SetDrawColor( col.r, col.g, col.b, col.a )
-		surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() )
-	
-	end
-	
-end
-
-function SKIN:LayoutMenuOption( panel )
-
-	// This is totally messy. :/
-
-	panel:SizeToContents()
-
-	panel:SetWide( panel:GetWide() + 30 )
-	
-	local w = math.max( panel:GetParent():GetWide(), panel:GetWide() )
-
-	panel:SetSize( w, 18 )
-	
-	if ( panel.SubMenuArrow ) then
-	
-		panel.SubMenuArrow:SetSize( panel:GetTall(), panel:GetTall() )
-		panel.SubMenuArrow:CenterVertical()
-		panel.SubMenuArrow:AlignRight()
-		
-	end
-	
-end
-function SKIN:SchemeMenuOption( panel )
-
-	panel:SetFGColor( 40, 40, 40, 255 )
-	
-end
-
-/*---------------------------------------------------------
-	TextEntry
----------------------------------------------------------*/
-function SKIN:PaintTextEntry( panel )
-
-	if ( panel.m_bBackground ) then
-	
-		surface.SetDrawColor( self.colTextEntryBG )
-		surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() )
-	
-	end
-	
-	panel:DrawTextEntryText( panel.m_colText, panel.m_colHighlight, panel.m_colCursor )
-	
-	if ( panel.m_bBorder ) then
-	
-		surface.SetDrawColor( self.colTextEntryBorder )
-		surface.DrawOutlinedRect( 0, 0, panel:GetWide(), panel:GetTall() )
-	
-	end
-
-	
-end
-
-function SKIN:SchemeTextEntry( panel )
-
-	panel:SetTextColor( self.colTextEntryText )
-	panel:SetHighlightColor( self.colTextEntryTextHighlight )
-	panel:SetCursorColor( Color( 0, 0, 100, 255 ) )
-
-end
-
-/*---------------------------------------------------------
-	Label
----------------------------------------------------------*/
-function SKIN:PaintLabel( panel )
-	return false
-end
-
-function SKIN:SchemeLabel( panel )
-
-	local col = nil
-
-	if ( panel.Hovered && panel:GetTextColorHovered() ) then
-		col = panel:GetTextColorHovered()
-	else
-		col = panel:GetTextColor()
-	end
-	
-	if ( col ) then
-		panel:SetFGColor( col.r, col.g, col.b, col.a )
-	else
-		panel:SetFGColor( 200, 200, 200, 255 )
-	end
-
-end
-
-function SKIN:LayoutLabel( panel )
-
-	panel:ApplySchemeSettings()
-	
-	if ( panel.m_bAutoStretchVertical ) then
-		panel:SizeToContentsY()
-	end
-	
-end
-
-/*---------------------------------------------------------
-	CategoryHeader
----------------------------------------------------------*/
-function SKIN:PaintCategoryHeader( panel )
-		
-end
-
-function SKIN:SchemeCategoryHeader( panel )
-	
-	panel:SetTextInset( 5 )
-	panel:SetFont( self.fontCategoryHeader )
-	
-	if ( panel:GetParent():GetExpanded() ) then
-		panel:SetTextColor( self.colCategoryText )
-	else
-		panel:SetTextColor( self.colCategoryTextInactive )
-	end
-	
-end
-
-/*---------------------------------------------------------
-	CategoryHeader
----------------------------------------------------------*/
-function SKIN:PaintCollapsibleCategory( panel )
-	
-	draw.RoundedBox( 4, 0, 0, panel:GetWide(), panel:GetTall(), self.colCollapsibleCategory )
-	
-end
-
-/*---------------------------------------------------------
-	Tab
----------------------------------------------------------*/
-function SKIN:PaintTab( panel )
-
-	// This adds a little shadow to the right which helps define the tab shape..
-	draw.RoundedBox( 4, 0, 0, panel:GetWide(), panel:GetTall() + 8, self.colTabShadow )
-	
-	if ( panel:GetPropertySheet():GetActiveTab() == panel ) then
-		draw.RoundedBox( 4, 1, 0, panel:GetWide()-2, panel:GetTall() + 8, self.colTab )
-	else
-		draw.RoundedBox( 4, 0, 0, panel:GetWide()-1, panel:GetTall() + 8, self.colTabInactive  )
-	end
-	
-end
-function SKIN:SchemeTab( panel )
-
-	panel:SetFont( self.fontTab )
-
-	local ExtraInset = 10
-
-	if ( panel.Image ) then
-		ExtraInset = ExtraInset + panel.Image:GetWide()
-	end
-	
-	panel:SetTextInset( ExtraInset )
-	panel:SizeToContents()
-	panel:SetSize( panel:GetWide() + 10, panel:GetTall() + 8 )
-	
-	local Active = panel:GetPropertySheet():GetActiveTab() == panel
-	
-	if ( Active ) then
-		panel:SetTextColor( self.colTabText )
-	else
-		panel:SetTextColor( self.colTabTextInactive )
-	end
-	
-	panel.BaseClass.ApplySchemeSettings( panel )
-		
-end
-
-function SKIN:LayoutTab( panel )
-
-	panel:SetTall( 22 )
-
-	if ( panel.Image ) then
-	
-		local Active = panel:GetPropertySheet():GetActiveTab() == panel
-		
-		local Diff = panel:GetTall() - panel.Image:GetTall()
-		panel.Image:SetPos( 7, Diff * 0.6 )
-		
-		if ( !Active ) then
-			panel.Image:SetImageColor( Color( 170, 170, 170, 155 ) )
-		else
-			panel.Image:SetImageColor( Color( 255, 255, 255, 255 ) )
-		end
-	
-	end	
-	
-end
-
-/*---------------------------------------------------------
-	PropertySheet
----------------------------------------------------------*/
-function SKIN:PaintPropertySheet( panel )
-
-	local ActiveTab = panel:GetActiveTab()
-	local Offset = 0
-	if ( ActiveTab ) then Offset = ActiveTab:GetTall() end
-	
-	// This adds a little shadow to the right which helps define the tab shape..
-	draw.RoundedBox( 4, 0, Offset, panel:GetWide(), panel:GetTall()-Offset, self.colPropertySheet )
-	
-end
-
-/*---------------------------------------------------------
-	ListViewLine
----------------------------------------------------------*/
-function SKIN:PaintListViewLine( panel )
-
-	local Col = nil
-	
-	if ( panel:IsSelected() ) then
-	
-		Col = self.listview_selected
-		
-	elseif ( panel.Hovered ) then
-	
-		Col = self.listview_hover
-		
-	elseif ( panel.m_bAlt ) then
-	
-		Col = self.bg_alt2
-		
-	else
-	
-		return
-				
-	end
-		
-	surface.SetDrawColor( Col.r, Col.g, Col.b, Col.a )
-	surface.DrawRect( 0, 0, panel:GetWide(), panel:GetTall() )
-	
-end
-
-/*---------------------------------------------------------
-	ListViewLabel
----------------------------------------------------------*/
-function SKIN:LayoutListViewLabel( panel )
-
-	panel:SetTextInset( 10 )
-	
-	if ( panel.Line:IsSelected() ) then
-		panel:SetTextColor( self.text_bright )
-	else
-		panel:SetTextColor( self.text_normal )
-	end
-		
-end
-
-/*---------------------------------------------------------
-	Form
----------------------------------------------------------*/
-function SKIN:PaintForm( panel )
-
-	local color = self.bg_color_sleep
-
-	self:DrawGenericBackground( 0, 9, panel:GetWide(), panel:GetTall()-9, self.bg_color )
-
-end
-function SKIN:SchemeForm( panel )
-
-	panel.Label:SetFont( "TabLarge" )
-	panel.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-
-end
-
-function SKIN:LayoutForm( panel )
-
-end
-
-/*---------------------------------------------------------
-	MultiChoice
----------------------------------------------------------*/
-function SKIN:LayoutMultiChoice( panel )
-
-	panel.TextEntry:SetSize( panel:GetWide(), panel:GetTall() )
-	
-	panel.DropButton:SetSize( panel:GetTall(), panel:GetTall() )
-	panel.DropButton:SetPos( panel:GetWide() - panel:GetTall(), 0 )
-	
-	panel.DropButton:SetZPos( 1 )
-	panel.DropButton:SetDrawBackground( false )
-	panel.DropButton:SetDrawBorder( false )
-	
-	panel.DropButton:SetTextColor( Color( 30, 100, 200, 255 ) )
-	panel.DropButton:SetTextColorHovered( Color( 50, 150, 255, 255 ) )
-	
-end
-
-/*
-NumberWangIndicator
-*/
-
-function SKIN:DrawNumberWangIndicatorText( panel, wang, x, y, number, alpha )
-
-	local alpha = math.Clamp( alpha ^ 0.5, 0, 1 ) * 255
-	local col = self.text_dark
-	
-	// Highlight round numbers
-	local dec = (wang:GetDecimals() + 1) * 10
-	if ( number / dec == math.ceil( number / dec ) ) then
-		col = self.text_highlight
-	end
-
-	draw.SimpleText( number, "Default", x, y, Color( col.r, col.g, col.b, alpha ) )
-	
-end
-
-function SKIN:PaintNumberWangIndicator( panel )
-	
-	/*
-	
-		Please excuse the crudeness of this code.
-	
-	*/
-
-	if ( panel.m_bTop ) then
-		surface.SetMaterial( self.texGradientUp )
-	else
-		surface.SetMaterial( self.texGradientDown )
-	end
-	
-	surface.SetDrawColor( self.colNumberWangBG )
-	surface.DrawTexturedRect( 0, 0, panel:GetWide(), panel:GetTall() )
-	
-	local wang = panel:GetWang()
-	local CurNum = math.floor( wang:GetFloatValue() )
-	local Diff = CurNum - wang:GetFloatValue()
-		
-	local InsetX = 3
-	local InsetY = 5
-	local Increment = wang:GetTall()
-	local Offset = Diff * Increment
-	local EndPoint = panel:GetTall()
-	local Num = CurNum
-	local NumInc = 1
-	
-	if ( panel.m_bTop ) then
-	
-		local Min = wang:GetMin()
-		local Start = panel:GetTall() + Offset
-		local End = Increment * -1
-		
-		CurNum = CurNum + NumInc
-		for y = Start, Increment * -1, End do
-	
-			CurNum = CurNum - NumInc
-			if ( CurNum < Min ) then break end
-					
-			self:DrawNumberWangIndicatorText( panel, wang, InsetX, y + InsetY, CurNum, y / panel:GetTall() )
-		
-		end
-	
-	else
-	
-		local Max = wang:GetMax()
-		
-		for y = Offset - Increment, panel:GetTall(), Increment do
-			
-			self:DrawNumberWangIndicatorText( panel, wang, InsetX, y + InsetY, CurNum, 1 - ((y+Increment) / panel:GetTall()) )
-			
-			CurNum = CurNum + NumInc
-			if ( CurNum > Max ) then break end
-		
-		end
-	
-	end
-	
-
-end
-
-function SKIN:LayoutNumberWangIndicator( panel )
-
-	panel.Height = 200
-
-	local wang = panel:GetWang()
-	local x, y = wang:LocalToScreen( 0, wang:GetTall() )
-	
-	if ( panel.m_bTop ) then
-		y = y - panel.Height - wang:GetTall()
-	end
-	
-	panel:SetPos( x, y )
-	panel:SetSize( wang:GetWide() - wang.Wanger:GetWide(), panel.Height)
-
-end
-
-/*---------------------------------------------------------
-	CheckBox
----------------------------------------------------------*/
-function SKIN:PaintCheckBox( panel )
-
-	local w, h = panel:GetSize()
-
-	surface.SetDrawColor( 255, 255, 255, 255 )
-	surface.DrawRect( 1, 1, w-2, h-2 )
-
-	surface.SetDrawColor( 30, 30, 30, 255 )
-	//=
-	surface.DrawRect( 1, 0, w-2, 1 )
-	surface.DrawRect( 1, h-1, w-2, 1 )
-	//||
-	surface.DrawRect( 0, 1, 1, h-2 )
-	surface.DrawRect( w-1, 1, 1, h-2 )
-	
-	surface.DrawRect( 1, 1, 1, 1 )
-	surface.DrawRect( w-2, 1, 1, 1 )
-	
-	surface.DrawRect( 1, h-2, 1, 1 )
-	surface.DrawRect( w-2, h-2, 1, 1 )
-
-end
-
-function SKIN:SchemeCheckBox( panel )
-
-	panel:SetTextColor( Color( 0, 0, 0, 255 ) )
-	DSysButton.ApplySchemeSettings( panel )
-	
-end
-
-/*---------------------------------------------------------
-	Slider
----------------------------------------------------------*/
-function SKIN:PaintSlider( panel )
-
-end
-
-
-/*---------------------------------------------------------
-	NumSlider
----------------------------------------------------------*/
-function SKIN:PaintNumSlider( panel )
-
-	local w, h = panel:GetSize()
-	
-	self:DrawGenericBackground( 0, 0, w, h, Color( 255, 255, 255, 20 ) )
-	
-	surface.SetDrawColor( 0, 0, 0, 200 )
-	surface.DrawRect( 3, h/2, w-6, 1 )
-	
-end
-
-
-/*---------------------------------------------------------
-	NumSlider
----------------------------------------------------------*/
-function SKIN:PaintComboBoxItem( panel )
-
-	if ( panel:GetSelected() ) then
-		local col = self.combobox_selected
-		surface.SetDrawColor( col.r, col.g, col.b, col.a )
-		panel:DrawFilledRect()
-	end
-
-end
-
-function SKIN:SchemeComboBoxItem( panel )
-	panel:SetTextColor( Color( 0, 0, 0, 255 ) )
-end
-
-/*---------------------------------------------------------
-	ComboBox
----------------------------------------------------------*/
-function SKIN:PaintComboBox( panel )
-	
-	surface.SetDrawColor( 255, 255, 255, 255 )
-	panel:DrawFilledRect()
-		
-	surface.SetDrawColor( 0, 0, 0, 255 )
-	panel:DrawOutlinedRect()
-	
-end
-
-/*---------------------------------------------------------
-	ScrollBar
----------------------------------------------------------*/
-function SKIN:PaintBevel( panel )
-
-	local w, h = panel:GetSize()
-
-	surface.SetDrawColor( 255, 255, 255, 255 )
-	surface.DrawOutlinedRect( 0, 0, w-1, h-1)
-	
-	surface.SetDrawColor( 0, 0, 0, 255 )
-	surface.DrawOutlinedRect( 1, 1, w-1, h-1)
-
-end
-
-/*---------------------------------------------------------
-	TinyButton
----------------------------------------------------------*/
-function SKIN:PaintTinyButton( panel )
-
-	if ( panel.m_bBackground ) then
-	
-		surface.SetDrawColor( 255, 255, 255, 255 )
-		panel:DrawFilledRect()
-	
-	end
-	
-	if ( panel.m_bBorder ) then
-
-		surface.SetDrawColor( 0, 0, 0, 255 )
-		panel:DrawOutlinedRect()
-	
-	end
-
-end
-
-function SKIN:SchemeTinyButton( panel )
-
-	panel:SetFont( "Default" )
-	
-	if ( panel:GetDisabled() ) then
-		panel:SetTextColor( Color( 0, 0, 0, 50 ) )
-	else
-		panel:SetTextColor( Color( 0, 0, 0, 255 ) )
-	end
-	
-	DLabel.ApplySchemeSettings( panel )
-	
-	panel:SetFont( "DefaultSmall" )
-
-end
-
-/*---------------------------------------------------------
-	TinyButton
----------------------------------------------------------*/
-function SKIN:PaintTreeNodeButton( panel )
-
-	if ( panel.m_bSelected ) then
-
-		surface.SetDrawColor( 50, 200, 255, 150 )
-		panel:DrawFilledRect()
-	
-	elseif ( panel.Hovered ) then
-
-		surface.SetDrawColor( 255, 255, 255, 100 )
-		panel:DrawFilledRect()
-	
-	end
-	
-	
-
-end
-
-function SKIN:SchemeTreeNodeButton( panel )
-
-	DLabel.ApplySchemeSettings( panel )
-
-end
-
-/*---------------------------------------------------------
-	Tooltip
----------------------------------------------------------*/
-function SKIN:PaintTooltip( panel )
-
-	local w, h = panel:GetSize()
-	
-	DisableClipping( true )
-	
-	-- This isn't great, but it's not like we're drawing 1000's of tooltips all the time
-	for i=1, 4 do
-	
-		local BorderSize = i*2
-		local BGColor = Color( 0, 0, 0, (255 / i) * 0.3 )
-		
-		self:DrawGenericBackground( BorderSize, BorderSize, w, h, BGColor )
-		panel:DrawArrow( BorderSize, BorderSize )
-		self:DrawGenericBackground( -BorderSize, BorderSize, w, h, BGColor )
-		panel:DrawArrow( -BorderSize, BorderSize )
-		self:DrawGenericBackground( BorderSize, -BorderSize, w, h, BGColor )
-		panel:DrawArrow( BorderSize, -BorderSize )
-		self:DrawGenericBackground( -BorderSize, -BorderSize, w, h, BGColor )
-		panel:DrawArrow( -BorderSize, -BorderSize )
-		
-	end
-
-
-	self:DrawGenericBackground( 0, 0, w, h, self.tooltip )
-	panel:DrawArrow( 0, 0 )
-
-	DisableClipping( false )
-end
-
-derma.DefineSkin( "StrandedDermaSkin", "StrandedDermaSkin", SKIN ) 
