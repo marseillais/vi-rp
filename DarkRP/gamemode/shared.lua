@@ -1,7 +1,7 @@
 /*--------------------------------------------------------
 Default teams. If you make a team above the citizen team, people will spawn with that team!
 --------------------------------------------------------*/
-TEAM_CITIZEN = AddExtraTeam("Citizen", Color(20, 150, 20, 255), {
+TEAM_CITIZEN = AddExtraTeam("Горожанен", Color(20, 150, 20, 255), {
 	"models/player/Group01/Female_01.mdl",
 	"models/player/Group01/Female_02.mdl",
 	"models/player/Group01/Female_03.mdl",
@@ -17,22 +17,16 @@ TEAM_CITIZEN = AddExtraTeam("Citizen", Color(20, 150, 20, 255), {
 	"models/player/Group01/Male_07.mdl",
 	"models/player/Group01/Male_08.mdl",
 	"models/player/Group01/Male_09.mdl"},
-[[The Citizen is the most basic level of society you can hold
-besides being a hobo. 
-You have no specific role in city life.]], {}, "citizen", 0, 45, 0, false, false)
+[[Гражданин - самый простой способ жить в этом городе без каких-либо потребностей,
+	суеты, разумеется, если есть деньги. Но рано или поздно они ведь кончаться.
+У вас нет никакой особой роли в Рп жизни, но все зависит лишь от вас. ]], {"weapon_mad_fists"}, "citizen", 0, 50, 0, false, false)
 
-TEAM_POLICE = AddExtraTeam("Civil Protection", Color(25, 25, 170, 255), "models/player/police.mdl", [[The protector of every citizen that lives in the city . 
-You have the power to arrest criminals and protect innocents. 
-Hit them with your arrest baton to put them in jail
-Bash them with a stunstick and they might learn better than to disobey 
-the law.
-The Battering Ram can break down the door of a criminal with a warrant 
-for his/her arrest.
-The Battering Ram can also unfreeze frozen props(if enabled).
-Type /wanted <name> to alert the public to this criminal
-OR go to tab and warrant someone by clicking the warrant button]], {"arrest_stick", "unarrest_stick", "weapon_glock2", "stunstick", "door_ram", "weaponchecker"}, "cp", 4, 65, 0, true, true)
+TEAM_POLICE = AddExtraTeam("Полиция", Color(25, 25, 170, 255), "models/player/police.mdl", [[Полиция - защита каждого гражданина города . 
+У вас есть достаточно власти для наказания преступников
+ и защите невинных. 
+Но вы можете быть и плохим полицейским, решать вам.]], {"weapon_mad_fists", "arrest_stick", "unarrest_stick", "taser", "weapon_mad_57", "stunstick", "door_ram", "weaponchecker"}, "cp", 4, 95, 0, true, true)
 
-TEAM_GANG = AddExtraTeam("Gangster", Color(75, 75, 75, 255), {
+TEAM_GANG = AddExtraTeam("Гангстер", Color(75, 75, 75, 255), {
 	"models/player/Group03/Female_01.mdl",
 	"models/player/Group03/Female_02.mdl",
 	"models/player/Group03/Female_03.mdl",
@@ -47,53 +41,42 @@ TEAM_GANG = AddExtraTeam("Gangster", Color(75, 75, 75, 255), {
 	"models/player/Group03/Male_06.mdl",
 	"models/player/Group03/Male_07.mdl",
 	"models/player/Group03/Male_08.mdl",
-	"models/player/Group03/Male_09.mdl"}, [[The lowest person of crime. 
-A gangster generally works for the Mobboss who runs the crime family. 
-The Mobboss sets your agenda and you follow it or you might be punished.]], {}, "gangster", 3, 45, 0, false, false)
+	"models/player/Group03/Male_09.mdl"}, [[Гангстер - низший уровень преступлений. 
+Вы - работаете на главу, и обязаны выполнять повестки дня,
+ тоесть - задания самого босса.
+ Если его нет, вы сам себе хозяин в грабеже и разврате.]], {"weapon_mad_fists"}, "gangster", 4, 85, 0, false, false)
 
-TEAM_MOB = AddExtraTeam("Mob boss", Color(25, 25, 25, 255), "models/player/gman_high.mdl", [[The Mobboss is the boss of the criminals in the city. 
-With his power he coordinates the gangsters and forms an efficent crime
-organization. 
-He has the ability to break into houses by using a lockpick. 
-The Mobboss also can unarrest you.]], {"lockpick", "unarrest_stick"}, "mobboss", 1, 60, 0, false, false)
+TEAM_MOB = AddExtraTeam("Моббосс", Color(25, 25, 25, 255), "models/player/gman_high.mdl", [[ Моббосс - глава криминала города. 
+Вы можете быть вором в законе,
+ а можете быть главой террористов, решать вам.]], {"weapon_mad_fists", "lockpick", "unarrest_stick"}, "mobboss", 1, 100, 0, false, false, TEAM_MAFIA)
+ 
+TEAM_GUN = AddExtraTeam("Продавец оружия", Color(255, 140, 0, 255), "models/player/monk.mdl", [[Гандиллер - человек, поставляющий оружие в городе. 
+Может быть плохим или хорошим. Решать вам:
+Делать полиции скидки, или продaвать
+  террористам вооружение против них.
+Но не забывайте, что продавать вы обязаны всем по закону.]], {"weapon_mad_fists"}, "gundealer", 2, 65, 0, false, false)
 
-TEAM_GUN = AddExtraTeam("Gun Dealer", Color(255, 140, 0, 255), "models/player/monk.mdl", [[A gun dealer is the only person who can sell guns to other 
-people. 
-However, make sure you aren't caught selling guns that are illegal to 
-the public.
-/Buyshipment <name> to Buy a  weapon shipment
-/Buygunlab to Buy a gunlab that spawns P228 pistols]], {}, "gundealer", 2, 45, 0, false, false)
+TEAM_MEDIC = AddExtraTeam("Доктор", Color(47, 79, 79, 255), "models/player/kleiner.mdl", [[Доктор - человек, без которого не обойтись
+	  в этом опасном городе.
+Выберите свой путь в жизни, кому вы будете помогать.
+Вы можете открыть больницу, или открыть клинику для
+  больных наркозависимостью, сделать службу скорой помощи,
+  решать вам.]], {"weapon_mad_fists", "weapon_mad_medic"}, "medic", 3, 100, 0, false, false)
+  
+TEAM_COOK = AddExtraTeam("Повар", Color(238, 99, 99, 255), "models/player/mossman.mdl", [[Повар - поставщик еды в городе.
+Не может иметь статус плохого или доброго.
+ Продавец, он и в Африке продавец.
+Но можно неплохо заработать на продаже еды.]], {"weapon_mad_fists"}, "cook", 2, 45, 0, 0, false)
 
-TEAM_MEDIC = AddExtraTeam("Medic", Color(47, 79, 79, 255), "models/player/kleiner.mdl", [[With your medical knowledge, you heal players to proper 
-health. 
-Without a medic, people can not be healed. 
-Left click with the Medical Kit to heal other players.
-Right click with the Medical Kit to heal yourself.]], {"med_kit"}, "medic", 3, 45, 0, false, false)
+TEAM_CHIEF = AddExtraTeam("Лидер полиции", Color(20, 20, 255, 255), "models/player/combine_soldier_prisonguard.mdl", [[Лидер полиции - опытный человек, который выполняет приказы мэра города.
+Должен управлять полицией.
+Может быть подкупным, но скрываясь от мэра,
+ если он сам таким не является.]], {"weapon_mad_fists", "arrest_stick", "unarrest_stick", "weapon_mad_ump", "weapon_mad_deagle", "stunstick", "door_ram", "weaponchecker"}, "chief", 1, 120, 0, false, true, TEAM_POLICE)
 
-TEAM_COOK = AddExtraTeam("Cook", Color(238, 99, 99, 255), "models/player/mossman.mdl", [[As a cook, it is your responsibility to feed the other members 
-of your city. 
-You can spawn a microwave and sell the food you make:
-/Buymicrowave]], {}, "cook", 2, 45, 0, 0, false)
-
-TEAM_CHIEF = AddExtraTeam("Civil Protection Chief", Color(20, 20, 255, 255), "models/player/combine_soldier_prisonguard.mdl", [[The Chief is the leader of the Civil Protection unit. 
-Coordinate the police forces to bring law to the city
-Hit them with arrest baton to put them in jail
-Bash them with a stunstick and they might learn better than to 
-disobey the law.
-The Battering Ram can break down the door of a criminal with a 
-warrant for his/her arrest.
-Type /wanted <name> to alert the public to this criminal
-Type /jailpos to set the Jail Position]], {"arrest_stick", "unarrest_stick", "weapon_deagle2", "stunstick", "door_ram", "weaponchecker"}, "chief", 1, 75, 0, false, true, TEAM_POLICE)
-
-TEAM_MAYOR = AddExtraTeam("Mayor", Color(150, 20, 20, 255), "models/player/breen.mdl", [[The Mayor of the city creates laws to serve the greater good 
-of the people.
-If you are the mayor you may create and accept warrants.
-Type /wanted <name>  to warrant a player
-Type /jailpos to set the Jail Position
-Type /lockdown initiate a lockdown of the city. 
-Everyone must be inside during a lockdown. 
-The cops patrol the area
-/unlockdown to end a lockdown]], {}, "mayor", 1, 85, 0, true, false/*, {TEAM_CHIEF, TEAM_POLICE}*/)
+TEAM_MAYOR = AddExtraTeam("Мэр", Color(150, 150, 20, 255), "models/player/breen.mdl", [[Мэр - глава города.
+ ОБЯЗАН своевременно издавать законы и следить за порядком.
+Может быть не только на стороне порядка и закона,
+ может быть и корруптным.]], {"weapon_mad_fists"}, "mayor", 1, 120, 0, true, false)
 /*
 --------------------------------------------------------
 HOW TO MAKE AN EXTRA CLASS!!!!
