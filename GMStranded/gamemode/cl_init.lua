@@ -353,16 +353,17 @@ function GM.FadeFadingProps()
 	local GM = GAMEMODE
 
 	for k, v in pairs(GM.FadingProps) do
-		if (v.Alpha <= 0) then
-			v.Entity:Remove()
-			table.remove(GM.FadingProps, k)
-		else
-			v.Alpha = v.Alpha - (1 * v.Speed)
-			v.Entity:SetColor(255, 255, 255, v.Alpha)
+		if (v.Alpha) then
+			if (v.Alpha <= 0) then
+				v.Entity:Remove()
+				table.remove(GM.FadingProps, k)
+			else
+				v.Alpha = v.Alpha - (1 * v.Speed)
+				v.Entity:SetColor(255, 255, 255, v.Alpha)
+			end
 		end
 	end
 end
-
 hook.Add("Think", "gms_FadeFadingPropsHook", GM.FadeFadingProps)
 
 /*---------------------------------------------------------

@@ -457,7 +457,8 @@ function PANEL:Init()
 	self.pnlCanvas = vgui.Create( "DPanel", self)
 	self.pnlCanvas:SetPos( 25,25 )
 	self.pnlCanvas:SetSize(ScrW() / 2 - 62, 2000)--ScrH() - 104
-	self.pnlCanvas.Paint = function() 
+	self.pnlCanvas.Paint = function()
+		surface.SetDrawColor(50, 50, 50, 255)
 		surface.DrawRect( 0, 0, self.pnlCanvas:GetWide(), self.pnlCanvas:GetTall() ) 
 	end 
 	

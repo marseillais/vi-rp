@@ -91,7 +91,9 @@ end
 
 function ENT:KeyValue(k, v)
     if (k == "MaxAntlions") then
-        self[k] = tonumber(v)
+		local val = tonumber(v) or 5
+        self[k] = val
+		self.MaxAntlions = val
 	end
 end
 
