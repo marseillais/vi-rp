@@ -1,0 +1,12 @@
+"Gamemode"
+{
+	"name"		"Stranded"
+	"version"	"2.2.1"
+
+	"author_name"	"Shitty authors"
+	"author_email"	""
+	"author_url"	""
+	
+	"info"		""
+	"hide"		"0"
+}

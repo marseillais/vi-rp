@@ -1,0 +1,18 @@
+"Gamemode"
+{
+    "name"  "CustomRP"
+    "version"   "1.0"
+
+    "author_name"   "Vlad, Ava, Gred"
+    "author_email"  ""
+    "author_url"    "http://serverscape.net"
+
+    "icon"  ""
+    "info"  ""
+    "hide"  "0"
+
+	"mappattern"
+	{
+		"1"		"^rp_"
+	}
+}
