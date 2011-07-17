@@ -744,7 +744,7 @@ concommand.Add("gms_admin_makefood", function(ply)
 	ent:Spawn()
 	SPropProtection.PlayerMakePropOwner(ply, ent)
 end)
-
+/*
 concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	if (!args[1]) then ply:SendMessage("Specify max antlions!", 3, Color(200, 0, 0, 255)) return end
@@ -756,7 +756,27 @@ concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
 	ent:SetNetworkedString("Owner", "World")
 	ent:SetKeyValue("MaxAntlions", args[1])
 	//Msg("Sending keyvalue: " .. args[1] .. "\n")
-end)
+end)*/
+function GM.MakeAntlionBarrow(ply,cmd,args)
+	if !ply:IsAdmin() then
+		ply:SendMessage("You need admin rights for this!",3,Color(200,0,0,255))
+	return end
+
+	if !args[1] then
+		ply:SendMessage("Specify max antlions!",3,Color(200,0,0,255))
+	return end
+
+	local tr = ply:TraceFromEyes(10000)
+
+	local ent = ents.Create("gms_antlionbarrow")
+	ent:SetPos(tr.HitPos)
+	ent:Spawn()
+	ent:SetNetworkedString("Owner", "World")
+	ent:SetKeyValue("MaxAntlions",args[1])
+	Msg("Sending keyvalue: "..args[1].."\n")
+end
+
+concommand.Add("gms_admin_MakeAntlionBarrow",GM.MakeAntlionBarrow)
 
 concommand.Add("gms_admin_makebush", function(ply)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
