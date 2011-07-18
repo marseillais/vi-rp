@@ -11,8 +11,7 @@ include("unlocks.lua") -- Unlocks
 include("combinations.lua") -- Combis
 
 --Clientside player variables
-
-StrandedColorTheme = Color(0, 0, 0, 240) --Colours(NeedHud, and 2 others)
+StrandedColorTheme = Color(0, 0, 0, 240)
 StrandedBorderTheme = Color(0, 0, 0, 180)
 Tribes = {}
 Skills = {}
@@ -20,6 +19,10 @@ Resources = {}
 Experience = {}
 FeatureUnlocks = {}
 MaxResources = 25
+
+Sleepiness = 0
+Hunger = 0
+Thirst = 0
 
 CampFires = {}
 

@@ -3094,6 +3094,7 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 					end
 				end				
 			end 
+
 			if (table.Count(ent_buildsite.Costs) > 0) then
 				local str = "You need: "
 				for k, v in pairs(ent_buildsite.Costs) do
@@ -3104,7 +3105,7 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 				ply:SendMessage(str, 5, Color(255, 255, 255, 255))
 			else
 				ply:SendMessage("Finished!", 3, Color(10, 200, 10, 255))
-				ent_buildsite:Finish()            
+				ent_buildsite:Finish()
 			end
 			
 			local str = ":"

@@ -57,7 +57,6 @@ UNLOCK.Req = {}
 UNLOCK.Req["Planting"] = 5
 GMS.RegisterUnlock("Sprout_Planting", UNLOCK)
 
---Experienced farmer
 local UNLOCK = {}
 UNLOCK.Name = "Adept Farmer"
 UNLOCK.Description = [[Your melon vines can now carry up to three 2 melons instead of one.]]
@@ -65,34 +64,26 @@ UNLOCK.Req = {}
 UNLOCK.Req["Planting"] = 13
 GMS.RegisterUnlock("Adept_Farmer", UNLOCK)
 
---Expert farmer
 local UNLOCK = {}
-
 UNLOCK.Name = "Expert Farmer"
 UNLOCK.Description = [[Your melon vines can now carry up to three 3 melons instead of one.]]
 UNLOCK.Req = {}
 UNLOCK.Req["Planting"] = 22
+GMS.RegisterUnlock("Expert_Farmer", UNLOCK)
 
-GMS.RegisterUnlock("Expert_Farmer",UNLOCK)
-
---Grain planting
 local UNLOCK = {}
-
 UNLOCK.Name = "Grain Planting"
 UNLOCK.Description = [[You can now plant grain.]]
 UNLOCK.Req = {}
 UNLOCK.Req["Planting"] = 3
+GMS.RegisterUnlock("Grain_Planting", UNLOCK)
 
-GMS.RegisterUnlock("Grain_Planting",UNLOCK)
---Extreme Survivalist
 local UNLOCK = {}
-
 UNLOCK.Name = "Extreme Survivalist"
 UNLOCK.Description = [[You can now become a pigeon and fly around.]]
 UNLOCK.Req = {}
 UNLOCK.Req["Survival"] = 50
 function UNLOCK.OnUnlock(ply)
-         ply:Give("pill_pigeon")
+	ply:Give("pill_pigeon")
 end
-
 GMS.RegisterUnlock("Extreme_Survivalist",UNLOCK)
