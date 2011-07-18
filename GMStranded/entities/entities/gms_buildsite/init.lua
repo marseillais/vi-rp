@@ -62,7 +62,7 @@ function ENT:Use(ply)
 	self.LastUsed = CurTime()
 	if (!(SPropProtection.PlayerIsPropOwner(ply, self.Entity) or SPropProtection.IsBuddy(ply, self.Entity)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
 
-    for k, v in pairs(self.Costs or {}) do -- Reported error here =\
+    for k, v in pairs(self.Costs) do
         if (ply:GetResource(k) >= 0) then
             if (ply:GetResource(k) < v) then
                 self:AddResource(ply, k, ply:GetResource(k))
@@ -73,6 +73,7 @@ function ENT:Use(ply)
             end
         end
     end
+
     if (table.Count(self.Costs) > 0) then
         local str = "You need: "
         for k, v in pairs(self.Costs) do
