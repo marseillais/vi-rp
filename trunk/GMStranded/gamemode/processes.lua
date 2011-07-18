@@ -28,7 +28,7 @@ function GM.ProcessThink()
 				v.Owner:Freeze(false)
 				v.Owner:StopProcessBar()
 				v.Owner.InProcess = false
-				v.Owner:SendMessage("Cancelled.",3,Color(200,0,0,255))
+				v.Owner:SendMessage("Cancelled.", 3, Color(200, 0, 0, 255))
 			end
 
 			v.IsStopped = true
@@ -56,7 +56,7 @@ function PlayerMeta:DoProcess(name, time, data)
 	if (self.InProcess) then self:SendMessage("You can't do this much at once.", 3, Color(200, 0, 0, 255)) return end
 
 	--Need seperate instance
-	self.ProcessTable = table.Merge(table.Copy(GMS.Processes[name]),table.Copy(GMS.Processes.BaseProcess))
+	self.ProcessTable = table.Merge(table.Copy(GMS.Processes[name]), table.Copy(GMS.Processes.BaseProcess))
 	self.ProcessTable.Owner = self
 	self.ProcessTable.Time = time
 	self.ProcessTable.TimerID = self:UniqueID()
@@ -72,20 +72,20 @@ function PlayerMeta:DoProcess(name, time, data)
 	timer.Create("GMS_ProcessTimer_" .. self:UniqueID(), time, 1, GAMEMODE.StopProcess, self)
 end
 
-function PlayerMeta:MakeProcessBar(name,time)
-         umsg.Start("gms_MakeProcessBar",self)
-         umsg.String(name)
-         umsg.Short(time)
-         umsg.End()
+function PlayerMeta:MakeProcessBar(name, time)
+	umsg.Start("gms_MakeProcessBar", self)
+	umsg.String(name)
+	umsg.Short(time)
+	umsg.End()
 end
 
 function PlayerMeta:StopProcessBar()
-         umsg.Start("gms_StopProcessBar",self)
-         umsg.End()
+	umsg.Start("gms_StopProcessBar", self)
+	umsg.End()
 end
 
 function GM.StopProcess(pl)
-	if pl == nil or pl.ProcessTable == nil then return end
+	if (pl == nil or pl.ProcessTable == nil) then return end
 
 	--Run stop
 	local bool = pl.ProcessTable:BaseStop()

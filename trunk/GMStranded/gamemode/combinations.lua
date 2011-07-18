@@ -1882,6 +1882,7 @@ You need:
 3 Gunbarrel
 3 Gunmagazine
 Weapon Crafting Level 20
+Hunting 20
 ]]
 
 COMBI.Req = {}
@@ -1892,6 +1893,7 @@ COMBI.Req["Gunmagazine"] = 3
 
 COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 20
+COMBI.SkillReq["Hunting"] = 20
 
 COMBI.Texture = "weapons/swep"
 COMBI.SwepClass = "weapon_smg1"
@@ -1910,6 +1912,7 @@ You need:
 1 Gunbarrel
 1 Gunmagazine
 Weapon Crafting Level 13
+Hunting 10
 ]]
 
 COMBI.Req = {}
@@ -1920,6 +1923,7 @@ COMBI.Req["Gunmagazine"] = 1
 
 COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 13
+COMBI.SkillReq["Hunting"] = 10
 
 COMBI.Texture = "weapons/swep"
 COMBI.SwepClass = "weapon_pistol"
@@ -1983,6 +1987,7 @@ COMBI.Description = [[This highly advanced, effective melee weapon is useful for
 You need:
 40 Iron
 Weapon Crafting Level 11
+Hunting 5
 ]]
 
 COMBI.Req = {}
@@ -1990,6 +1995,7 @@ COMBI.Req["Iron"] = 40
 
 COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 11
+COMBI.SkillReq["Hunting"] = 5
 
 COMBI.Texture = "weapons/swep"
 COMBI.SwepClass = "weapon_stunstick"
