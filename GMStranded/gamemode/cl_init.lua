@@ -556,7 +556,13 @@ end)
   Tribe menu
 ---------------------------------------------------------*/
 concommand.Add("gms_tribemenu", function()
-	local tribemenu = vgui.Create("GMS_TribeMenu")
+	if (!GAMEMODE.TribeMenu) then
+		GAMEMODE.TribeMenu = vgui.Create("GMS_TribeMenu")
+		GAMEMODE.TribeMenu:SetDeleteOnClose(false)
+		GAMEMODE.TribeMenu:SetVisible(false)
+	end
+
+	GAMEMODE.TribeMenu:SetVisible(!GAMEMODE.TribeMenu:IsVisible())
 end)
 
 /*---------------------------------------------------------
@@ -564,7 +570,13 @@ end)
 ---------------------------------------------------------*/
 concommand.Add("gms_tribes", function()
 	if (#Tribes > 0) then
-		local tribeslist = vgui.Create("GMS_TribesList")
+		if (!GAMEMODE.TribesMenu) then
+			GAMEMODE.TribesMenu = vgui.Create("GMS_TribesList")
+			GAMEMODE.TribesMenu:SetDeleteOnClose(false)
+			GAMEMODE.TribesMenu:SetVisible(false)
+		end
+
+		GAMEMODE.TribesMenu:SetVisible(!GAMEMODE.TribesMenu:IsVisible())
 	else
 		chat.AddText(Color(255, 255, 255), "No tribes created so far. Why not create one?")
 	end

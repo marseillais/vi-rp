@@ -41,9 +41,7 @@ function PANEL:Init()
 	self.ContentPanel:AddSheet("Construction", vgui.Create( "stranded_PropSpawn", self ), "gui/silkicons/brick_add", true, true)
 	self.ContentPanel:AddSheet("ToolMenu", vgui.Create( "stranded_ToolMenu", self ), "gui/silkicons/wrench", true, true)
 	self.ContentPanel:AddSheet("Planting", vgui.Create( "stranded_PlantSpawn", self ), "gui/silkicons/box", true, true)
-	self.ContentPanel:AddSheet("Tribes", vgui.Create( "stranded_TribesMenu", self ), "gui/silkicons/group", true, true)
 	self.ContentPanel:AddSheet("Commands", vgui.Create( "stranded_Commands", self ), "gui/silkicons/application", true, true)
-	self.ContentPanel:AddSheet("Options", vgui.Create( "stranded_Options", self ), "gui/silkicons/application", true, true)
 	self.ContentPanel:AddSheet("Prop Protection", vgui.Create( "stranded_SPPMenu", self ), "gui/silkicons/shield", true, true)
 end
 
@@ -655,60 +653,55 @@ vgui.Register("gms_SavingBar",PANEL,"Panel")
 /*---------------------------------------------------------
   Tribe Menu
 ---------------------------------------------------------*/
-
 local PANEL = {}
 
 function PANEL:Init()
-         self:SetTitle("Create-A-Tribe")
-         self:SetKeyboardInputEnabled(true)
-         self:SetMouseInputEnabled(true)
-         self:MakePopup()
-         self:SetSize(ScrW() / 4, 350)
-		 self:Center()
-         
-         local line = 30
-         local tab = 0         
-        
-	local tnamelabel = vgui.Create("DLabel", self)
-		tnamelabel:SetPos(5,30)
-		tnamelabel:SetText("Tribe name")
-		
-	local tname = vgui.Create("DTextEntry",self)
-		tname:SetSize(self:GetWide()-10, 30)
-        tname:SetPos(5, 50)
-		
-	local tpwlabel = vgui.Create("DLabel", self)
-		tpwlabel:SetPos(5,85)
-		tpwlabel:SetText("Tribe password")
-		
-	local tpw = vgui.Create("DTextEntry",self)
-		tpw:SetSize(self:GetWide()-10, 30)
-        tpw:SetPos(5, 105)
-		
-	local tcollabel = vgui.Create("DLabel", self)
-		tcollabel:SetPos(5,140)
-		tcollabel:SetText("Tribe color")
-		
-	local tcolor = vgui.Create("DColorMixer",self)
-		tcolor:SetSize(self:GetWide()+15, 150)
-        tcolor:SetPos(5, 160)
-		
-	local button = vgui.Create("DButton",self)
-         button:SetSize(self:GetWide()-10, 30)
-         button:SetPos(5, 315)
-         button:SetText("Create Tribe!")
-		 button.DoClick = function()
-			RunConsoleCommand("gms_createtribe", tname:GetValue(), tcolor:GetColor().r, tcolor:GetColor().g, tcolor:GetColor().b, tpw:GetValue())
-			self:SetVisible(false)
-		 end
-end
+	self:SetTitle("Create-A-Tribe")
+	self:SetKeyboardInputEnabled(true)
+	self:SetMouseInputEnabled(true)
+	self:MakePopup()
+	self:SetSize(275, 305)
+	self:Center()
 
-vgui.Register("GMS_TribeMenu",PANEL,"DFrame")
+	local tnamelabel = vgui.Create("DLabel", self)
+	tnamelabel:SetPos(5, 21)
+	tnamelabel:SetText("Tribe name")
+
+	local tname = vgui.Create("DTextEntry", self)
+	tname:SetSize(self:GetWide() - 10, 20)
+	tname:SetPos(5, 40)
+
+	local tpwlabel = vgui.Create("DLabel", self)
+	tpwlabel:SetPos(5, 65)
+	tpwlabel:SetText("Tribe password (Optional)")
+	tpwlabel:SizeToContents()
+
+	local tpw = vgui.Create("DTextEntry", self)
+	tpw:SetSize(self:GetWide() - 10, 20)
+	tpw:SetPos(5, 80)
+
+	local tcollabel = vgui.Create("DLabel", self)
+	tcollabel:SetPos(5, 105)
+	tcollabel:SetText("Tribe color")
+
+	local tcolor = vgui.Create("DColorMixer", self)
+	tcolor:SetSize(self:GetWide() + 15, 150)
+	tcolor:SetPos(5, 125)
+
+	local button = vgui.Create("DButton", self)
+	button:SetSize(self:GetWide() - 10, 20)
+	button:SetPos(5, 280)
+	button:SetText("Create Tribe!")
+	button.DoClick = function()
+		RunConsoleCommand("gms_createtribe", tname:GetValue(), tcolor:GetColor().r, tcolor:GetColor().g, tcolor:GetColor().b, tpw:GetValue())
+		self:SetVisible(false)
+	end
+end
+vgui.Register("GMS_TribeMenu", PANEL, "DFrame")
 
 /*---------------------------------------------------------
   Tribes List
 ---------------------------------------------------------*/
-
 local PANEL = {}
 
 function PANEL:Init()
@@ -764,7 +757,6 @@ function PANEL:Init()
 	self:SetSize(ScrW() / 4, tid * 25 + 53)
 	self:Center()
 end
-
 vgui.Register("GMS_TribesList", PANEL, "DFrame")
 
 /*---------------------------------------------------------
@@ -874,7 +866,7 @@ function PANEL:RefreshSkills()
 	self.SkillLabels = {}
 	self.Line = ScrH() / 22 + 5
 
-	for k, v in pairs(Skills) do
+	for k, v in SortedPairs(Skills) do
 		local lbl = vgui.Create("gms_SkillPanel", self)
 		lbl:SetPos(0, self.Line)
 		lbl:SetSize(self:GetWide(), 16)
@@ -938,6 +930,9 @@ function PANEL:Paint()
 
 	local XP = Experience[self.Skill] / 100 * (self:GetWide() - 10)
 	surface.SetDrawColor(0, 128, 0, 220) -- XP bar
+	if (self.TxtSkill == "Survival") then
+		surface.SetDrawColor(0, 128, 176, 220) -- XP bar
+	end
 	surface.DrawRect(5, 0, XP, self:GetTall())
 
 	draw.SimpleText(self.TxtSkill .. ": " .. Skills[self.Skill] .. " (" .. Experience[self.Skill] .. " / 100)", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
@@ -989,7 +984,7 @@ function PANEL:RefreshResources()
     self.Tab = 5
     self.IntResources = 0
     local count = 0
-    for k, v in pairs(Resources) do
+    for k, v in SortedPairs(Resources) do
         if (v > 0) then
             local lbl = vgui.Create("Label", self)
             lbl:SetPos(self.Tab, self.Line)

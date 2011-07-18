@@ -1,62 +1,3 @@
-/*---------------------------------------------------------
-  DTribes Menu
----------------------------------------------------------*/
-local PANEL = {}
-
-PANEL.Tribetables = {}
-PANEL.Tribetables["gms_tribe1"] = "The Stranded"
-PANEL.Tribetables["gms_tribe2"] = "Scavengers"
-PANEL.Tribetables["gms_tribe3"] = "The Dynamics"
-PANEL.Tribetables["gms_tribe4"] = "The Gummies"
-PANEL.Tribetables["gms_tribe5"] = "Anonymous"
-PANEL.Tribetables["gms_tribe6"] = "Survivalists"
-
-function PANEL:Init()
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Tribes Menu" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
-	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
-
-	CategoryList:SetSpacing( 5 )
-	CategoryList:EnableHorizontal( false )
-	CategoryList:EnableVerticalScrollbar( true )
-         
-    local size = ScrH() / 30
-    local line = 25
-	
-    for cmd,txt in pairs(self.Tribetables) do
-        local button = vgui.Create("gms_CommandButton",CategoryList)
-        button:SetSize(CategoryList:GetWide() / 2-10, size)
-        button:SetPos(10, line)
-        button:SetConCommand(cmd.."\n")
-        button:SetText(txt)
-
-        line = line + button:GetTall() + 10
-    end
-	
-	local createtribe = vgui.Create("gms_CommandButton",CategoryList)
-        createtribe:SetSize(CategoryList:GetWide() / 2-20, size*2)
-        createtribe:SetPos(CategoryList:GetWide() / 2+10, 25)
-        createtribe:SetConCommand("gms_tribemenu\n")
-        createtribe:SetText("Create-A-Tribe")
-		
-	local jointribe = vgui.Create("gms_CommandButton",CategoryList)
-        jointribe:SetSize(CategoryList:GetWide() / 2-20, size*2)
-        jointribe:SetPos(CategoryList:GetWide() / 2+10, 30 + size*2)
-        jointribe:SetConCommand("gms_tribes\n")
-        jointribe:SetText("Join-A-Tribe")
-		
-end
-
-function PANEL:PerformLayout( )
-	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
-end
-
-vgui.Register("stranded_TribesMenu",PANEL,"DPanel")
 
 /*---------------------------------------------------------
   DPlant Menu
@@ -170,73 +111,38 @@ end
 vgui.Register( "stranded_PropSpawn", PANEL, "DPanel" )
 
 /*---------------------------------------------------------
-  DOptions Menu
----------------------------------------------------------*/
-local PANEL = {}
-
-PANEL.Optiontables = {}
-PANEL.Optiontables["gms_savecharacter"] = "Save Character"
-function checkAdmin(ply)  if ply:IsAdmin() then 
-PANEL.Optiontables["gms_admin"] = "Admin Menu"
-end
-end
-
-function PANEL:Init()
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Options" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
-	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
-
-	CategoryList:SetSpacing( 5 )
-	CategoryList:EnableHorizontal( false )
-	CategoryList:EnableVerticalScrollbar( true )
-         
-    local size = ScrH() / 30
-    local line = 25
-
-		checkAdmin(LocalPlayer())
-    for cmd,txt in pairs(self.Optiontables) do
-        local button = vgui.Create("gms_CommandButton",CategoryList)
-        button:SetSize(CategoryList:GetWide() / 2, size)
-        button:SetPos(10, line)
-        button:SetConCommand(cmd.."\n")
-        button:SetText(txt)
-             
-        line = line + button:GetTall() + 10
-    end
-
-end
-
-function PANEL:PerformLayout( )
-	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
-end
-
-vgui.Register("stranded_Options",PANEL,"DPanel")
-
-/*---------------------------------------------------------
   DCommands Menu
 ---------------------------------------------------------*/
 local PANEL = {}
 
 PANEL.Commandtables = {}
-PANEL.Commandtables["gms_sleep"] = "Sleep"
-PANEL.Commandtables["gms_wakeup"] = "WakeUp"
-PANEL.Commandtables["gms_DropWeapon"] = "Drop Weapon"
-PANEL.Commandtables["gms_makefire"] = "Make Campfire"
-PANEL.Commandtables["gms_DrinkBottle"] = "Drink WaterBottle"
-PANEL.Commandtables["gms_TakeMedicine"] = "Take Medicine"
-PANEL.Commandtables["gms_OpenDropResourceWindow"] = "Drop Resources"
-PANEL.Commandtables["gms_GenericCombi"] = "Combinations"
-PANEL.Commandtables["gms_BuildingsCombi"] = "Structures"
-PANEL.Commandtables["gms_help"] = "Motd Help"
-PANEL.Commandtables["gms_dropall"] = "Drop All Resources"
-PANEL.Commandtables["gms_salvage"] = "Salvage Prop"
+PANEL.Commandtables["Sleep"] = "gms_sleep"
+PANEL.Commandtables["Wake up"] = "gms_wakeup"
+PANEL.Commandtables["Drop weapon"] = "gms_DropWeapon"
+PANEL.Commandtables["Make campfire"] = "gms_makefire"
+PANEL.Commandtables["Drink bottle of water"] = "gms_DrinkBottle"
+PANEL.Commandtables["Take medicine"] = "gms_TakeMedicine"
+PANEL.Commandtables["Drop Resources"] = "gms_OpenDropResourceWindow"
+PANEL.Commandtables["Combinations"] = "gms_GenericCombi"
+PANEL.Commandtables["Structures"] = "gms_BuildingsCombi"
+PANEL.Commandtables["Help"] = "gms_help"
+PANEL.Commandtables["Drop all resources"] = "gms_dropall"
+PANEL.Commandtables["Salvage prop"] = "gms_salvage"
+
+PANEL.Commandtables["Tribe: Create"] = "gms_tribemenu"
+PANEL.Commandtables["Tribe: Join"] = "gms_tribes"
+PANEL.Commandtables["Tribe: Leave"] = "gms_leave"
+
+PANEL.Commandtables["Save character"] = "gms_savecharacter"
+function checkAdmin(ply)
+	if ply:IsAdmin() then 
+		PANEL.Commandtables["Admin menu"] = "gms_admin"
+	end
+end
 
 function PANEL:Init()
+	checkAdmin(LocalPlayer())
+
     self.Label = vgui.Create( "DLabel", self )
 	self.Label:SetText( "Commands" )
 	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
@@ -248,11 +154,11 @@ function PANEL:Init()
 	CategoryList:SetSpacing( 5 )
 	CategoryList:EnableHorizontal( false )
 	CategoryList:EnableVerticalScrollbar( true )
-         
+
     local size = ScrH() / 30
     local line = 25
 
-    for cmd,txt in pairs(self.Commandtables) do
+    for txt, cmd in SortedPairs(self.Commandtables) do
         local button = vgui.Create("gms_CommandButton",CategoryList)
         button:SetSize(CategoryList:GetWide() / 2, size)
         button:SetPos(10, line)
