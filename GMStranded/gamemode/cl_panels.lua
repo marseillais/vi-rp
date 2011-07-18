@@ -88,18 +88,19 @@ end
 
 function PANEL:Paint()
 	DFrame.Paint(self)
-	draw.SimpleTextOutlined(self.Name,"ScoreboardHead",self:GetWide() / 2,self:GetTall() / 6,Color(10,200,10,255),1,1,0.5,Color(100,100,100,160))
+	draw.SimpleTextOutlined(self.Name, "ScoreboardHead", self:GetWide() / 2, self:GetTall() / 6, Color(10, 200, 10, 255), 1, 1, 0.5, Color(100, 100, 100, 160))
 	return true
 end
 
 function PANEL:SetUnlock(text)
-         local unlock = GMS.FeatureUnlocks[text]
-         
-         self.Name = unlock.Name
-         self.DescWindow:SetText(unlock.Description)
+	local unlock = GMS.FeatureUnlocks[text]
+
+	self.Name = unlock.Name
+	self.DescWindow:SetText(unlock.Description)
 end
 
-vgui.Register("GMS_UnlockWindow",PANEL,"DFrame")
+vgui.Register("GMS_UnlockWindow", PANEL, "DFrame")
+
 /*---------------------------------------------------------
   GMS dropdown
 ---------------------------------------------------------*/

@@ -21,8 +21,46 @@ Experience = {}
 FeatureUnlocks = {}
 MaxResources = 25
 
+CampFires = {}
+
 -- Locals
 local PlayerMeta = FindMetaTable("Player")
+
+/* Receive the campfires */
+
+usermessage.Hook("addCampFire", function(data)
+	table.insert(CampFires, Entity(data:ReadShort()))
+end)
+
+usermessage.Hook("removeCampFire", function(data)
+	local ent = Entity(data:ReadShort())
+
+	for id, e in pairs(CampFires) do
+		if (e == ent) then
+			table.remove(CampFires, id)
+		end
+	end
+end)
+
+hook.Add("Think", "CampFireLight", function()
+	for id, e in pairs(CampFires) do
+		if (!e or e == NULL or e:WaterLevel() > 0) then
+			table.remove(CampFires, id)
+		else
+			local Hax = DynamicLight(e:EntIndex())
+			if (Hax) then
+				Hax.Pos = e:GetPos()// + Vector(0, 0, offset)
+				Hax.r = 255
+				Hax.g = 128
+				Hax.b = 0
+				Hax.Brightness = math.random(2, 3)
+				Hax.Size = math.random(400, 512) 
+				Hax.Decay = 400 * 5
+				Hax.DieTime = CurTime() + 0.25
+			end
+		end
+	end
+end)
 
 /*---------------------------------------------------------
   General / utility
@@ -36,20 +74,23 @@ end
 function GM:HUDPaint()
 	self.BaseClass:HUDPaint()
 	if (ProcessCompleteTime) then
+		local col = StrandedColorTheme
+		local bordcol = StrandedBorderTheme
+
 		local wid = ScrW() / 3
 		local hei = ScrH() / 30
-		surface.SetDrawColor(30, 30, 30, 150)
+		surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
 		surface.DrawRect(ScrW() * 0.5 - wid * 0.5, ScrH() / 30, wid, hei)
 
 		local width = math.min(((RealTime() - ProcessStart) / ProcessCompleteTime) * wid, wid)
 		if (width > wid) then GAMEMODE.StopProgressBar() end
-		surface.SetDrawColor(0, 200, 0, 255)
+		surface.SetDrawColor(0, 128, 176, 220)
 		surface.DrawRect(ScrW() * 0.5 - wid * 0.5, ScrH() / 30, width, hei)
 
-		surface.SetDrawColor(27, 167, 219,255)
+		surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
 		surface.DrawOutlinedRect(ScrW() * 0.5 - wid * 0.5, ScrH() / 30, wid, hei)
 
-		draw.SimpleText(CurrentProcess, "ScoreboardText", ScrW() * 0.5, hei * 1.5, Color(255, 255, 255, 255), 1, 1)
+		draw.SimpleText(CurrentProcess .. " (F4 to Cancel)" , "ScoreboardText", ScrW() * 0.5, hei * 1.5, Color(255, 255, 255, 255), 1, 1)
 	end
 end
 
@@ -580,7 +621,7 @@ end)
 /*---------------------------------------------------------
    Tribe system
 ---------------------------------------------------------*/
-function GM.getTribes(data)
+usermessage.Hook("recvTribes", function(data)
 	local id = data:ReadShort()
 	local name = data:ReadString()
 	local red = data:ReadShort()
@@ -590,8 +631,7 @@ function GM.getTribes(data)
 	team.SetUp(id, name, Color(red, green, blue))
 	
 	table.insert(Tribes, {name, hazpass})
-end
-usermessage.Hook("recvTribes", GM.getTribes)
+end)
 
 function GM.ReceiveTribe(data)
 	local name = data:ReadString()

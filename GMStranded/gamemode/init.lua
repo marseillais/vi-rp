@@ -54,10 +54,63 @@ GM.Tribes["The Dynamics"] = {id = 5, red = 0, green = 72, blue = 255, Password =
 GM.Tribes["Scavengers"] = {id = 6, red = 8, green = 255, blue = 0, Password = false}
 GM.NumTribes = 6
 
+
+GM.AntlionBarrowSpawns = {}
+GM.AntlionBarrowSpawns['gms_rollinghills'] = {Vector(3131.2876, -980.5972, 519.5605), Vector(-4225.0200, 6009.3516, 513.1411)}
+GM.AntlionBarrowSpawns['gms_rollinghills_daynight'] = GM.AntlionBarrowSpawns['gms_rollinghills']
+GM.AntlionBarrowSpawns['gms_rollinghills_daynight_b1'] = GM.AntlionBarrowSpawns['gms_rollinghills']
+
 resource.AddFile("gamemodes/GMStranded/content/help/help2.htm")
 for k, v in pairs(file.Find("../materials/gui/GMS/*")) do
 	resource.AddFile("materials/gui/GMS/" .. v)
 end
+
+/*---------------------------------------------------------
+	Custom auto anlion barrow placement
+-----------------------------------------------------------*/
+
+timer.Simple(3, function()	
+	print("Starting... " .. game.GetMap())
+	if (GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) then
+		print("Placing... ")
+		for id, pos in pairs(GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) do
+			local ent = ents.Create("gms_antlionbarrow")
+			ent:SetPos(pos)
+			ent:Spawn()
+			ent:SetNetworkedString("Owner", "World")
+			ent:SetKeyValue("MaxAntlions", 7)
+		end
+	end
+end)
+
+/* Cancel process */
+
+concommand.Add("gms_cancelprocess", function(ply, cmd, args)
+	if (ply.InProcess) then
+		v = ply.ProcessTable
+		
+		if (v.Owner and v.Owner != NULL and v.Owner:IsValid()) then 
+			v.Owner:Freeze(false)
+			v.Owner:StopProcessBar()
+			v.Owner.InProcess = false
+			v.Owner:SendMessage("Cancelled.", 3, Color(200, 0, 0, 255))
+		end
+
+		v.IsStopped = true
+		timer.Destroy("GMS_ProcessTimer_" .. v.TimerID)
+		GAMEMODE.RemoveProcessThink(v)
+	end
+end)
+
+/* Send all campfires */
+
+hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
+	for i, v in pairs(GAMEMODE.CampFireProps) do
+		umsg.Start("addCampFire", ply)
+			umsg.Short(v:EntIndex())
+		umsg.End()
+	end
+end)
 
 /*---------------------------------------------------------
   Custom player messages
@@ -108,9 +161,9 @@ function GM:ShowSpare1(ply)
 	ply:ConCommand("gms_help")
 end
 
-/*hook.Add("ShowSpare1", "HelpMenu", function(ply)
-	ply:ConCommand("gms_help")
-end)*/
+function GM:ShowSpare2(ply)
+	ply:ConCommand("gms_cancelprocess")
+end
 
 function PlayerMeta:OpenCombiMenu(str)
 	umsg.Start("gms_OpenCombiMenu", self)
@@ -750,7 +803,7 @@ concommand.Add("gms_admin_makefood", function(ply)
 	ent:Spawn()
 	SPropProtection.PlayerMakePropOwner(ply, ent)
 end)
-/*
+
 concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	if (!args[1]) then ply:SendMessage("Specify max antlions!", 3, Color(200, 0, 0, 255)) return end
@@ -761,26 +814,7 @@ concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
 	ent:Spawn()
 	ent:SetNetworkedString("Owner", "World")
 	ent:SetKeyValue("MaxAntlions", args[1])
-	//Msg("Sending keyvalue: " .. args[1] .. "\n")
-end)*/
-function GM.MakeAntlionBarrow(ply,cmd,args)
-	if !ply:IsAdmin() then
-		ply:SendMessage("You need admin rights for this!",3,Color(200,0,0,255))
-	return end
-
-	if !args[1] then
-		ply:SendMessage("Specify max antlions!",3,Color(200,0,0,255))
-	return end
-
-	local tr = ply:TraceFromEyes(10000)
-
-	local ent = ents.Create("gms_antlionbarrow")
-	ent:SetPos(tr.HitPos)
-	ent:Spawn()
-	ent:SetNetworkedString("Owner", "World")
-	ent:SetKeyValue("MaxAntlions",args[1])
-	Msg("Sending keyvalue: "..args[1].."\n")
-end
+end)
 
 concommand.Add("gms_admin_MakeAntlionBarrow",GM.MakeAntlionBarrow)
 
@@ -1321,8 +1355,9 @@ end)
 /*---------------------------------------------------------
   Salvage Props
 ---------------------------------------------------------*/
-concommand.Add( "gms_salvage", function(ply)
+concommand.Add("gms_salvage", function(ply)
 	if (ply.InProcess) then return end
+	
 	local tr = ply:TraceFromEyes(100)
 	if (tr.HitNonWorld) then
 		ent = tr.Entity
@@ -2267,6 +2302,8 @@ function GM:OnNPCKilled(npc, killer, weapon)
 			loot:Spawn()
 			timer.Simple(180, function(loot) if (loot:IsValid()) then loot:Remove() end end, loot)
 			npc:Fadeout(5)
+
+			killer:IncXP("Hunting", math.Clamp(math.Round(50 / killer:GetSkill("Hunting")), 1, 1000))
 		else
 			npc:Fadeout(5)			
 		end
@@ -2288,8 +2325,14 @@ function GM.CampFireTimer()
 				if (CurTime() - ent.CampFireLifeTime >= 180) then
 					ent:Fadeout()
 					table.remove(GM.CampFireProps, k)
+					
+					local rp = RecipientFilter()
+					rp:AddAllPlayers()
+					umsg.Start("removeCampFire", rp)
+						umsg.Short(ent:EntIndex())
+					umsg.End()
 				elseif (ent:WaterLevel() > 0) then
-					ent:Fadeout()
+					ent:Extinguish()
 					table.remove(GM.CampFireProps, k)
 				else	
 					ent:SetHealth(ent.CampFireMaxHP)
@@ -2358,6 +2401,12 @@ function EntityMeta:MakeCampfire()
 					v.CampFireLifeTime = CurTime()
 
 					table.insert(GAMEMODE.CampFireProps, v)
+
+					local rp = RecipientFilter()
+					rp:AddAllPlayers()
+					umsg.Start("addCampFire", rp)
+						umsg.Short(v:EntIndex())
+					umsg.End()
 				end
 			end
 		end
@@ -2764,7 +2813,7 @@ timer.Create("AlertTimerS", 5, 0, AlertMessagesS)
 /*---------------------------------------------------------
    Tribe system
 ---------------------------------------------------------*/
-function GM.SendTribes(ply)
+hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
 	for i, v in pairs(GAMEMODE.Tribes) do
 		umsg.Start("recvTribes", ply)
 			umsg.Short(v.id)
@@ -2779,8 +2828,7 @@ function GM.SendTribes(ply)
 			end
 		umsg.End()
 	end
-end
-hook.Add("PlayerInitialSpawn", "getTribes", GM.SendTribes)
+end)
 
 function CreateTribe(ply, name, red, green, blue, password)
 	local Password = false
