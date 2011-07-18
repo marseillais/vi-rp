@@ -54,9 +54,11 @@ end
 --Actual processing
 function PlayerMeta:DoProcess(name, time, data)
 	if (self.InProcess) then self:SendMessage("You can't do this much at once.", 3, Color(200, 0, 0, 255)) return end
+	if (self.AFK) then self:SendMessage("You can't do this while afk.", 3, Color(200, 0, 0, 255)) return end
+	if (self.Sleeping) then self:SendMessage("You can't do this while sleeping.", 3, Color(200, 0, 0, 255)) return end
 
 	--Need seperate instance
-	self.ProcessTable = table.Merge(table.Copy(GMS.Processes[name]), table.Copy(GMS.Processes.BaseProcess))
+	self.ProcessTable = table.Merge(table.Copy(GMS.Processes.BaseProcess), table.Copy(GMS.Processes[name]))
 	self.ProcessTable.Owner = self
 	self.ProcessTable.Time = time
 	self.ProcessTable.TimerID = self:UniqueID()
@@ -72,10 +74,11 @@ function PlayerMeta:DoProcess(name, time, data)
 	timer.Create("GMS_ProcessTimer_" .. self:UniqueID(), time, 1, GAMEMODE.StopProcess, self)
 end
 
-function PlayerMeta:MakeProcessBar(name, time)
+function PlayerMeta:MakeProcessBar(name, time, cancel)
 	umsg.Start("gms_MakeProcessBar", self)
 	umsg.String(name)
 	umsg.Short(time)
+	umsg.Bool(cancel)
 	umsg.End()
 end
 
@@ -96,29 +99,33 @@ function GM.StopProcess(pl)
 	pl.InProcess = false
 	pl.ProcessTable = nil
 end
+
 /*---------------------------------------------------------
   Base process
 ---------------------------------------------------------*/
 local PROCESS = {}
 
 function PROCESS:BaseThink()
-		if ValidEntity(ent) then
-         if self == nil or self.Owner == nil or !self.Owner:Alive() then
-            return true
-         end
+	if (ValidEntity(ent)) then
+		if (self == nil or self.Owner == nil or !self.Owner:Alive()) then
+			return true
+		end
 
-         if !self.Owner:IsValid() or !self.Owner:IsConnected() then return true end
+		if (!self.Owner:IsValid() or !self.Owner:IsConnected()) then return true end
 	end
 end
 
 function PROCESS:BaseStop()
-         if !self.Owner:Alive() or !self.Owner or self.Owner == NULL then return false end
-         if !self.Owner:IsValid() then return false end         
-         self.Owner:StopProcessBar()
-         return true
+	if (!self.Owner:Alive() or !self.Owner or self.Owner == NULL) then return false end
+	if (!self.Owner:IsValid()) then return false end         
+	self.Owner:StopProcessBar()
+	return true
 end
 
+PROCESS.Cancel = true
+
 GMS.Processes.BaseProcess = PROCESS
+
 /*---------------------------------------------------------
   Fruit eating process
 ---------------------------------------------------------*/
@@ -130,7 +137,7 @@ PROCESS.SideGain["orange"] = "Orange_Seeds"
 PROCESS.SideGain["banana"] = "Banana_Seeds"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Eating Fruit",self.Time)
+         self.Owner:MakeProcessBar("Eating Fruit", self.Time, self.Cancel)
          self.Owner:Freeze(true)
 		 
 		 self.Owner:EmitSound(Sound("vo/SandwichEat09.wav"))
@@ -185,6 +192,8 @@ function PROCESS:OnStop()
         self.Owner:Freeze(false)
 end
 
+PROCESS.Cancel = false
+
 GMS.RegisterProcess("EatFruit",PROCESS)
 
 /*---------------------------------------------------------
@@ -193,7 +202,7 @@ GMS.RegisterProcess("EatFruit",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-	self.Owner:MakeProcessBar("Eating some berries", self.Time)
+	self.Owner:MakeProcessBar("Eating some berries", self.Time, self.Cancel)
 	self.Owner:Freeze(true)
 	self.StartTime = CurTime()
 
@@ -218,6 +227,8 @@ function PROCESS:OnStop()
 	self.Owner:Freeze(false)
 end
 
+PROCESS.Cancel = false
+
 GMS.RegisterProcess("EatBerry", PROCESS)
 
 /*---------------------------------------------------------
@@ -233,7 +244,7 @@ PROCESS.Results[5] = "Herbs"
 PROCESS.Results[6] = "Berries"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Foraging",self.Time)
+         self.Owner:MakeProcessBar("Foraging", self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -265,7 +276,7 @@ local PROCESS = {}
 function PROCESS:OnStart()
          self.Data.Entity:Fadeout(2)
 
-         self.Owner:MakeProcessBar("Looting",self.Time)
+         self.Owner:MakeProcessBar("Looting",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -295,7 +306,7 @@ PROCESS.Rarities[5] = "Sand"
 PROCESS.Rarities[6] = "Stone"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Digging",self.Time)
+         self.Owner:MakeProcessBar("Digging",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          self.StartTime = CurTime()
          
@@ -352,7 +363,7 @@ PROCESS.Results[3] = "Sand"
 PROCESS.Results[4] = "Glass" -- 25% Chance, Easy hack :\
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Filtering Ground",self.Time)
+         self.Owner:MakeProcessBar("Filtering Ground",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -382,7 +393,7 @@ GMS.RegisterProcess("FilterGround",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Harvesting Grain",self.Time)
+         self.Owner:MakeProcessBar("Harvesting Grain",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          
          local ent = self.Data.Entity
@@ -432,7 +443,7 @@ GMS.RegisterProcess("HarvestGrain",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Harvesting Bush",self.Time)
+         self.Owner:MakeProcessBar("Harvesting Bush",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          
          local ent = self.Data.Entity
@@ -484,7 +495,7 @@ local PROCESS = {}
 
 function PROCESS:OnStart()
 	if GetConVarNumber("gms_Campfire") == 1 then
-         self.Owner:MakeProcessBar("Making Campfire",self.Time)
+         self.Owner:MakeProcessBar("Making Campfire",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 	end
 end
@@ -513,7 +524,7 @@ GMS.RegisterProcess("Campfire",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Chopping Wood",self.Time)
+         self.Owner:MakeProcessBar("Chopping Wood",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          
          self.StartTime = CurTime()
@@ -564,7 +575,7 @@ GMS.RegisterProcess("WoodCutting",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Mining",self.Time)
+         self.Owner:MakeProcessBar("Mining",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          self.StartTime = CurTime()
          
@@ -638,7 +649,7 @@ local PROCESS = {}
 
 function PROCESS:OnStart()
          if self.Owner:HasUnlock("Sprout_Collect") then
-            self.Owner:MakeProcessBar("Loosening sprout",self.Time)
+            self.Owner:MakeProcessBar("Loosening sprout",self.Time, self.Cancel)
             self.Owner:Freeze(true)
          else
             self.IsStopped = true
@@ -672,7 +683,7 @@ GMS.RegisterProcess("SproutCollect",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Watermelon",self.Time)
+         self.Owner:MakeProcessBar("Planting Watermelon",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -700,7 +711,7 @@ GMS.RegisterProcess("PlantMelon",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Banana",self.Time)
+         self.Owner:MakeProcessBar("Planting Banana",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -728,7 +739,7 @@ GMS.RegisterProcess("PlantBanana",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Orange",self.Time)
+         self.Owner:MakeProcessBar("Planting Orange",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -756,7 +767,7 @@ GMS.RegisterProcess("PlantOrange",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Grain",self.Time)
+         self.Owner:MakeProcessBar("Planting Grain",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -784,7 +795,7 @@ GMS.RegisterProcess("PlantGrain",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Berry Bush",self.Time)
+         self.Owner:MakeProcessBar("Planting Berry Bush",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -812,7 +823,7 @@ GMS.RegisterProcess("PlantBush",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Planting Tree",self.Time)
+         self.Owner:MakeProcessBar("Planting Tree",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -839,14 +850,16 @@ GMS.RegisterProcess("PlantTree",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Assembling",self.Time)
-         self.Owner:Freeze(true)
+	self.Owner:MakeProcessBar("Assembling",self.Time, self.Cancel)
+	self.Owner:Freeze(true)
 end
 
 function PROCESS:OnStop()
-         self.Owner:SendMessage("Assembly successful.", 3, Color(10,200,10,255))
-         self.Owner:Freeze(false)
+	self.Owner:SendMessage("Assembly successful.", 3, Color(10,200,10,255))
+	self.Owner:Freeze(false)
 end
+
+PROCESS.Cancel = false
 
 GMS.RegisterProcess("Assembling",PROCESS)
 
@@ -856,7 +869,7 @@ GMS.RegisterProcess("Assembling",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Fishing",self.Time)
+         self.Owner:MakeProcessBar("Fishing",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -894,7 +907,7 @@ GMS.RegisterProcess("Fishing",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Fishing",3)
+         self.Owner:MakeProcessBar("Fishing",3, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -936,7 +949,7 @@ GMS.RegisterProcess("AdvancedFishing",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Bottling Water",self.Time)
+         self.Owner:MakeProcessBar("Bottling Water",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -956,7 +969,7 @@ GMS.RegisterProcess("BottleWater",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Drinking Bottle",self.Time)
+         self.Owner:MakeProcessBar("Drinking Bottle",self.Time, self.Cancel)
          self.Owner:Freeze(true)
          self.StartTime = CurTime()
          
@@ -985,7 +998,9 @@ function PROCESS:OnStop()
          self.Owner:Freeze(false)
 end
 
-GMS.RegisterProcess("DrinkBottle",PROCESS)
+PROCESS.Cancel = false
+
+GMS.RegisterProcess("DrinkBottle", PROCESS)
 
 /*---------------------------------------------------------
   Take Medicine
@@ -996,7 +1011,7 @@ function PROCESS:OnStart()
 	if self.Owner:Health() >= 200 or (self.Owner:Health() >= 150 and self.Owner:HasUnlock("Master_Survivalist") != true) or (self.Owner:Health() >= 100 and self.Owner:HasUnlock("Adept_Survivalist") != true) then 
 		 self.Owner:SendMessage("You're feeling good, why would you heal yourself.", 3, Color(200,0,0,255))
 	else
-		 self.Owner:MakeProcessBar("Taking Medicine",self.Time)
+		 self.Owner:MakeProcessBar("Taking Medicine",self.Time, self.Cancel)
 		 self.Owner:EmitSound (Sound ("items/smallmedkit1.wav"))
 end
 
@@ -1016,7 +1031,7 @@ GMS.RegisterProcess("TakeMedicine",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Cooking "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Cooking "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
          self.Sound = CreateSound(self.Owner,Sound("npc/headcrab/headcrab_burning_loop2.wav"))
          self.Sound:Play()
@@ -1065,7 +1080,7 @@ GMS.RegisterProcess("Cook",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Crafting "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Crafting "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -1091,7 +1106,7 @@ GMS.RegisterProcess("MakeWeapon",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Making "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Making "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -1115,7 +1130,7 @@ GMS.RegisterProcess("MakeGeneric",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Setting up "..self.Data.Name.." site",self.Time)
+         self.Owner:MakeProcessBar("Setting up "..self.Data.Name.." site",self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -1138,7 +1153,7 @@ GMS.RegisterProcess("MakeBuilding",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Smelting "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Smelting "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -1163,7 +1178,7 @@ GMS.RegisterProcess("Smelt",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Crushing "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Crushing "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 
@@ -1188,7 +1203,7 @@ GMS.RegisterProcess("Crush",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Processing "..self.Data.Name,self.Time)
+         self.Owner:MakeProcessBar("Processing "..self.Data.Name,self.Time, self.Cancel)
          self.Owner:Freeze(true)
 end
 

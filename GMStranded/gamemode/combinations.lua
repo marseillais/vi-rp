@@ -1,16 +1,31 @@
-/*---------------------------------------------------------
-  Combinations system
----------------------------------------------------------*/
+
 GMS.Combinations = {}
-function GMS.RegisterCombi(name,tbl,group)
-	if !GMS.Combinations[group] then GMS.Combinations[group] = {} end
+function GMS.RegisterCombi(name, tbl, group)
+	if (!GMS.Combinations[group]) then GMS.Combinations[group] = {} end
 	GMS.Combinations[group][name] = tbl
 end
-/*---------------------------------------------------------
 
-  Buildings / big stuff
+/* RESOURCE PACK */
 
----------------------------------------------------------*/
+local COMBI = {}
+
+COMBI.Name = "Resource Pack"
+COMBI.Description = [[You can use the resource pack to store multiple resources in it. Highly recommended.
+You need:
+20 Wood
+10 Stone
+]]
+
+COMBI.Req = {}
+COMBI.Req["Wood"] = 20
+COMBI.Req["Stone"] = 10
+
+COMBI.Results = {}
+COMBI.Results = "gms_resourcepack"
+COMBI.BuildSiteModel = "models/items/item_item_crate.mdl"
+
+GMS.RegisterCombi("ResourcePack", COMBI, "Buildings")
+
 /*---------------------------------------------------------
   Stone Workbench
 ---------------------------------------------------------*/
@@ -31,7 +46,7 @@ COMBI.Results = {}
 COMBI.Results = "gms_stoneworkbench"
 COMBI.BuildSiteModel = "models/props/de_piranesi/pi_merlon.mdl"
 
-GMS.RegisterCombi("StoneWorkbench",COMBI,"Buildings")
+GMS.RegisterCombi("StoneWorkbench", COMBI, "Buildings")
 /*---------------------------------------------------------
   Copper Workbench
 ---------------------------------------------------------*/
@@ -1221,6 +1236,7 @@ COMBI.Results = {}
 COMBI.Results["Medicine"] = 1
 
 GMS.RegisterCombi("Medicine",COMBI,"Generic")
+
 /*---------------------------------------------------------
 
   Cooking
