@@ -476,7 +476,7 @@ usermessage.Hook("gms_stopsleep", GM.StopSleep)
 ---------------------------------------------------------*/
 function GM.AFKOverlay()
 	if (!AFKFadeIn and !AFKFadeOut) then return end
-	if (AFKFadeIn and AFKFade) < 250 then
+	if (AFKFadeIn and AFKFade < 250) then
 		AFKFade = AFKFade + 5
 	elseif (AFKFadeIn and AFKFade >= 255) then
 		AFKFadeIn = false
@@ -563,6 +563,7 @@ concommand.Add("gms_tribemenu", function()
 	end
 
 	GAMEMODE.TribeMenu:SetVisible(!GAMEMODE.TribeMenu:IsVisible())
+	GAMEMODE.TribeMenu.tname:RequestFocus()
 end)
 
 /*---------------------------------------------------------
@@ -570,13 +571,7 @@ end)
 ---------------------------------------------------------*/
 concommand.Add("gms_tribes", function()
 	if (#Tribes > 0) then
-		if (!GAMEMODE.TribesMenu) then
-			GAMEMODE.TribesMenu = vgui.Create("GMS_TribesList")
-			GAMEMODE.TribesMenu:SetDeleteOnClose(false)
-			GAMEMODE.TribesMenu:SetVisible(false)
-		end
-
-		GAMEMODE.TribesMenu:SetVisible(!GAMEMODE.TribesMenu:IsVisible())
+		local TribesMenu = vgui.Create("GMS_TribesList")
 	else
 		chat.AddText(Color(255, 255, 255), "No tribes created so far. Why not create one?")
 	end

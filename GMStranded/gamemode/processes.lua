@@ -1,76 +1,75 @@
+
 --Locals
 local PlayerMeta = FindMetaTable("Player")
 local EntityMeta = FindMetaTable("Entity")
+
 /*---------------------------------------------------------
   Process system
 ---------------------------------------------------------*/
 GMS.Processes = {}
 
 --Registry
-function GMS.RegisterProcess(name,tbl)
-         GMS.Processes[name] = tbl
+function GMS.RegisterProcess(name, tbl)
+	GMS.Processes[name] = tbl
 end
 
 --Handle think hooks
 GM.ProcessThinkHookTable = {}
 function GM.ProcessThink()
-         local GM = GAMEMODE
-         for k,v in pairs(GM.ProcessThinkHookTable) do
-             local think;
-             if v.Think then think = v:Think() end
-             
-             local basethink = v:BaseThink()
-             
-             if think or basethink then
-                if v.Owner and v.Owner != NULL and v.Owner:IsValid() then 
-                   v.Owner:Freeze(false)
-                   v.Owner:StopProcessBar()
-                   v.Owner.InProcess = false
-                   v.Owner:SendMessage("Cancelled.",3,Color(200,0,0,255))
-                end
+	local GM = GAMEMODE
+	for k, v in pairs(GM.ProcessThinkHookTable) do
+		local think;
+		if (v.Think) then think = v:Think() end
 
-                v.IsStopped = true
-                timer.Destroy("GMS_ProcessTimer_"..v.TimerID)
-                GM.RemoveProcessThink(v)
-             end
-         end
+		local basethink = v:BaseThink()
+
+		if (think or basethink) then
+			if (v.Owner and v.Owner != NULL and v.Owner:IsValid()) then 
+				v.Owner:Freeze(false)
+				v.Owner:StopProcessBar()
+				v.Owner.InProcess = false
+				v.Owner:SendMessage("Cancelled.",3,Color(200,0,0,255))
+			end
+
+			v.IsStopped = true
+			timer.Destroy("GMS_ProcessTimer_" .. v.TimerID)
+			GM.RemoveProcessThink(v)
+		end
+	end
 end
-
-hook.Add("Think","gms_ProcessThinkHooks",GM.ProcessThink)
+hook.Add("Think", "gms_ProcessThinkHooks", GM.ProcessThink)
 
 function GM.AddProcessThink(tbl)
-         table.insert(GAMEMODE.ProcessThinkHookTable,tbl)
+	table.insert(GAMEMODE.ProcessThinkHookTable, tbl)
 end
 
 function GM.RemoveProcessThink(tbl)
-         for k,v in pairs(GAMEMODE.ProcessThinkHookTable) do
-             if v == tbl then
-                table.remove(GAMEMODE.ProcessThinkHookTable,k)
-             end
-         end
+	for k, v in pairs(GAMEMODE.ProcessThinkHookTable) do
+		if (v == tbl) then
+			table.remove(GAMEMODE.ProcessThinkHookTable,k)
+		end
+	end
 end
 
 --Actual processing
-function PlayerMeta:DoProcess(name,time,data)
-         if self.InProcess then
-            self:SendMessage("You can't do this much at once.",3,Color(200,0,0,255))
-         return end
-         
-        --Need seperate instance
-         self.ProcessTable = table.Merge(table.Copy(GMS.Processes[name]),table.Copy(GMS.Processes.BaseProcess))
-         self.ProcessTable.Owner = self
-         self.ProcessTable.Time = time
-         self.ProcessTable.TimerID = self:UniqueID()
-         if data then self.ProcessTable.Data = data end
+function PlayerMeta:DoProcess(name, time, data)
+	if (self.InProcess) then self:SendMessage("You can't do this much at once.", 3, Color(200, 0, 0, 255)) return end
 
-         self.InProcess = true
+	--Need seperate instance
+	self.ProcessTable = table.Merge(table.Copy(GMS.Processes[name]),table.Copy(GMS.Processes.BaseProcess))
+	self.ProcessTable.Owner = self
+	self.ProcessTable.Time = time
+	self.ProcessTable.TimerID = self:UniqueID()
+	if (data) then self.ProcessTable.Data = data end
 
-         if self.ProcessTable.OnStart then self.ProcessTable:OnStart() end
-         
-		--Start think
-         GAMEMODE.AddProcessThink(self.ProcessTable)
+	self.InProcess = true
 
-         timer.Create("GMS_ProcessTimer_"..self:UniqueID(),time, 1, GAMEMODE.StopProcess, self)
+	if (self.ProcessTable.OnStart) then self.ProcessTable:OnStart() end
+
+	--Start think
+	GAMEMODE.AddProcessThink(self.ProcessTable)
+
+	timer.Create("GMS_ProcessTimer_" .. self:UniqueID(), time, 1, GAMEMODE.StopProcess, self)
 end
 
 function PlayerMeta:MakeProcessBar(name,time)
@@ -187,6 +186,39 @@ function PROCESS:OnStop()
 end
 
 GMS.RegisterProcess("EatFruit",PROCESS)
+
+/*---------------------------------------------------------
+  Eat Berry
+---------------------------------------------------------*/
+local PROCESS = {}
+
+function PROCESS:OnStart()
+	self.Owner:MakeProcessBar("Eating some berries", self.Time)
+	self.Owner:Freeze(true)
+	self.StartTime = CurTime()
+
+	self.Owner:EmitSound(Sound("vo/SandwichEat09.wav"))
+end
+
+function PROCESS:OnStop()
+	self.Owner:DecResource("Berries", 1)
+	self.Owner:SendMessage("You're a little less hungry and thirsty now.", 3, Color(10,200,10,255))
+	if (self.Owner.Hunger <= 900) then
+		self.Owner:SetFood(self.Owner.Hunger + 100)
+	elseif (self.Owner.Hunger >= 900) then
+		self.Owner:SetFood(1000)
+	end
+	
+	if (self.Owner.Thirst <= 900) then
+		self.Owner:SetThirst(self.Owner.Thirst + 100)
+	elseif (self.Owner.Thirst >= 900) then
+		self.Owner:SetThirst(1000)
+	end
+
+	self.Owner:Freeze(false)
+end
+
+GMS.RegisterProcess("EatBerry", PROCESS)
 
 /*---------------------------------------------------------
   Foraging process
