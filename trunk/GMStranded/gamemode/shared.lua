@@ -8,15 +8,14 @@ GM.Author 	= "Robotboy655 and many others :)"
 GM.Email 	= ""
 GM.Website 	= "http://gmsbugs.tk/"
 
-team.SetUp(20, "Survivalists", Color(255, 255, 255, 255))
-team.SetUp(21, "Anonymous", Color(0, 121, 145, 255))
-team.SetUp(22, "The Gummies", Color(255, 23, 0, 255))
-team.SetUp(23, "The Dynamics", Color(0, 72, 255, 255))
-team.SetUp(24, "Scavengers", Color(8, 255, 0, 255))
 team.SetUp(1, "The Stranded", Color(200, 200, 0, 255))
+team.SetUp(2, "Survivalists", Color(255, 255, 255, 255))
+team.SetUp(3, "Anonymous", Color(0, 121, 145, 255))
+team.SetUp(4, "The Gummies", Color(255, 23, 0, 255))
+team.SetUp(5, "The Dynamics", Color(0, 72, 255, 255))
+team.SetUp(6, "Scavengers", Color(8, 255, 0, 255))
 
 --Tables
-
 GMS_SpawnLists = {}
 GMS_SpawnLists["Wood - Tables/Desks"] =
 	{

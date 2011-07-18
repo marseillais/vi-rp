@@ -46,11 +46,17 @@ local EntityMeta = FindMetaTable("Entity")
 
 --Tribes table
 GM.Tribes = {}
-GM.NumTribes = 1
+GM.Tribes["The Stranded"] = {id = 1, red = 200, green = 200, blue = 0, Password = false}
+GM.Tribes["Survivalists"] = {id = 2, red = 225, green = 225, blue = 225, Password = false}
+GM.Tribes["Anonymous"] = {id = 3, red = 0, green = 145, blue = 145, Password = false}
+GM.Tribes["The Gummies"] = {id = 4, red = 255, green = 23, blue = 0, Password = false}
+GM.Tribes["The Dynamics"] = {id = 5, red = 0, green = 72, blue = 255, Password = false}
+GM.Tribes["Scavengers"] = {id = 6, red = 8, green = 255, blue = 0, Password = false}
+GM.NumTribes = 6
 
 resource.AddFile("gamemodes/GMStranded/content/help/help2.htm")
 for k, v in pairs(file.Find("../materials/gui/GMS/*")) do
-	resource.AddFile("materials/gui/GMS/"..v)
+	resource.AddFile("materials/gui/GMS/" .. v)
 end
 
 /*---------------------------------------------------------
@@ -1045,7 +1051,7 @@ function GM:PlayerInitialSpawn(ply)
 	umsg.End()
 
 	ply:SetTeam(1)
-	//ply:ConCommand("gms_help\n")		 
+	-- ply:ConCommand("gms_help\n")		 
 
 	--Serverside player variables
 	ply.Skills = {}
@@ -2703,60 +2709,6 @@ function GM.WaterExtinguish()
 end
 hook.Add("Think", "GM_WaterExtinguish", GM.WaterExtinguish)
 
-/*---------------------------------------------------------
-  Tribe: The Stranded
----------------------------------------------------------*/
-function GM.Tribe1(ply)
-	ply:SetTeam(1)
-	ply:SendMessage("Successfully changed to Tribe: The Stranded!", 5, Color(255, 255, 255, 255))
-end
-
-concommand.Add("gms_tribe1", GM.Tribe1)
-/*---------------------------------------------------------
-  Tribe: Scavengers
----------------------------------------------------------*/
-function GM.Tribe2(ply)
-	ply:SetTeam(24)
-	ply:SendMessage("Successfully changed to Tribe: Scavengers", 5, Color(255, 255, 255, 255))
-end
-
-concommand.Add("gms_tribe2", GM.Tribe2)
-/*---------------------------------------------------------
-  Tribe: The Dynamics
----------------------------------------------------------*/
-function GM.Tribe3(ply)
-	ply:SetTeam(23)
-	ply:SendMessage("Successfully changed to Tribe: The Dynamics", 5, Color(255, 255, 255, 255))
-end
-
-concommand.Add("gms_tribe3", GM.Tribe3)
-/*---------------------------------------------------------
-  Tribe: The Gummies
----------------------------------------------------------*/
-function GM.Tribe4(ply)
-	ply:SetTeam(22)
-	ply:SendMessage("Successfully changed to Tribe: The Gummies", 5, Color(255, 255, 255, 255))
-end
-
-concommand.Add("gms_tribe4", GM.Tribe4)
-/*---------------------------------------------------------
-  Tribe: Anonymous
----------------------------------------------------------*/
-function GM.Tribe5(ply)
-	ply:SetTeam(21)
-	ply:SendMessage("Successfully changed to Tribe: Anonymous", 5, Color(255, 255, 255, 255))
-end
-
-concommand.Add("gms_tribe5", GM.Tribe5)
-/*---------------------------------------------------------
-  Tribe: Survivalists
----------------------------------------------------------*/
-function GM.Tribe6(ply)
-	ply:SetTeam(20)
-	ply:SendMessage("Successfully changed to Tribe: Survivalists", 5, Color(255, 255, 255, 255))
-end
-concommand.Add("gms_tribe6", GM.Tribe6) 
-
 local AlertSounds = {"citizen_beaten1.wav", "citizen_beaten4.wav", "citizen_beaten5.wav", "cough1.wav", "cough2.wav", "cough3.wav", "cough4.wav"}
 /*---------------------------------------------------------
   Alert Message: Thirst
@@ -2825,6 +2777,10 @@ function CreateTribe(ply, name, red, green, blue, password)
 	local Password = false
 	if (password and password != "") then Password = password end
 
+	name = string.Trim(name) -- No space bars! =\
+	if (name == "") then ply:SendMessage("You should enter tribe name!", 5, Color(255, 50, 50, 255)) return end
+	if (GAMEMODE.Tribes[name] != nil) then ply:SendMessage("Tribe with this name already exists!", 5, Color(255, 50, 50, 255)) return end
+	
 	GAMEMODE.NumTribes = GAMEMODE.NumTribes + 1
 	GAMEMODE.Tribes[name] = {
 		id = GAMEMODE.NumTribes,
@@ -2848,7 +2804,7 @@ function CreateTribe(ply, name, red, green, blue, password)
 		end
 	umsg.End()
 	
-	team.SetUp(GAMEMODE.NumTribes, tostring(name), Color(red, green, blue,255))
+	team.SetUp(GAMEMODE.NumTribes, tostring(name), Color(red, green, blue, 255))
 	ply:SetTeam(GAMEMODE.NumTribes)
 	ply:SendMessage("Successfully Created A Tribe", 5, Color(255, 255, 255, 255))
 end
