@@ -129,11 +129,6 @@ PANEL.Commandtables["Help"] = "gms_help"
 PANEL.Commandtables["Drop all resources"] = "gms_dropall"
 PANEL.Commandtables["Salvage prop"] = "gms_salvage"
 
-PANEL.Commandtables["Tribe: Create"] = "gms_tribemenu"
-PANEL.Commandtables["Tribe: Join"] = "gms_tribes"
-PANEL.Commandtables["Tribe: Leave"] = "gms_leave"
-
-PANEL.Commandtables["Save character"] = "gms_savecharacter"
 function checkAdmin(ply)
 	if ply:IsAdmin() then 
 		PANEL.Commandtables["Admin menu"] = "gms_admin"
@@ -156,18 +151,41 @@ function PANEL:Init()
 	CategoryList:EnableVerticalScrollbar( true )
 
     local size = ScrH() / 30
-    local line = 25
+    local line = 5
 
     for txt, cmd in SortedPairs(self.Commandtables) do
         local button = vgui.Create("gms_CommandButton",CategoryList)
-        button:SetSize(CategoryList:GetWide() / 2, size)
-        button:SetPos(10, line)
+        button:SetSize(CategoryList:GetWide() / 2 - 10, size)
+        button:SetPos(5, line)
         button:SetConCommand(cmd.."\n")
         button:SetText(txt)
-             
-        line = line + button:GetTall() + 10
+
+        line = line + button:GetTall() + 5
     end
 
+	local button = vgui.Create("gms_CommandButton",CategoryList)
+	button:SetSize(CategoryList:GetWide() / 2 - 10, ScrH() / 10)
+	button:SetPos(CategoryList:GetWide() / 2 + 5, 5)
+	button:SetConCommand("gms_tribemenu\n")
+	button:SetText("Create-a-tribe")
+
+	local button = vgui.Create("gms_CommandButton",CategoryList)
+	button:SetSize(CategoryList:GetWide() / 2 - 10, ScrH() / 10)
+	button:SetPos(CategoryList:GetWide() / 2 + 5, 10 + (ScrH() / 10))
+	button:SetConCommand("gms_tribes\n")
+	button:SetText("Join-a-tribe")
+
+	local button = vgui.Create("gms_CommandButton",CategoryList)
+	button:SetSize(CategoryList:GetWide() / 2 - 10, ScrH() / 10)
+	button:SetPos(CategoryList:GetWide() / 2 + 5, 15 + (ScrH() / 10) * 2)
+	button:SetConCommand("gms_leave\n")
+	button:SetText("Leave-a-tribe")
+	
+	local button = vgui.Create("gms_CommandButton",CategoryList)
+	button:SetSize(CategoryList:GetWide() / 2 - 10, ScrH() / 10)
+	button:SetPos(CategoryList:GetWide() / 2 + 5, 20 + (ScrH() / 10) * 3)
+	button:SetConCommand("gms_savecharacter\n")
+	button:SetText("Save character")
 end
 
 function PANEL:PerformLayout( )
