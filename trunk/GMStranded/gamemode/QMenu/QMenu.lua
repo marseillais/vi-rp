@@ -128,6 +128,7 @@ PANEL.Commandtables["Structures"] = "gms_BuildingsCombi"
 PANEL.Commandtables["Help"] = "gms_help"
 PANEL.Commandtables["Drop all resources"] = "gms_dropall"
 PANEL.Commandtables["Salvage prop"] = "gms_salvage"
+PANEL.Commandtables["Eat some berries"] = "gms_EatBerry"
 
 function checkAdmin(ply)
 	if ply:IsAdmin() then 

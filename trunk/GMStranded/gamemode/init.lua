@@ -384,7 +384,7 @@ function EntityMeta:SetFoodInfoInstant(strType)
 end
 
 function PlayerMeta:SetFood(int)
-	if (self.Hunger + int > 1000) then
+	if (int > 1000) then
 		int = 1000
 	end
 
@@ -400,7 +400,7 @@ end
   Water functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetThirst(int)
-	if (self.Thirst + int > 1000) then
+	if (int > 1000) then
 		int = 1000
 	end
 
@@ -416,7 +416,7 @@ end
   Sleep functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetSleepiness(int)
-	if (self.Sleepiness + int > 1000) then
+	if (int > 1000) then
 		int = 1000
 	end
 
@@ -1531,6 +1531,15 @@ end
 concommand.Add("gms_DrinkBottle", GM.DrinkFromBottle)
 
 /*---------------------------------------------------------
+  Eat berry command
+---------------------------------------------------------*/
+function GM.DrinkFromBottle(ply, cmd, args)
+	if (ply:GetResource("Berries") < 1) then ply:SendMessage("You need some berries.", 3, Color(200, 0, 0, 255)) return end
+	ply:DoProcess("EatBerry", 1.5)
+end
+concommand.Add("gms_EatBerry", GM.DrinkFromBottle)
+
+/*---------------------------------------------------------
   Take Medicine command
 ---------------------------------------------------------*/
 function GM.TakeAMedicine(ply, cmd, args)
@@ -2256,7 +2265,7 @@ function GM:OnNPCKilled(npc, killer, weapon)
 			tbl.Resources = res
 			loot:SetPos(npc:GetPos() + Vector(0, 0, 64))
 			loot:Spawn()
-			timer.Simple(180, function(loot) if (loot) then loot:Remove() end end, loot)
+			timer.Simple(180, function(loot) if (loot:IsValid()) then loot:Remove() end end, loot)
 			npc:Fadeout(5)
 		else
 			npc:Fadeout(5)			
