@@ -23,8 +23,7 @@ function ENT:Initialize()
 	if (phys and phys != NULL) then phys:EnableMotion(false) end
     self.Entity.StrandedProtected = true
 
-    timer.Create("SpawnAntlions", 1, 1, self.SpawnAntlions, self)
- 	timer.Create("CheckSurroundings", 1.1, 1, self.CheckSurroundings, self)
+ 	timer.Create("CheckSurroundings_" .. self.Entity:EntIndex(), 2, 0, self.CheckSurroundings, self)
 end
 
 function ENT:SpawnAntlions()
@@ -36,7 +35,7 @@ function ENT:SpawnAntlion()
     local retries = 50
 
     while ((!util.IsInWorld(offset) and retries > 0) or offset:Distance(self.Entity:GetPos()) < 200) do
-        offset = Vector(math.random(-300, 300), math.random(-300, 300), 100)
+        offset = Vector(math.random(-400, 400), math.random(-400, 400), 100)
         retries = retries - 1
     end
 
@@ -51,7 +50,6 @@ function ENT:SpawnAntlion()
 	ant:SetNWString("Owner", "World")
     ant:Spawn()
     ant:Fadein(2)
-    constraint.NoCollide(self.Entity, ant, 0, 0);
     table.insert(self.Antlions, ant)
 end
 
@@ -78,7 +76,6 @@ function ENT:CheckSurroundings()
         timer.Create("gms_antlionspawntimers_" .. self.Entity:EntIndex(), math.random(20, 60), 1, self.AddAntlion, self)
         self.Spawning = true
     end
-	timer.Create("CheckSurroundings", 1.1, 1, self.CheckSurroundings, self)
 end
 
 function ENT:AddAntlion()
@@ -124,6 +121,5 @@ function ENT:OnRemove()
 			ant:Remove()
 		end
 	end
-	timer.Destroy("CheckSurroundings")
-	timer.Destroy("SpawnAntlions")
+	timer.Destroy("CheckSurroundings_" .. self.Entity:EntIndex())
 end

@@ -90,7 +90,11 @@ function GM:HUDPaint()
 		surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
 		surface.DrawOutlinedRect(ScrW() * 0.5 - wid * 0.5, ScrH() / 30, wid, hei)
 
-		draw.SimpleText(CurrentProcess .. " (F4 to Cancel)" , "ScoreboardText", ScrW() * 0.5, hei * 1.5, Color(255, 255, 255, 255), 1, 1)
+		local str = CurrentProcess
+		if (ProcessCancelAble) then
+			str = str .. " (F4 to Cancel)"
+		end
+		draw.SimpleText(str , "ScoreboardText", ScrW() * 0.5, hei * 1.5, Color(255, 255, 255, 255), 1, 1)
 	end
 end
 
@@ -112,6 +116,7 @@ function GM.MakeProgressBar(um)
 	CurrentProcess = um:ReadString()
 	ProcessStart = RealTime()
 	ProcessCompleteTime = um:ReadShort()
+	ProcessCancelAble = um:ReadBool()
 end
 usermessage.Hook("gms_MakeProcessBar", GM.MakeProgressBar)
 
@@ -251,7 +256,7 @@ function CheckName(ent, nametable)
 	end
 end
 
-function GM.GMS_ResourceDropsHUD()
+function GM.GMS_ResourceDropsHUD() // RP EDIT THIS
 	local ply = LocalPlayer()
 	local str = nil
 	local draw_loc = nil
@@ -274,6 +279,26 @@ function GM.GMS_ResourceDropsHUD()
 				str = (v.Res or "Loading") .. ": " .. tostring(v.Amount or 0)
 				draw_loc = cent:ToScreen()
 				surface.SetFont("ChatFont")
+				w, h = surface.GetTextSize(str)
+ 				draw.RoundedBox(4, draw_loc.x - (w / 2) - 3, draw_loc.y - (h / 2) - 3, w + 6, h + 6, Color(50, 50, 50, 200))
+				surface.SetTextColor(255, 255, 255, 200)
+				surface.SetTextPos(draw_loc.x - (w / 2), draw_loc.y -(h / 2))
+				surface.DrawText(str)
+			end
+		end
+		
+		if (v:GetClass() == "gms_resourcepack") then
+			cent = v:LocalToWorld(v:OBBCenter())
+			
+			tr = {}
+			tr.start = pos
+			tr.endpos = cent
+			tr.filter = ply
+
+			if ((cent - pos):Length() <= 200 and util.TraceLine(tr).Entity == v) then
+				draw_loc = cent:ToScreen()
+				surface.SetFont("ChatFont")
+				str = "Resource pack"
 				w, h = surface.GetTextSize(str)
  				draw.RoundedBox(4, draw_loc.x - (w / 2) - 3, draw_loc.y - (h / 2) - 3, w + 6, h + 6, Color(50, 50, 50, 200))
 				surface.SetTextColor(255, 255, 255, 200)

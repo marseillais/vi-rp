@@ -35,6 +35,7 @@ function ENT:StartTouch(entEntity)
 	if (entEntity:GetClass() == "gms_resourcedrop" and entEntity.Type == self.Entity.Type) then
 		big_gms_combineresource(self, entEntity)
 	end
+	if (entEntity:GetClass() == "gms_resourcepack") then big_gms_combineresourcepack(entEntity, self) end
 	if (entEntity:GetClass() == "gms_buildsite" and (entEntity.Costs[self.Entity.Type] != nil and entEntity.Costs[self.Entity.Type] > 0)) then
 		gms_addbuildsiteresource(self, entEntity)
 	end

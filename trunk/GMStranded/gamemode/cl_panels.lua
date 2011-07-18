@@ -99,7 +99,7 @@ function PANEL:SetUnlock(text)
 	self.DescWindow:SetText(unlock.Description)
 end
 
-vgui.Register("GMS_UnlockWindow", PANEL, "DFrame")
+vgui.Register("GMS_UnlockWindow", PANEL, "DFrame") // The hax.
 
 /*---------------------------------------------------------
   GMS dropdown
@@ -1320,4 +1320,4 @@ function PANEL:OnCursorExited()
          self.BeingHovered = false
 end
 
-vgui.Register("GMS_CombiIcon",PANEL,"DPanel")
+vgui.Register("GMS_CombiIcon", PANEL, "DPanel")

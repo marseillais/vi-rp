@@ -70,9 +70,7 @@ end
 -----------------------------------------------------------*/
 
 timer.Simple(3, function()	
-	print("Starting... " .. game.GetMap())
 	if (GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) then
-		print("Placing... ")
 		for id, pos in pairs(GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) do
 			local ent = ents.Create("gms_antlionbarrow")
 			ent:SetPos(pos)
@@ -86,30 +84,32 @@ end)
 /* Cancel process */
 
 concommand.Add("gms_cancelprocess", function(ply, cmd, args)
-	if (ply.InProcess) then
-		v = ply.ProcessTable
-		
-		if (v.Owner and v.Owner != NULL and v.Owner:IsValid()) then 
-			v.Owner:Freeze(false)
-			v.Owner:StopProcessBar()
-			v.Owner.InProcess = false
-			v.Owner:SendMessage("Cancelled.", 3, Color(200, 0, 0, 255))
-		end
-
-		v.IsStopped = true
-		timer.Destroy("GMS_ProcessTimer_" .. v.TimerID)
-		GAMEMODE.RemoveProcessThink(v)
+	if (!ply.InProcess) then return end
+	v = ply.ProcessTable
+	if (!v.Cancel) then return end
+	
+	if (v.Owner and v.Owner != NULL and v.Owner:IsValid()) then 
+		v.Owner:Freeze(false)
+		v.Owner:StopProcessBar()
+		v.Owner.InProcess = false
+		v.Owner:SendMessage("Cancelled.", 3, Color(200, 0, 0, 255))
 	end
+
+	v.IsStopped = true
+	timer.Destroy("GMS_ProcessTimer_" .. v.TimerID)
+	GAMEMODE.RemoveProcessThink(v)
 end)
 
 /* Send all campfires */
 
 hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
-	for i, v in pairs(GAMEMODE.CampFireProps) do
-		umsg.Start("addCampFire", ply)
-			umsg.Short(v:EntIndex())
-		umsg.End()
-	end
+	timer.Simple(5, function()
+		for i, v in pairs(GAMEMODE.CampFireProps) do
+			umsg.Start("addCampFire", ply)
+				umsg.Short(v:EntIndex())
+			umsg.End()
+		end
+	end)
 end)
 
 /*---------------------------------------------------------
@@ -378,16 +378,28 @@ end
 function PlayerMeta:DropResource(resource, int)
 	local nearby = {}
 
-	for k,v in pairs(ents.FindByClass("gms_resourcedrop")) do
-		if (v:GetPos():Distance(self:GetPos()) < 150 and v.Type == resource) then
-			table.insert(nearby, v)
+	for k, v in pairs(ents.FindByClass("gms_resource*")) do
+		if (v:GetPos():Distance(self:GetPos()) < 150) then
+			if (v:GetClass() == "gms_resourcedrop" and v.Type != resource) then
+			else
+				print("INSURTING" .. v:GetClass())
+				table.insert(nearby, v)
+			end
 		end
 	end
 
 	if (#nearby > 0) then
 		local ent = nearby[1]
-		ent.Amount = ent.Amount + int
-		ent:SetResourceDropInfoInstant(ent.Type, ent.Amount)
+		if (ent:GetClass() == "gms_resourcedrop") then
+			ent.Amount = ent.Amount + int
+			ent:SetResourceDropInfoInstant(ent.Type, ent.Amount)
+		else
+			if (ent.Resources[resource]) then
+				ent.Resources[resource] = ent.Resources[resource] + int
+			else
+				ent.Resources[resource] = int
+			end
+		end
 	else
 		local ent = ents.Create("gms_resourcedrop")
 		ent:SetPos(self:TraceFromEyes(60).HitPos + Vector(0, 0, 15))
@@ -536,7 +548,10 @@ end
 /*---------------------------------------------------------
   Model check functions
 ---------------------------------------------------------*/
+
 function EntityMeta:IsTreeModel()
+	if (!self or !self:IsValid()) then return false end
+
 	local trees = table.Add(GMS.TreeModels, GMS.AdditionalTreeModels)
 	for k, v in pairs(trees) do
 		if (string.lower(v) == self:GetModel() or string.gsub(string.lower(v), "/", "\\") == self:GetModel()) then
@@ -548,6 +563,8 @@ function EntityMeta:IsTreeModel()
 end
 
 function EntityMeta:IsBerryBushModel()
+	if (!self or !self:IsValid()) then return false end
+
 	local mdl = "models/props/pi_shrub.mdl"
 	if (mdl == self:GetModel() or string.gsub(string.lower(mdl), "/", "\\") == self:GetModel()) then
 		return true
@@ -557,6 +574,8 @@ function EntityMeta:IsBerryBushModel()
 end
 
 function EntityMeta:IsGrainModel()
+	if (!self or !self:IsValid()) then return false end
+
 	local mdl = "models/props_foliage/cattails.mdl"
 	if (mdl == self:GetModel() or string.gsub(string.lower(mdl), "/", "\\") == self:GetModel()) then
 		return true
@@ -566,6 +585,8 @@ function EntityMeta:IsGrainModel()
 end
 
 function EntityMeta:IsFoodModel()
+	if (!self or !self:IsValid()) then return false end
+
 	for k, v in pairs(GMS.EdibleModels) do
 		if (string.lower(v) == self:GetModel() or string.gsub(string.lower(v), "/", "\\") == self:GetModel()) then
 			return true
@@ -576,9 +597,11 @@ function EntityMeta:IsFoodModel()
 end
 
 function EntityMeta:IsRockModel()
+	if (!self or !self:IsValid()) then return false end
+
 	local rocks = table.Add(GMS.RockModels, GMS.AdditionalRockModels)
 	for k, v in pairs(rocks) do
-		if(string.lower(v) == self:GetModel() or string.gsub(string.lower(v), "/", "\\") == self:GetModel()) then
+		if (string.lower(v) == self:GetModel() or string.gsub(string.lower(v), "/", "\\") == self:GetModel()) then
 			return true
 		end
 	end
@@ -1169,15 +1192,18 @@ function GM:PlayerInitialSpawn(ply)
 			ply:SetNWInt("plants", ply:GetNWInt("plants") + 1)
 		end
 	end
-	for _, v in ipairs(ents.GetAll()) do
-		if (v:GetClass() == "gms_resourcedrop") then
-			umsg.Start("gms_SetResourceDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Type, "_", " "))
-				umsg.Short(v.Amount)
-			umsg.End()
+	
+	timer.Simple(4, function()
+		for _, v in ipairs(ents.GetAll()) do
+			if (v:GetClass() == "gms_resourcedrop") then
+				umsg.Start("gms_SetResourceDropInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(v.Type, "_", " "))
+					umsg.Short(v.Amount)
+				umsg.End()
+			end
 		end
-	end
+	end)
 end
 
 function GM:PlayerSpawn(ply)
@@ -1309,7 +1335,9 @@ function GM.SaveCharacter(ply,cmd,args)
 	end
 	
 	for id, wep in pairs(ply:GetWeapons()) do
-		table.insert(tbl["weapons"], wep:GetClass())
+		if (wep:GetClass() != "gms_hands" or wep:GetClass() != "weapon_physgun" or wep:GetClass() != "weapon_physcannon") then
+			table.insert(tbl["weapons"], wep:GetClass())
+		end
 	end
 	
 	local ammo_types = {"ar2", "smg1", "pistol", "buckshot", "357", "grenade", "alyxgun", "xbowbolt", "AlyxGun", "RPG_Round","SMG1_Grenade", "SniperRound",
@@ -1943,7 +1971,7 @@ concommand.Add("gms_MakeCombination", GM.MakeCombination)
   STOOLs and Physgun
 ---------------------------------------------------------*/
 function GM:PhysgunPickup(ply, ent)
-	if ply:IsAdmin() then return true end
+	if (ply:IsAdmin()) then return true end
 
 	if (ent.StrandedProtected or ent:IsRockModel() or ent:IsTreeModel() or ent:IsPlayer() or table.HasValue(GMS.PickupProhibitedClasses, ent:GetClass())) then
 		return false
@@ -1995,13 +2023,14 @@ function GM:PlayerSpawnedProp(ply, mdl, ent)
 	if (ply.CanSpawnProp == false) then ent:Remove() ply:SendMessage("No spamming!", 3, Color(200, 0, 0, 255)) return end
 
 	ply.CanSpawnProp = false
-	timer.Simple(0.2,self.PlayerSpawnedPropDelay, self, ply, mdl, ent)
+	timer.Simple(0.2, self.PlayerSpawnedPropDelay, self, ply, mdl, ent)
 end
 
 function GM:PlayerSpawnedPropDelay(ply, mdl, ent)
 	ply.CanSpawnProp = true
 	if (ply.InProcess) then return end
-
+	if (!ent or !ent:IsValid()) then return end
+	
 	--Admin only models
 	if ((ent:IsRockModel() or ent:IsTreeModel() or ent:IsFoodModel()) and !ply:IsAdmin()) then
 		ent:Remove() ply:SendMessage("You cannot spawn this prop unless you're admin.", 5, Color(255, 255, 255, 255))
@@ -2182,7 +2211,7 @@ function GM.SubtractNeeds()
 			end
 		end
 	end
-         
+
 	timer.Simple(5, GAMEMODE.SubtractNeeds)
 end
 timer.Simple(5, GM.SubtractNeeds)
@@ -2445,6 +2474,8 @@ function GM.UseKeyHook(ply, key)
 				ply:DoProcess("SproutCollect", 5)
 			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
+			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
+				ply:PickupResourceEntityPack(ent)
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end
 			end
@@ -2514,6 +2545,23 @@ function PlayerMeta:PickupResourceEntity(ent)
 
 	self:IncResource(ent.Type, int)
 	self:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+end
+
+function PlayerMeta:PickupResourceEntityPack(ent)
+	if (!(SPropProtection.PlayerIsPropOwner(self, ent) or SPropProtection.IsBuddy(self, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
+
+	if (table.Count(ent.Resources) > 0) then
+		for res, int in pairs(ent.Resources) do
+			local room = self.MaxResources - self:GetAllResources()
+
+			if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
+			if (room < int) then int = room end
+			ent.Resources[res] = ent.Resources[res] - int
+
+			self:IncResource(res, int)
+			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+		end
+	end
 end
 
 /*---------------------------------------------------------
@@ -2641,7 +2689,7 @@ function GM:SaveMap(name)
 					entry["sleeping"] = phys:IsAsleep()
 				end   
 
-				if (entry["class"] == "gms_resourcedrop") then entry["type"] = ent.Type entry["amount"] = ent.Amount end
+				if (entry["class"] == "gms_resourcedrop") then entry["type"] = ent.Type entry["amount"] = ent.Amount end // RP
 
 				num = num + 1
 				savegame["entries"][#savegame["entries"] + 1] = entry
@@ -2711,10 +2759,10 @@ function GM:LoadMapEntity(savegame, max, k)
 	for k, v in pairs(entry["table"]) do ent[k] = v end
 	ent:Spawn()
 
-	if (entry["class"] == "gms_resourcedrop") then
+	if (entry["class"] == "gms_resourcedrop") then // RP
 		ent.Type = entry["type"]
 		ent.Amount = entry["amount"]
-		ent:SetResourceDropInfo(ent.Type, ent.Amount) // The hax
+		ent:SetResourceDropInfo(ent.Type, ent.Amount)
 	end
 
 	local phys = ent:GetPhysicsObject()
@@ -2814,20 +2862,22 @@ timer.Create("AlertTimerS", 5, 0, AlertMessagesS)
    Tribe system
 ---------------------------------------------------------*/
 hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
-	for i, v in pairs(GAMEMODE.Tribes) do
-		umsg.Start("recvTribes", ply)
+	timer.Simple(5, function()
+		for i, v in pairs(GAMEMODE.Tribes) do
+			umsg.Start("recvTribes", ply)
 			umsg.Short(v.id)
 			umsg.String(i)
 			umsg.Short(v.red)
 			umsg.Short(v.green)
 			umsg.Short(v.blue)
 			if (v.Password == false) then 
-				umsg.Bool(false) -- Haz pass
+				umsg.Bool(false)
 			else
-				umsg.Bool(true) -- Haz pass
+				umsg.Bool(true)
 			end
-		umsg.End()
-	end
+			umsg.End()
+		end
+	end)
 end)
 
 function CreateTribe(ply, name, red, green, blue, password)
@@ -2987,17 +3037,35 @@ function big_gms_combineresource(ent_a, ent_b)
 	local ent_a_owner = ent_a:GetNetworkedString("Owner")
 	local ent_b_owner = ent_b:GetNetworkedString("Owner")
 	local ply = player.GetByID(ent_a:GetNetworkedString("Ownerid"))
+	local plyb = player.GetByID(ent_b:GetNetworkedString("Ownerid"))
 
 	if (ent_a_owner != nil and ent_b_owner != nil and ply != nil) then
-		if (ent_a_owner == ent_b_owner or SPropProtection.PlayerCanTouch(ply, ent_b)) then
+		if (ent_a_owner == ent_b_owner or (SPropProtection.PlayerCanTouch(ply, ent_b) and SPropProtection.PlayerCanTouch(plyb, ent_a))) then
 			ent_a.Amount = ent_a.Amount + ent_b.Amount
 			ent_a:SetResourceDropInfoInstant(ent_a.Type, ent_a.Amount)
 			ent_b:Remove()
 		end
-	else
-		ent_a.Amount = ent_a.Amount + ent_b.Amount
-		ent_a:SetResourceDropInfoInstant(ent_a.Type, ent_a.Amount)
-		ent_b:Remove()
+	end 	
+end
+
+/* Resource box touches Resource pack */
+
+function big_gms_combineresourcepack(respack, ent_b)
+	local ent_a_owner = respack:GetNetworkedString("Owner")
+	local ent_b_owner = ent_b:GetNetworkedString("Owner")
+	local ply = player.GetByID(respack:GetNetworkedString("Ownerid"))
+	local plyb = player.GetByID(ent_b:GetNetworkedString("Ownerid"))
+
+	if (ent_a_owner != nil and ent_b_owner != nil and ply != nil) then
+		if (ent_a_owner == ent_b_owner or (SPropProtection.PlayerCanTouch(ply, ent_b) and SPropProtection.PlayerCanTouch(plyb, respack))) then
+			if (respack.Resources[ent_b.Type]) then
+				respack.Resources[ent_b.Type] = respack.Resources[ent_b.Type] + ent_b.Amount
+			else
+				respack.Resources[ent_b.Type] = ent_b.Amount
+			end
+			//respack:SetResourcePackInfoInstant(respack.Resources)
+			ent_b:Remove()
+		end
 	end 	
 end
 
@@ -3046,13 +3114,60 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 			ent_buildsite:SetNetworkedString("Resources", str)
 		end
 	end
+end
+
+function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
+	local ent_resourcedrop_owner = ent_resourcepack:GetNetworkedString("Owner")
+	local ent_buildsite_owner = ent_buildsite:GetNetworkedString("Owner")
+	local ply = player.GetByID(ent_resourcepack:GetNetworkedString("Ownerid"))
+
+	if (ent_resourcedrop_owner != nil and ent_buildsite_owner != nil and ply != nil and ent_resourcepack:IsPlayerHolding()) then
+		if ((SPropProtection.PlayerIsPropOwner(ply, ent_buildsite) or SPropProtection.IsBuddy(ply, ent_buildsite)) or tonumber(SPropProtection["Config"]["use"]) != 1)  then
+			
+			for res, num in pairs(ent_resourcepack.Resources) do
+				if (num > ent_buildsite.Costs[res]) then	
+					ent_resourcepack.Resources[res] = num - ent_buildsite.Costs[res]
+					ent_buildsite.Costs[res] = nil
+				elseif (num <= ent_buildsite.Costs[res]) then
+					ent_buildsite.Costs[res] = ent_buildsite.Costs[res] - num
+					ent_resourcepack.Resources[res] = 0
+				end
+				for k, v in pairs(ent_buildsite.Costs) do
+					if (ent_buildsite.Costs[res]) then
+						if (ent_buildsite.Costs[res] <= 0) then
+							ent_buildsite.Costs[res] = nil
+						end
+					end				
+				end
+			end
+
+			if (table.Count(ent_buildsite.Costs) > 0) then
+				local str = "You need: "
+				for k, v in pairs(ent_buildsite.Costs) do
+					str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+				end
+
+				str = str .. " to finish."
+				ply:SendMessage(str, 5, Color(255, 255, 255, 255))
+			else
+				ply:SendMessage("Finished!", 3, Color(10, 200, 10, 255))
+				ent_buildsite:Finish()            
+			end
+			
+			local str = ":"
+			for k, v in pairs(ent_buildsite.Costs) do
+				str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+			end
+			ent_buildsite:SetNetworkedString("Resources", str)
+		end
+	end
 end	
 
 /*---------------------------------------------------------
    Resource Box versus Player Damage
 ---------------------------------------------------------*/
 function playershouldtakedamage(victim, attacker)
-	if ((victim:IsPlayer() and attacker:GetClass() == "gms_resourcedrop") or (victim:IsPlayer() and attacker:IsPlayerHolding())) then
+	if (victim:IsPlayer() and (attacker:GetClass() == "gms_resourcedrop" or attacker:IsPlayerHolding() or attacker:GetClass() == "gms_resourcepack")) then
 		return false
 	end
 	return true
