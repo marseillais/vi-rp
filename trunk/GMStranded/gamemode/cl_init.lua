@@ -663,7 +663,6 @@ concommand.Add("gms_tribemenu", function()
 	end
 
 	GAMEMODE.TribeMenu:SetVisible(!GAMEMODE.TribeMenu:IsVisible())
-	GAMEMODE.TribeMenu.tname:RequestFocus()
 end)
 
 /*---------------------------------------------------------

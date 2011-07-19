@@ -1740,7 +1740,7 @@ function GM.TakeResource(ply, cmd, args)
 		end
 	end
 end
-concommand.Add("gms_TakeResources", GM.TakeResource)
+concommand.Add("gms_TakeResources", GM.TakeResource)//ply:PickupResourceEntityPack(ent)
 
 /*---------------------------------------------------------
   Buildings menu
@@ -2381,12 +2381,6 @@ function GM.CampFireTimer()
 				if (CurTime() - ent.CampFireLifeTime >= 360) then
 					ent:Fadeout()
 					table.remove(GM.CampFireProps, k)
-					
-					local rp = RecipientFilter()
-					rp:AddAllPlayers()
-					umsg.Start("removeCampFire", rp)
-						umsg.Short(ent:EntIndex())
-					umsg.End()
 				elseif (ent:WaterLevel() > 0) then
 					ent:Extinguish()
 					table.remove(GM.CampFireProps, k)
@@ -2433,7 +2427,7 @@ concommand.Add("gms_makefire", GM.MakeCampfire)
 
 function EntityMeta:MakeCampfire()
 	if (GetConVarNumber("gms_Campfire") == 1) then
-		self:Ignite(180, 0)
+		self:Ignite(360, 0)
 
 		self.CampFireMaxHP = self:Health()
 		self.CampFireLifeTime = CurTime()
@@ -2448,9 +2442,9 @@ function EntityMeta:MakeCampfire()
 				if (v:GetModel() == mdl) then
 					GetConVarNumber("gms_MaxReproducedTrees")
 					if (GetConVarNumber("gms_SpreadFire") == 1) then
-						v:Ignite(180, (v:OBBMins() - v:OBBMaxs()):Length() * 0.50 + 10)
+						v:Ignite(360, (v:OBBMins() - v:OBBMaxs()):Length() * 0.50 + 10)
 					else
-						v:Ignite(180, 0)
+						v:Ignite(360, 0)
 					end
 
 					v.CampFireMaxHP = v:Health()
@@ -2502,7 +2496,6 @@ function GM.UseKeyHook(ply, key)
 			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
 			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
-				//ply:PickupResourceEntityPack(ent)
 				ply:ConCommand("gms_openrespackmenu")
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end

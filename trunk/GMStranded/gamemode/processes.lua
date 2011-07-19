@@ -223,12 +223,11 @@ PROCESS.Cancel = false
 
 GMS.RegisterProcess("EatBerry", PROCESS)
 
-// The hax
-
 /*---------------------------------------------------------
   Foraging process
 ---------------------------------------------------------*/
 local PROCESS = {}
+
 PROCESS.Results = {}
 PROCESS.Results[1] = "Melon Seeds"
 PROCESS.Results[2] = "Banana Seeds"
@@ -238,29 +237,29 @@ PROCESS.Results[5] = "Herbs"
 PROCESS.Results[6] = "Berries"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Foraging", self.Time, self.Cancel)
-         self.Owner:Freeze(true)
+	self.Owner:MakeProcessBar("Foraging", self.Time, self.Cancel)
+	self.Owner:Freeze(true)
 end
 
 function PROCESS:OnStop()
-         local num = math.random(1,100)
+	local num = math.random(1,100)
 
-         if num > 50 - self.Owner:GetSkill("Harvesting") then
-            local res = self.Results[math.random(1,#self.Results)]
+	if (num > 50 - self.Owner:GetSkill("Harvesting")) then
+		local res = self.Results[math.random(1, #self.Results)]
 
-            local amount = math.random(1,3)
-            self.Owner:IncResource(string.gsub(res," ","_"),amount)
-            self.Owner:IncXP("Harvesting",math.Clamp(math.Round(50 / self.Owner:GetSkill("Harvesting")),1 , 1000))
-            self.Owner:SendMessage(res.." ("..amount.."x)", 3, Color(10,200,10,255))
-            self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
-         else
-           self.Owner:SendMessage("Found nothing of interest", 3, Color(255,255,255,255))
-         end
+		local amount = math.random(1,3)
+		self.Owner:IncResource(string.gsub(res," ","_"),amount)
+		self.Owner:IncXP("Harvesting",math.Clamp(math.Round(50 / self.Owner:GetSkill("Harvesting")),1 , 1000))
+		self.Owner:SendMessage(res.." ("..amount.."x)", 3, Color(10,200,10,255))
+		self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
+	else
+		self.Owner:SendMessage("Found nothing of interest", 3, Color(255,255,255,255))
+	end
 
-         self.Owner:Freeze(false)
+	self.Owner:Freeze(false)
 end
 
-GMS.RegisterProcess("Foraging",PROCESS)
+GMS.RegisterProcess("Foraging", PROCESS)
 
 /*---------------------------------------------------------
   Looting process
@@ -268,29 +267,29 @@ GMS.RegisterProcess("Foraging",PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-         self.Data.Entity:Fadeout(2)
+	self.Data.Entity:Fadeout(2)
 
-         self.Owner:MakeProcessBar("Looting",self.Time, self.Cancel)
-         self.Owner:Freeze(true)
+	self.Owner:MakeProcessBar("Looting", self.Time, self.Cancel)
+	self.Owner:Freeze(true)
 end
 
 function PROCESS:OnStop()
-         for k,v in pairs(self.Data.Resources) do
-             self.Owner:SendMessage(k.." ("..v.."x)", 3, Color(10,200,10,255))
-             self.Owner:IncResource(k,v)
-         end
-         
-         self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
-         self.Owner:Freeze(false)
+	for k, v in pairs(self.Data.Resources) do
+		self.Owner:SendMessage(k .. " (x" .. v .. ")", 3, Color(10, 200, 10, 255))
+		self.Owner:IncResource(k, v)
+	end
+
+	self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
+	self.Owner:Freeze(false)
 end
 
-GMS.RegisterProcess("Loot",PROCESS)
+GMS.RegisterProcess("Loot", PROCESS)
 
 /*---------------------------------------------------------
   Digging
 ---------------------------------------------------------*/
 local PROCESS = {}
---Yes, horribly random, I know
+
 PROCESS.Rarities = {}
 PROCESS.Rarities[1] = "Iron"
 PROCESS.Rarities[2] = "Sand"
@@ -300,11 +299,11 @@ PROCESS.Rarities[5] = "Sand"
 PROCESS.Rarities[6] = "Stone"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Digging",self.Time, self.Cancel)
-         self.Owner:Freeze(true)
-         self.StartTime = CurTime()
-         
-         self:PlaySound()
+	self.Owner:MakeProcessBar("Digging", self.Time, self.Cancel)
+	self.Owner:Freeze(true)
+	self.StartTime = CurTime()
+
+	self:PlaySound()
 end
 
 function PROCESS:PlaySound()
