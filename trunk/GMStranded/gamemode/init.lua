@@ -382,7 +382,6 @@ function PlayerMeta:DropResource(resource, int)
 		if (v:GetPos():Distance(self:GetPos()) < 150) then
 			if (v:GetClass() == "gms_resourcedrop" and v.Type != resource) then
 			else
-				print("INSURTING" .. v:GetClass())
 				table.insert(nearby, v)
 			end
 		end
@@ -399,6 +398,7 @@ function PlayerMeta:DropResource(resource, int)
 			else
 				ent.Resources[resource] = int
 			end
+			ent:SetResPackInfo(resource, ent.Resources[resource])
 		end
 	else
 		local ent = ents.Create("gms_resourcedrop")
@@ -427,6 +427,17 @@ function EntityMeta:SetResourceDropInfoInstant(strType, int)
 		umsg.String(self:EntIndex())
 		umsg.String(string.gsub(strType, "_", " "))
 		umsg.Short(self.Amount)
+		umsg.End()
+	end
+end
+
+function EntityMeta:SetResPackInfo(strType, int)
+	for k, v in pairs(player.GetAll()) do
+		local strType = strType or "Error"
+		umsg.Start("gms_SetResPackInfo", v)
+		umsg.String(self:EntIndex())
+		umsg.String(string.gsub(strType, "_", " "))
+		umsg.Short(int)
 		umsg.End()
 	end
 end
@@ -1194,14 +1205,23 @@ function GM:PlayerInitialSpawn(ply)
 	end
 	
 	timer.Simple(4, function()
-		for _, v in ipairs(ents.GetAll()) do
-			if (v:GetClass() == "gms_resourcedrop") then
-				umsg.Start("gms_SetResourceDropInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(v.Type, "_", " "))
-					umsg.Short(v.Amount)
-				umsg.End()
+		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
+			umsg.Start("gms_SetResourceDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Type, "_", " "))
+				umsg.Short(v.Amount)
+			umsg.End()
+		end
+	end)
+	
+	timer.Simple(6, function()
+		local time = 0
+		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function() v:SetResPackInfo(res, num) end)
+				time = time + 0.5
 			end
+			time = time + 1
 		end
 	end)
 end
@@ -1210,11 +1230,9 @@ function GM:PlayerSpawn(ply)
 	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
 
 	if (ply:HasUnlock("Sprint_Mkii")) then
-		ply:SetWalkSpeed(400)
-		ply:SetRunSpeed(150)
+		GAMEMODE:SetPlayerSpeed(ply, 400, 100)
 	else
-		ply:SetWalkSpeed(250)
-		ply:SetRunSpeed(250)
+		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
 	end
 
 	self:PlayerLoadout(ply) --hook.Call( "PlayerLoadout", GAMEMODE, ply )
@@ -1258,6 +1276,7 @@ function GM:PlayerLoadout(ply)
 	if (ply:IsAdmin() or ply:IsSuperAdmin()) then ply:Give("gmod_tool") ply:Give("pill_pigeon") end
 	if (ply:HasUnlock("Extreme_Survivalist")) then ply:Give("pill_pigeon") end
 	ply:Give("weapon_physcannon")
+	ply:SelectWeapon("weapon_physgun")
 	ply:SelectWeapon("gms_hands")
 end
 	
@@ -1371,7 +1390,7 @@ end)
 ---------------------------------------------------------*/
 concommand.Add("gms_dropall", function(ply)
 	local DeltaTime = 0
-	for k,v in pairs(ply.Resources) do
+	for k, v in pairs(ply.Resources) do
 		if (v > 0) then
 			timer.Simple(DeltaTime, function() ply:DecResource(k, v) ply:DropResource(k, v) end, ply, k, v)
 			DeltaTime = DeltaTime + 0.3
@@ -1677,41 +1696,49 @@ function GM.TakeResource(ply, cmd, args)
 	if (ply.InProcess) then return end
 
 	if (args == nil or args[1] == nil) then ply:SendMessage("You need to at least give a resource type!", 3, Color(200, 0, 0, 255)) return end
-
-	if (tonumber(args[2]) <= 0) then ply:SendMessage("No zeros/negatives!", 3, Color(200, 0, 0, 255)) return end
+	
+	local int = tonumber(args[2]) or 99999
+	
+	if (int <= 0) then ply:SendMessage("No zeros/negatives!", 3, Color(200, 0, 0, 255)) return end
 	args[1] = string.Capitalize(args[1])
 
 	local tr = ply:TraceFromEyes(150)
 	local ent = tr.Entity
 	local cls = tr.Entity:GetClass()
-	if (cls != "gms_resourcedrop" or (ply:GetPos() - ent:LocalToWorld(ent:OBBCenter())):Length() >= 65 or ent.Type != args[1]) then return end
+	
 	if (!(SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
+	if ((ply:GetPos() - ent:LocalToWorld(ent:OBBCenter())):Length() >= 65) then return end
 
-	local int = tonumber(args[2])
-	local room = ply.MaxResources - ply:GetAllResources()
-
-	if (int >= ent.Amount) then
-		int = ent.Amount
+	if (cls == "gms_resourcedrop") then
+		if (ent.Type != args[1]) then return end
+	
+		local room = ply.MaxResources - ply:GetAllResources()
+		if (int >= ent.Amount) then int = ent.Amount end
+		if (room <= 0) then ply:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
+		if (room < int) then int = room end
+		ent.Amount = ent.Amount - int
+		if (ent.Amount <= 0) then ent:Fadeout() else ent:SetResourceDropInfo(ent.Type, ent.Amount) end
+		
+		ply:IncResource(ent.Type, int)
+		ply:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
 	end
+	
+	if (cls == "gms_resourcepack") then
+		for res, num in pairs(ent.Resources) do
+			if (res == args[1]) then
+				local room = ply.MaxResources - ply:GetAllResources()
+				if (int >= num) then int = num end
+				if (room <= 0) then ply:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
+				if (room < int) then int = room end
+				ent.Resources[res] = num - int
+				ent:SetResPackInfo(res, ent.Resources[res]) 
+				if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
 
-	if (room <= 0) then
-		ply:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255))
-	return end
-
-	if (room < int) then
-		int = room
+				ply:IncResource(res, int)
+				ply:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+			end
+		end
 	end
-
-	ent.Amount = ent.Amount - int
-
-	if (ent.Amount <= 0) then
-		ent:Fadeout()
-	else
-		ent:SetResourceDropInfo(ent.Type, ent.Amount)
-	end
-
-	ply:IncResource(ent.Type, int)
-	ply:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
 end
 concommand.Add("gms_TakeResources", GM.TakeResource)
 
@@ -2351,7 +2378,7 @@ function GM.CampFireTimer()
 			if (!ent or ent == NULL) then
 				table.remove(GM.CampFireProps, k)
 			else
-				if (CurTime() - ent.CampFireLifeTime >= 180) then
+				if (CurTime() - ent.CampFireLifeTime >= 360) then
 					ent:Fadeout()
 					table.remove(GM.CampFireProps, k)
 					
@@ -2475,7 +2502,8 @@ function GM.UseKeyHook(ply, key)
 			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
 			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
-				ply:PickupResourceEntityPack(ent)
+				//ply:PickupResourceEntityPack(ent)
+				ply:ConCommand("gms_openrespackmenu")
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end
 			end
@@ -2557,6 +2585,9 @@ function PlayerMeta:PickupResourceEntityPack(ent)
 			if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
 			if (room < int) then int = room end
 			ent.Resources[res] = ent.Resources[res] - int
+
+			ent:SetResPackInfo(res, ent.Resources[res])
+			if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
 
 			self:IncResource(res, int)
 			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
@@ -3063,7 +3094,7 @@ function big_gms_combineresourcepack(respack, ent_b)
 			else
 				respack.Resources[ent_b.Type] = ent_b.Amount
 			end
-			//respack:SetResourcePackInfoInstant(respack.Resources)
+			respack:SetResPackInfo(ent_b.Type, respack.Resources[ent_b.Type])
 			ent_b:Remove()
 		end
 	end 	
@@ -3128,10 +3159,12 @@ function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 			for res, num in pairs(ent_resourcepack.Resources) do
 				if (num > ent_buildsite.Costs[res]) then	
 					ent_resourcepack.Resources[res] = num - ent_buildsite.Costs[res]
+					ent_resourcepack:SetResPackInfo(res, ent_resourcepack.Resources[res])
 					ent_buildsite.Costs[res] = nil
 				elseif (num <= ent_buildsite.Costs[res]) then
 					ent_buildsite.Costs[res] = ent_buildsite.Costs[res] - num
-					ent_resourcepack.Resources[res] = 0
+					ent_resourcepack:SetResPackInfo(res, 0)
+					ent_resourcepack.Resources[res] = nil
 				end
 				for k, v in pairs(ent_buildsite.Costs) do
 					if (ent_buildsite.Costs[res]) then

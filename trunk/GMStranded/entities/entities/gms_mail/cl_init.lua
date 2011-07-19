@@ -1,6 +1,6 @@
 include("shared.lua")
 
-local texLogo = surface.GetTextureID( "vgui/modicon" )
+local texLogo = surface.GetTextureID("vgui/modicon")
 if (!GMS) then 
 	local GMS = {} 
 end

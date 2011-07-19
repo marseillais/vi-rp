@@ -1045,18 +1045,32 @@ vgui.Register("gms_ResourcesHud", PANEL, "Panel")
 local PANEL = {}
 
 function PANEL:Init()
+	self:SetText("")
 end
 
 function PANEL:Paint()
-	surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
+	if (self.Hovered) then
+		surface.SetDrawColor(0, 64, 128, 178) -- Resource bar background
+	else
+		surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
+	end
 	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
 
 	local XP = math.floor(Resources[self.Resource] / MaxResources * (self:GetWide() - 10))
-	surface.SetDrawColor(0, 128, 0, 220) -- Resource bar
+	surface.SetDrawColor(0, 128, 0, 200) -- Resource bar
 	surface.DrawRect(5, 0, XP, self:GetTall())
 
 	draw.SimpleText(self.TxtResource .. ": " .. Resources[self.Resource], "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
 	return true
+end
+
+function PANEL:DoRightClick()
+	local menu = DermaMenu()
+    menu:AddOption("Drop x1",function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 1") end)
+    menu:AddOption("Drop x10",function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 10") end)
+    menu:AddOption("Drop All",function() RunConsoleCommand("say", "!drop " .. self.Resource) end)
+    menu:AddOption("Cancel",function() end)
+    menu:Open()
 end
 
 function PANEL:SetResource(str)
@@ -1064,7 +1078,7 @@ function PANEL:SetResource(str)
     self.Resource = str
 end
 
-vgui.Register("gms_ResourcePanel", PANEL, "Panel")
+vgui.Register("gms_ResourcePanel", PANEL, "DButton")
 
 
 /*---------------------------------------------------------
@@ -1317,7 +1331,79 @@ function PANEL:OnCursorEntered()
 end
 
 function PANEL:OnCursorExited()
-         self.BeingHovered = false
+	self.BeingHovered = false
 end
 
 vgui.Register("GMS_CombiIcon", PANEL, "DPanel")
+
+local PANEL = {}
+
+function PANEL:Init()
+	self.Text = ""
+	self.Num = 0
+
+	self.Drop10 = vgui.Create("gms_takeButton", self)
+	self.DropAll = vgui.Create("gms_takeButton", self)
+end
+
+function PANEL:Paint()
+	draw.RoundedBox(4, 0, 0, self:GetWide(), self:GetTall(), Color(176, 176, 176, 255))
+	draw.SimpleText(self.Text .. ": " .. self.Num, "DefaultBold", 5, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 0, 1)
+end
+
+function PANEL:SetRes(str, num)
+	self.Text = str
+	self.Num = num
+	self.Drop10:SetRes(str, 10, false)
+	self.DropAll:SetRes(str, num, true)
+end
+
+function PANEL:PerformLayout()
+	self.DropAll:SetSize(64, self:GetTall())
+	self.DropAll:SetPos(self:GetWide() - 68, 0)
+    
+	self.Drop10:SetSize(64, self:GetTall())
+	self.Drop10:SetPos(self:GetWide() - 136, 0)
+end
+
+vgui.Register("gms_resourceLine", PANEL, "Panel")
+
+local PANEL = {}
+
+function PANEL:Init()
+	self.Text = ""
+	self.Num = 0
+	self.IsAll = false
+	self:SetText("")
+end
+
+function PANEL:Paint()
+	if (self:GetDisabled()) then
+		draw.RoundedBox(0, 0, 0, self:GetWide(), self:GetTall(), Color(50, 50, 50, 255))
+	elseif (self.Depressed || self:GetSelected()) then
+		draw.RoundedBox(0, 0, 0, self:GetWide(), self:GetTall(), Color(50, 50, 176, 255))
+	elseif (self.Hovered) then
+		draw.RoundedBox(0, 0, 0, self:GetWide(), self:GetTall(), Color(100, 100, 255, 255))
+	else
+		draw.RoundedBox(0, 0, 0, self:GetWide(), self:GetTall(), Color(100, 100, 100, 255))
+	end
+
+	if (self.IsAll) then
+		draw.SimpleText("Take All", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	else
+		draw.SimpleText("Take " .. self.Num, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	end
+end
+
+function PANEL:DoClick()
+	RunConsoleCommand("say", "!take " .. self.Text .. " " .. self.Num)
+	self:GetParent():GetParent():GetParent():GetParent():Remove()
+end
+
+function PANEL:SetRes(str, num, isAll)
+	self.Text = str
+	self.Num = num
+	self.IsAll = isAll
+end
+
+vgui.Register("gms_takeButton", PANEL, "DButton")

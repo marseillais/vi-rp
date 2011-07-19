@@ -25,7 +25,8 @@ end
 function ENT:OnRestore()
 end
 
-function ENT:OnTakeDamage(dmiDamage)
+function ENT:OnTakeDamage(dmg)
+    self:TakePhysicsDamage(dmg) -- React physically when getting shot/blown
 end
 
 function ENT:PhysicsSimulate(pobPhysics, numDeltaTime)
@@ -35,7 +36,7 @@ function ENT:StartTouch(entEntity)
 	if (entEntity:GetClass() == "gms_resourcedrop" and entEntity.Type == self.Entity.Type) then
 		big_gms_combineresource(self, entEntity)
 	end
-	if (entEntity:GetClass() == "gms_resourcepack") then big_gms_combineresourcepack(entEntity, self) end
+	//if (entEntity:GetClass() == "gms_resourcepack") then big_gms_combineresourcepack(entEntity, self) end // Seems to give 2x store
 	if (entEntity:GetClass() == "gms_buildsite" and (entEntity.Costs[self.Entity.Type] != nil and entEntity.Costs[self.Entity.Type] > 0)) then
 		gms_addbuildsiteresource(self, entEntity)
 	end

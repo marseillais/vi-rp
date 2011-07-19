@@ -8,8 +8,7 @@ function ENT:Draw()
 	self.Entity:DrawModel()
 end
 
-
-function GMS.SetEntityDropInfo(um)
+usermessage.Hook("gms_SetResourceDropInfo", function(um)
     local index = um:ReadString()
     local type = um:ReadString()
     local int = um:ReadShort()
@@ -24,11 +23,10 @@ function GMS.SetEntityDropInfo(um)
 		ent.Res = type
 		ent.Amount = int
     end
-end
-usermessage.Hook("gms_SetResourceDropInfo", GMS.SetEntityDropInfo)
+end)
 
 GMS.PendingRDrops = {}
-function GMS.CheckForRDrop()
+hook.Add("Think", "gms_CheckForPendingRDrops", function()
     for k, tbl in pairs(GMS.PendingRDrops) do
     local ent = ents.GetByIndex(tbl.Index)
 		if (ent != NULL) then
@@ -37,8 +35,7 @@ function GMS.CheckForRDrop()
 			table.remove(GMS.PendingRDrops, k)
         end
     end
-end
-hook.Add("Think", "gms_CheckForPendingRDrops", GMS.CheckForRDrop)
+end)
 
 function ENT:Initialize()
 	self.AddAngle = Angle(0, 0, 90)
