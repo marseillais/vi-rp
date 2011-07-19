@@ -13,10 +13,10 @@ Active = false
 ---------------------------------------------------------*/
 function GM:OnSpawnMenuOpen()
 	if (LocalPlayer():GetNWString("AFK") != 1) then
-		if (MENU == nil or not MENU:IsValid()) then
-			vgui.Create("GMS_menu")
+		if (GAMEMODE.MENU == nil or not GAMEMODE.MENU:IsValid()) then
+			GAMEMODE.MENU = vgui.Create("GMS_menu")
 		else
-			MENU:SetVisible(true)
+			GAMEMODE.MENU:SetVisible(true)
 		end
 		gui.EnableScreenClicker(true)
 		RestoreCursorPosition()
@@ -24,8 +24,8 @@ function GM:OnSpawnMenuOpen()
 end
 
 function GM:OnSpawnMenuClose()
-	if (MENU and MENU:IsValid() and MENU:IsVisible()) then
-		MENU:SetVisible(false)
+	if (GAMEMODE.MENU and GAMEMODE.MENU:IsValid() and GAMEMODE.MENU:IsVisible()) then
+		GAMEMODE.MENU:SetVisible(false)
 	end
 	RememberCursorPosition()
 	gui.EnableScreenClicker(false)
@@ -34,15 +34,15 @@ end
 local PANEL = {}
 
 function PANEL:Init()
-	MENU = self
 	self:SetTitle("Stranded Menu")
-	self.ContentPanel = vgui.Create("DPropertySheet", self)
 	self:ShowCloseButton(false)
-	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self), "gui/silkicons/brick_add", true, true)
-	self.ContentPanel:AddSheet("ToolMenu", vgui.Create("stranded_ToolMenu", self), "gui/silkicons/wrench", true, true)
-	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_PlantSpawn", self), "gui/silkicons/box", true, true)
-	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_Commands", self), "gui/silkicons/application", true, true)
-	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_SPPMenu", self), "gui/silkicons/shield", true, true)
+	
+	self.ContentPanel = vgui.Create("DPropertySheet", self)
+	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", false, false)
+	self.ContentPanel:AddSheet("ToolMenu", vgui.Create("stranded_ToolMenu", self.ContentPanel), "gui/silkicons/wrench", true, true)
+	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_PlantSpawn", self.ContentPanel), "gui/silkicons/box", false, false)
+	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_Commands", self.ContentPanel), "gui/silkicons/application", true, true)
+	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_SPPMenu", self.ContentPanel), "gui/silkicons/shield", true, true)
 end
 
 function PANEL:Close()
@@ -51,9 +51,9 @@ function PANEL:Close()
 end
 
 function PANEL:PerformLayout( )
-	self:SetSize(ScrW() / 2, ScrH())
-	self:SetPos(ScrW() / 2, 0)
-	self.ContentPanel:StretchToParent(4, 26, 4, 4)
+	self:SetSize(ScrW() / 2 - 10, ScrH() - 10)
+	self:SetPos(ScrW() / 2 + 5, 5)
+	self.ContentPanel:StretchToParent(5, 21, 5, 5)
 	
 	DFrame.PerformLayout(self)
 end
@@ -721,32 +721,6 @@ function PANEL:Init()
         button:SetPos(5, 28 + id * 25)
         button.DoClick = function()
 			if (hazpass) then
-				/*local frame = vgui.Create("DFrame")
-				frame:SetTitle("Please enter password")
-				frame:SetKeyboardInputEnabled(true)
-				frame:SetMouseInputEnabled(true)
-				frame:MakePopup()
-				frame:SetSize(ScrW() / 4, 78)
-				frame:Center()
-				
-				local pass = vgui.Create("DTextEntry", frame)
-				pass:SetSize(ScrW() / 4 - 10, 20)
-				pass:SetPos(5, 28)
-				pass.OnEnter = function(self)
-					RunConsoleCommand("gms_join", name, pass:GetValue())
-					frame:Close()
-				end
-
-				local button = vgui.Create("DButton", frame)
-				button:SetSize(ScrW() / 4 - 10, 20)
-				button:SetPos(5, 53)
-				button.DoClick = function()
-					RunConsoleCommand("gms_join", name, pass:GetValue())
-					frame:Close()
-				end
-				button:SetText("Okay")
-				*/
-				
 				Derma_StringRequest("Please enter password", "Please enter password for the tribe.", "", function(text) RunConsoleCommand("gms_join", name, text) end)
 			else
 				RunConsoleCommand("gms_join", name)
@@ -1339,14 +1313,16 @@ end
 
 vgui.Register("GMS_CombiIcon", PANEL, "DPanel")
 
+/* RESOURCE PACK GUI */
+
 local PANEL = {}
 
 function PANEL:Init()
 	self.Text = ""
 	self.Num = 0
 
-	self.Drop10 = vgui.Create("gms_takeButton", self)
-	self.DropAll = vgui.Create("gms_takeButton", self)
+	self.TakeX = vgui.Create("gms_takeButton", self)
+	self.TakeAll = vgui.Create("gms_takeButton", self)
 end
 
 function PANEL:Paint()
@@ -1357,16 +1333,16 @@ end
 function PANEL:SetRes(str, num)
 	self.Text = str
 	self.Num = num
-	self.Drop10:SetRes(str, 10, false)
-	self.DropAll:SetRes(str, num, true)
+	self.TakeX:SetRes(str, nil, false)
+	self.TakeAll:SetRes(str, num, true)
 end
 
 function PANEL:PerformLayout()
-	self.DropAll:SetSize(64, self:GetTall())
-	self.DropAll:SetPos(self:GetWide() - 68, 0)
+	self.TakeAll:SetSize(64, self:GetTall())
+	self.TakeAll:SetPos(self:GetWide() - 68, 0)
     
-	self.Drop10:SetSize(64, self:GetTall())
-	self.Drop10:SetPos(self:GetWide() - 136, 0)
+	self.TakeX:SetSize(64, self:GetTall())
+	self.TakeX:SetPos(self:GetWide() - 136, 0)
 end
 
 vgui.Register("gms_resourceLine", PANEL, "Panel")
@@ -1394,12 +1370,19 @@ function PANEL:Paint()
 	if (self.IsAll) then
 		draw.SimpleText("Take All", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
 	else
-		draw.SimpleText("Take " .. self.Num, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+		draw.SimpleText("Take X", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
 	end
 end
 
 function PANEL:DoClick()
-	RunConsoleCommand("gms_TakeResources", string.gsub(self.Text, " ", "_"), self.Num)
+	if (self.IsAll) then
+		RunConsoleCommand("gms_TakeResources", string.gsub(self.Text, " ", "_"), self.Num)
+	else
+		local res = self.Text
+		Derma_StringRequest("Please enter amount", "Please enter amount of " ..  res .. " to take.", "", function(text)
+			RunConsoleCommand("gms_TakeResources", string.gsub(res, " ", "_"), text)
+		end)
+	end
 	self:GetParent():GetParent():GetParent():GetParent():Remove()
 end
 

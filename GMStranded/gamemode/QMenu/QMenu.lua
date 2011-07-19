@@ -1,65 +1,13 @@
 
 /*---------------------------------------------------------
-  DPlant Menu
----------------------------------------------------------*/
-local PANEL = {}
-
-PANEL.Plantables = {}
-PANEL.Plantables["gms_plantmelon"] = "Plant Melon"
-PANEL.Plantables["gms_plantbanana"] = "Plant Banana"
-PANEL.Plantables["gms_plantorange"] = "Plant Orange"
-PANEL.Plantables["gms_planttree"] = "Plant Tree"
-PANEL.Plantables["gms_plantgrain"] = "Plant Grain"
-PANEL.Plantables["gms_plantbush"] = "Plant BerryBush"
-
-function PANEL:Init()
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Planting Menu" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
-	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
-
-	CategoryList:SetSpacing( 5 )
-	CategoryList:EnableHorizontal( false )
-	CategoryList:EnableVerticalScrollbar( true )
-         
-    local size = ScrH() / 30
-    local line = 25
-
-    for cmd,txt in pairs(self.Plantables) do
-        local button = vgui.Create("gms_CommandButton",CategoryList)
-        button:SetSize(CategoryList:GetWide() / 2, size)
-        button:SetPos(10, line)
-        button:SetConCommand(cmd.."\n")
-        button:SetText(txt)
-             
-        line = line + button:GetTall() + 10
-    end
-
-end
-
-function PANEL:PerformLayout( )
-	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
-end
-
-vgui.Register("stranded_PlantSpawn",PANEL,"DPanel")
-
-/*---------------------------------------------------------
   DProp Spawn Menu
 ---------------------------------------------------------*/
 local PANEL = { }
 local ValueTable = {}
 function PANEL:Init( )
-	self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Click on an icon to spawn a prop." )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
 	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
+	CategoryList:SetPos( 5,5 )
+	CategoryList:SetSize(ScrW() / 2 - 32, ScrH() - 64)
 
 	CategoryList:SetSpacing( 5 )
 	CategoryList:EnableHorizontal( false )
@@ -101,7 +49,6 @@ end
 
 function PANEL:PerformLayout( )
 	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
 	for k,v in pairs (ValueTable) do
 		self.IconList[v]:StretchToParent( 4, 26, 4, 4 ) 
 		self.IconList[v]:InvalidateLayout() 
@@ -109,6 +56,36 @@ function PANEL:PerformLayout( )
 end
 
 vgui.Register( "stranded_PropSpawn", PANEL, "DPanel" )
+
+/*---------------------------------------------------------
+  DPlant Menu
+---------------------------------------------------------*/
+local PANEL = {}
+
+PANEL.Plantables = {}
+PANEL.Plantables["gms_plantmelon"] = "Plant Melon"
+PANEL.Plantables["gms_plantbanana"] = "Plant Banana"
+PANEL.Plantables["gms_plantorange"] = "Plant Orange"
+PANEL.Plantables["gms_planttree"] = "Plant Tree"
+PANEL.Plantables["gms_plantgrain"] = "Plant Grain"
+PANEL.Plantables["gms_plantbush"] = "Plant BerryBush"
+
+function PANEL:Init()
+	self:SetSpacing(5)
+	self:SetPadding(5)
+	self:EnableHorizontal(false)
+	self:EnableVerticalScrollbar(true)
+
+    for cmd, txt in pairs(self.Plantables) do
+        local button = vgui.Create("gms_CommandButton", CategoryList)
+        button:SetConCommand(cmd)
+        button:SetText(txt)
+		self:AddItem(button)
+    end
+
+end
+
+vgui.Register("stranded_PlantSpawn", PANEL, "DPanelList")
 
 /*---------------------------------------------------------
   DCommands Menu
@@ -138,14 +115,9 @@ end
 
 function PANEL:Init()
 	checkAdmin(LocalPlayer())
-
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Commands" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
 	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
+	CategoryList:SetPos(5,5 )
+	CategoryList:SetSize(ScrW() / 2 - 32, ScrH() - 64)
 
 	CategoryList:SetSpacing( 5 )
 	CategoryList:EnableHorizontal( false )
@@ -191,7 +163,6 @@ end
 
 function PANEL:PerformLayout( )
 	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
 end
 
 vgui.Register("stranded_Commands",PANEL,"DPanel")
@@ -202,14 +173,9 @@ vgui.Register("stranded_Commands",PANEL,"DPanel")
 local PANEL = {}
 
 function PANEL:Init()
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Tool Menu" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
-	
 	CategoryList = vgui.Create( "DPanelList", self)
-	CategoryList:SetPos( 25,25 )
-	CategoryList:SetSize(ScrW() / 2 - 62, ScrH() - 104)
+	CategoryList:SetPos( 5,5 )
+	CategoryList:SetSize(ScrW() / 2 - 32, ScrH() - 64)
 	CategoryList:SetSpacing( 5 )
 	CategoryList:SetPadding( 0 )
 	CategoryList:EnableHorizontal( true )
@@ -332,7 +298,6 @@ end
 
 function PANEL:PerformLayout( )
 	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
 end
 
 vgui.Register("stranded_ToolMenu",PANEL,"DPanel")
@@ -374,14 +339,9 @@ function PANEL:Init()
 	CreateClientConVar("SPropProtection_dpd", 1, false, true)
 	CreateClientConVar("SPropProtection_dae", 0, false, true)
 	CreateClientConVar("SPropProtection_delay", 120, false, true)
-    self.Label = vgui.Create( "DLabel", self )
-	self.Label:SetText( "Prop Protection Menu" )
-	self.Label:SetTextColor( Color( 255, 255, 255, 255 ) )
-	self.Label:SizeToContents( )
-	
 	self.pnlCanvas = vgui.Create( "DPanel", self)
-	self.pnlCanvas:SetPos( 25,25 )
-	self.pnlCanvas:SetSize(ScrW() / 2 - 62, 2000)--ScrH() - 104
+	self.pnlCanvas:SetPos( 5,5 )
+	self.pnlCanvas:SetSize(ScrW() / 2 - 32, 2000)--ScrH() - 104
 	self.pnlCanvas.Paint = function()
 		surface.SetDrawColor(50, 50, 50, 255)
 		surface.DrawRect( 0, 0, self.pnlCanvas:GetWide(), self.pnlCanvas:GetTall() ) 
@@ -586,11 +546,10 @@ end
 
 function PANEL:PerformLayout( )
 	self:StretchToParent( 2, 24, 2, 2 )
-	self.Label:SetPos( 2, 2 )
 end
 
 function PANEL:OnVScroll( iOffset ) 
-	self.pnlCanvas:SetPos( 25, 25 + iOffset )
+	self.pnlCanvas:SetPos( 5, 5 + iOffset )
 end 
 
 function PANEL:OnMouseWheeled( dlta ) 

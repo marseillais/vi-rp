@@ -295,3 +295,33 @@ function CHATCMD:Run( ply )
 end
 
 GMS.RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+  ADMIN: Reset needs
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!resetneeds"
+CHATCMD.Desc = " - Reset your needs"
+function CHATCMD:Run(ply)
+	if (!ply:IsAdmin()) then return end
+	ply.Hunger = 1000
+	ply.Thirst = 1000
+	ply.Sleepiness = 1000
+end
+
+GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
+
+/*---------------------------------------------------------
+  ADMIN: Give resources
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!giveres"
+CHATCMD.Desc = "<Resource> <Amount> - Give resources to yourself"
+function CHATCMD:Run(ply, ...)
+	if (!ply:IsAdmin()) then return end
+	ply:IncResource(arg[1], tonumber(arg[2]))
+end
+
+GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)

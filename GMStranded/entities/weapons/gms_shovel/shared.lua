@@ -12,7 +12,7 @@ if (CLIENT) then
 	SWEP.ViewModelFOV = 55
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
-	SWEP.Slot = 3
+	SWEP.Slot = 2
 	SWEP.SlotPos = 3
 end
 
@@ -38,6 +38,7 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Initialize()
+	self:SetWeaponHoldType("melee")
 end
 
 function SWEP:Reload()
@@ -47,6 +48,7 @@ function SWEP:PrimaryAttack()
     if (CLIENT) then return end
     self.Weapon:SetNextPrimaryFire(CurTime() + 1)
 	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
+	self.Owner:SetAnimation(PLAYER_ATTACK1)
     local tr = self.Owner:TraceFromEyes(150)
 
     if (tr.HitWorld) then

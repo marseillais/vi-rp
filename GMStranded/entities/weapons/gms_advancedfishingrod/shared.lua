@@ -12,8 +12,8 @@ if (CLIENT) then
 	SWEP.ViewModelFOV = 55
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
-	SWEP.Slot = 4
-	SWEP.SlotPos = 3
+	SWEP.Slot = 3
+	SWEP.SlotPos = 5
 end
 
 SWEP.Author = "Stranded Team"
@@ -47,7 +47,6 @@ function SWEP:PrimaryAttack()
 	if (CLIENT) then return end
 
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
-	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
 	self.Owner:EmitSound(Sound("npc/vort/claw_swing" .. math.random(1, 2) .. ".wav"))
 
 	local trace = {}
@@ -78,6 +77,7 @@ end
 function SWEP:HideWeapon(bool)
 	if (SERVER and self.Owner) then 
 		self.Owner:DrawViewModel(bool) 
+		self.Owner:DrawWorldModel(bool) 
 	end
 end
 

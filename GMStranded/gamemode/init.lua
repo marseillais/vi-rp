@@ -339,7 +339,7 @@ function PlayerMeta:CreateStructureBuildingSite(pos, angle, model, class, cost, 
 	local tbl = rep:GetTable()
 	local str = ":"
 	for k, v in pairs(cost) do
-		str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+		str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 	end
 	rep:SetAngles(angle)
 	rep.Costs = cost
@@ -1420,7 +1420,7 @@ concommand.Add("gms_salvage", function(ply)
 		local res = GMS.MaterialResources[tr.MatType]
 		local cost = math.Round(0.6 * math.ceil(vol * GetConVarNumber("gms_CostsScale")))
 		ply:IncResource(res, cost)
-		ply:SendMessage("Gained " .. string.Replace(res, "_", " ") .. " (x" .. cost .. ") from salvaging.", 3, Color( 255, 255, 255, 255 ))
+		ply:SendMessage("Gained " .. string.Replace(res, "_", " ") .. " (" .. cost .. "x) from salvaging.", 3, Color( 255, 255, 255, 255 ))
 		ent:Fadeout()
 	else
 		ply:SendMessage("Cannot salvage this kind of prop.", 5, Color(255, 255, 255, 255))
@@ -1666,7 +1666,7 @@ function GM.DropResource(ply, cmd, args)
 	ply:DropResource(Type, int)
 	ply:DecResource(Type, int)
 
-	ply:SendMessage("Dropped " .. string.Replace(Type, "_", " ") .. " (x" .. int .. ")", 3, Color(10, 200, 10, 255))
+	ply:SendMessage("Dropped " .. string.Replace(Type, "_", " ") .. " (" .. int .. "x)", 3, Color(10, 200, 10, 255))
 end
 concommand.Add("gms_DropResources", GM.DropResource)
 
@@ -1685,7 +1685,7 @@ function GM.ADropResource(ply, cmd, args)
 	local Type = args[1] 
 
 	ply:DropResource(Type, int)
-	ply:SendMessage("Dropped " .. string.Replace(Type, "_", " ") .. " (x" .. int .. ")", 3, Color(10, 200, 10, 255))
+	ply:SendMessage("Dropped " .. string.Replace(Type, "_", " ") .. " (" .. int .. "x)", 3, Color(10, 200, 10, 255))
 end
 concommand.Add("gms_ADropResources", GM.ADropResource)
 
@@ -1705,9 +1705,10 @@ function GM.TakeResource(ply, cmd, args)
 	local tr = ply:TraceFromEyes(150)
 	local ent = tr.Entity
 	local cls = tr.Entity:GetClass()
-	
+
+	if (cls != "gms_resourcedrop" and cls != "gms_resourcepack") then return end
 	if (!(SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
-	if ((ply:GetPos() - ent:LocalToWorld(ent:OBBCenter())):Length() >= 65) then return end
+	if ((ply:GetPos() - ent:LocalToWorld(ent:OBBCenter())):Length() >= 100) then return end
 
 	if (cls == "gms_resourcedrop") then
 		if (ent.Type != args[1]) then return end
@@ -1720,7 +1721,7 @@ function GM.TakeResource(ply, cmd, args)
 		if (ent.Amount <= 0) then ent:Fadeout() else ent:SetResourceDropInfo(ent.Type, ent.Amount) end
 		
 		ply:IncResource(ent.Type, int)
-		ply:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+		ply:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
 	end
 	
 	if (cls == "gms_resourcepack") then
@@ -1735,7 +1736,7 @@ function GM.TakeResource(ply, cmd, args)
 				if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
 
 				ply:IncResource(res, int)
-				ply:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+				ply:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
 			end
 		end
 	end
@@ -2110,7 +2111,7 @@ function GM:PlayerSpawnedPropDelay(ply, mdl, ent)
 		ply:SendMessage("Not enough resources, creating buildsite.", 3, Color(255, 255, 255, 255))
 		local str = ":"
 		for k, v in pairs(site.Costs) do
-			str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+			str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 		end
 		site:SetNetworkedString('Resources', str)
 		local Name = "Prop"
@@ -2122,10 +2123,10 @@ function GM:PlayerSpawnedPropDelay(ply, mdl, ent)
 	--Resource cost
 	if ply:GetResource(res) < cost then
 		ent:Remove()
-		ply:SendMessage("You need " .. string.Replace(res, "_", " ") .. " (x" .. cost .. ") to spawn this prop.", 3, Color(200, 0, 0, 255))
+		ply:SendMessage("You need " .. string.Replace(res, "_", " ") .. " (" .. cost .. "x) to spawn this prop.", 3, Color(200, 0, 0, 255))
 	else
 		ply:DecResource(res,cost)
-		ply:SendMessage("Used " .. string.Replace(res, "_", " ") .. " (x" .. cost .. ") to spawn this prop.", 3, Color(255, 255, 255, 255))
+		ply:SendMessage("Used " .. string.Replace(res, "_", " ") .. " (" .. cost .. "x) to spawn this prop.", 3, Color(255, 255, 255, 255))
 		ply:DoProcess("Assembling", 5)
 	end
 end
@@ -2220,9 +2221,9 @@ function GM.SubtractNeeds()
 
 			--Kay you're worn out
 			if (ply.AFK != true) then
-				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 4 end
-				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 10 end
-				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 4 end
+				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 1 end
+				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 5 end
+				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 2 end
 			end
              
 			ply:UpdateNeeds()
@@ -2233,15 +2234,15 @@ function GM.SubtractNeeds()
 					ply:SetHealth(ply:Health() - 2)
 				else
 					ply:Kill()
-					for k, v in pairs(player.GetAll()) do ply:SendMessage(ply:Nick() .. " died of famine.", 3, Color(170, 0, 0, 255)) end
+					for k, v in pairs(player.GetAll()) do ply:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
 				end
 			end
 		end
 	end
 
-	timer.Simple(5, GAMEMODE.SubtractNeeds)
+	timer.Simple(3, GAMEMODE.SubtractNeeds)
 end
-timer.Simple(5, GM.SubtractNeeds)
+timer.Simple(3, GM.SubtractNeeds)
 
 /*---------------------------------------------------------
   Sleep
@@ -2474,6 +2475,7 @@ function GM.UseKeyHook(ply, key)
 	if (tr.HitNonWorld) then
 		if (tr.Entity and !GMS.IsInWater(tr.HitPos)) then
 			local ent = tr.Entity
+			if (!ent or ent == NULL or !ent:IsValid()) then return end
 			local mdl = tr.Entity:GetModel()
 			local cls = tr.Entity:GetClass()
 
@@ -2493,9 +2495,9 @@ function GM.UseKeyHook(ply, key)
 			elseif (ent:IsTreeModel()) then
 				if (!ply:HasUnlock("Sprout_Collect")) then ply:SendMessage("You don't have enough skill.", 3, Color(200, 0, 0, 255)) return end
 				ply:DoProcess("SproutCollect", 5)
-			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
+			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
-			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 80 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
+			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:ConCommand("gms_openrespackmenu")
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end
@@ -2565,7 +2567,7 @@ function PlayerMeta:PickupResourceEntity(ent)
 	if (ent.Amount <= 0) then ent:Fadeout() else ent:SetResourceDropInfo(ent.Type, ent.Amount) end
 
 	self:IncResource(ent.Type, int)
-	self:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+	self:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
 end
 
 function PlayerMeta:PickupResourceEntityPack(ent)
@@ -2583,7 +2585,7 @@ function PlayerMeta:PickupResourceEntityPack(ent)
 			if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
 
 			self:IncResource(res, int)
-			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (x" .. int .. ")", 4, Color(10, 200, 10, 255))
+			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
 		end
 	end
 end
@@ -3122,7 +3124,7 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 			if (table.Count(ent_buildsite.Costs) > 0) then
 				local str = "You need: "
 				for k, v in pairs(ent_buildsite.Costs) do
-					str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+					str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 				end
 
 				str = str .. " to finish."
@@ -3134,7 +3136,7 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 			
 			local str = ":"
 			for k, v in pairs(ent_buildsite.Costs) do
-				str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+				str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 			end
 			ent_buildsite:SetNetworkedString("Resources", str)
 		end
@@ -3171,7 +3173,7 @@ function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 			if (table.Count(ent_buildsite.Costs) > 0) then
 				local str = "You need: "
 				for k, v in pairs(ent_buildsite.Costs) do
-					str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+					str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 				end
 
 				str = str .. " to finish."
@@ -3183,7 +3185,7 @@ function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 			
 			local str = ":"
 			for k, v in pairs(ent_buildsite.Costs) do
-				str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+				str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 			end
 			ent_buildsite:SetNetworkedString("Resources", str)
 		end

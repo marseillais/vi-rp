@@ -12,7 +12,7 @@ if (CLIENT) then
 	SWEP.ViewModelFOV = 55
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
-	SWEP.Slot = 3
+	SWEP.Slot = 2
 	SWEP.SlotPos = 1
 end
 
@@ -38,6 +38,7 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Initialize()
+	self:SetWeaponHoldType("melee")
 end
 
 function SWEP:Reload()
@@ -46,6 +47,7 @@ end
 function SWEP:PrimaryAttack()
     if (CLIENT) then return end
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
+	self.Owner:SetAnimation(PLAYER_ATTACK1)
     self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
     self.Owner:EmitSound(Sound("weapons/iceaxe/iceaxe_swing1.wav"))
 

@@ -22,7 +22,7 @@ function ENT:AddResource(ply, res, int)
 	
 	local str = ":"
 	for k, v in pairs(self.Costs) do
-		str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+		str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
 	end
 	self.Entity:SetNetworkedString('Resources', str)
 end
@@ -77,7 +77,7 @@ function ENT:Use(ply)
     if (table.Count(self.Costs) > 0) then
         local str = "You need: "
         for k, v in pairs(self.Costs) do
-            str = str .. " " .. string.Replace(k, "_", " ") .. " (x" .. v .. ")"
+            str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
         end
         str = str .. " to finish."
         ply:SendMessage(str, 5, Color(255, 255, 255, 255))
