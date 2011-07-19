@@ -44,17 +44,23 @@ end
 
 function CROW.Disable(player)
 	player:ConCommand("-duck\n")
-	if CLIENT then
+	if (CLIENT) then
 		player.CROW = false
 		return
 	end
-	if not player.CROW then return end
+	if (not player.CROW) then return end
 	CROW.BangHowdy(player)
 	player.CROW.ghost:Remove()
 	player:SetNetworkedEntity("CROW.ghost", nil)
 	player:SetModel(player.CROW.model)
 	player:SetMoveType(MOVETYPE_WALK)
 	player.CROW = nil
+	
+	if (player:HasUnlock("Sprint_Mkii")) then
+		GAMEMODE:SetPlayerSpeed(player, 400, 100)
+	else
+		GAMEMODE:SetPlayerSpeed(player, 250, 250)
+	end
 end
 
 if CLIENT then

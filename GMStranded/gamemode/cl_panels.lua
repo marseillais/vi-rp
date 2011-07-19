@@ -721,7 +721,7 @@ function PANEL:Init()
         button:SetPos(5, 28 + id * 25)
         button.DoClick = function()
 			if (hazpass) then
-				local frame = vgui.Create("DFrame")
+				/*local frame = vgui.Create("DFrame")
 				frame:SetTitle("Please enter password")
 				frame:SetKeyboardInputEnabled(true)
 				frame:SetMouseInputEnabled(true)
@@ -745,6 +745,9 @@ function PANEL:Init()
 					frame:Close()
 				end
 				button:SetText("Okay")
+				*/
+				
+				Derma_StringRequest("Please enter password", "Please enter password for the tribe.", "", function(text) RunConsoleCommand("gms_join", name, text) end)
 			else
 				RunConsoleCommand("gms_join", name)
 			end
@@ -1396,7 +1399,7 @@ function PANEL:Paint()
 end
 
 function PANEL:DoClick()
-	RunConsoleCommand("say", "!take " .. self.Text .. " " .. self.Num)
+	RunConsoleCommand("gms_TakeResources", string.gsub(self.Text, " ", "_"), self.Num)
 	self:GetParent():GetParent():GetParent():GetParent():Remove()
 end
 
