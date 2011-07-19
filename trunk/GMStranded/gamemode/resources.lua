@@ -155,3 +155,16 @@ resource.AddFile("sound/cough1.wav")
 resource.AddFile("sound/cough2.wav")
 resource.AddFile("sound/cough3.wav")
 resource.AddFile("sound/cough4.wav")
+
+--Missing Tree Model
+resource.AddFile("models/gm_forest/tree_oak1.dx80.vtx")
+resource.AddFile("models/gm_forest/tree_oak1.dx90.vtx")
+resource.AddFile("models/gm_forest/tree_oak1.mdl")
+resource.AddFile("models/gm_forest/tree_oak1.phy")
+resource.AddFile("models/gm_forest/tree_oak1.sw.vtx")
+resource.AddFile("models/gm_forest/tree_oak1.vvd")
+resource.AddFile("models/gm_forest/tree_oak1.xbox.vtx")
+
+resource.AddFile("materials/gm_forest/oak_brk.vmt")
+resource.AddFile("materials/gm_forest/brg_eik_brn2.vmt")
+resource.AddFile("materials/gm_forest/brg_eik_brn2.vtf")

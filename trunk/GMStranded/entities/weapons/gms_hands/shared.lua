@@ -12,9 +12,10 @@ if (CLIENT) then
 	SWEP.ViewModelFOV = 55
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
+	SWEP.Slot = 0
+	SWEP.SlotPos = 1
 end
 
-SWEP.Base = "weapon_base"
 SWEP.Author = "Stranded Team"
 SWEP.Contact = ""
 SWEP.Purpose = "Pick up stuff, as well as poor harvesting."
@@ -37,7 +38,6 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Initialize()
-	if (CLIENT) then return end
 	self:SetWeaponHoldType("fist")
 end
 
@@ -47,11 +47,13 @@ end
 function SWEP:PrimaryAttack()
     if (CLIENT) then return end
 	self.Weapon:SetNextPrimaryFire(CurTime() + 0.5)
+	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
+	self.Owner:SetAnimation(PLAYER_ATTACK1)
 	self.Owner:EmitSound(Sound("weapons/iceaxe/iceaxe_swing1.wav"))
 
     local trace = {}
     trace.start = self.Owner:GetShootPos()
-    trace.endpos = trace.start + (self.Owner:GetAimVector() * 150)
+    trace.endpos = trace.start + (self.Owner:GetAimVector() * 100)
     trace.filter = self.Owner
     local tr = util.TraceLine(trace)
 

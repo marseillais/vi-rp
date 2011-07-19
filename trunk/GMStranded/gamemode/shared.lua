@@ -363,9 +363,9 @@ GMS.TreeModels = {
 	"models/props_foliage/tree_deciduous_01a.mdl",
 	"models/props_foliage/oak_tree01.mdl",
 	"models/props_foliage/tree_cliff_01a.mdl",
-	"models/props_foliage/tree_deciduous_01a-lod.mdl"
-	-- HL2:EP2
-	-- "models/props_foliage/tree_pine04.mdl"
+	"models/props_foliage/tree_deciduous_01a-lod.mdl",
+	"models/gm_forest/tree_oak1.mdl" -- The tree @ gms_rollinghills
+	-- "models/props_foliage/tree_pine04.mdl" -- HL2:EP2
 }
 
 GMS.AdditionalTreeModels = {"models/props_foliage/tree_deciduous_02a.mdl"}
@@ -414,8 +414,7 @@ GMS.AdditionalRockModels = {
 	"models/props_wasteland/rockcliff_cluster03b.mdl",
 	"models/props_wasteland/rockcliff_cluster03c.mdl",
 	"models/props_wasteland/rockcliff05a.mdl"
-	-- HL2: EP2
-	--"models/cliffs/rocks_large03.mdl"
+	-- "models/cliffs/rocks_large03.mdl" -- HL2: EP2
 }
 
 GMS.SmallRockModel = "models/props_junk/rock001a.mdl"
