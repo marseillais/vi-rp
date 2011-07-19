@@ -24,7 +24,8 @@ end
 function ENT:OnRestore()
 end
 
-function ENT:OnTakeDamage(dmiDamage)
+function ENT:OnTakeDamage(dmg)
+    self:TakePhysicsDamage(dmg) -- React physically when getting shot/blown
 end
 
 function ENT:PhysicsSimulate(pobPhysics, numDeltaTime)

@@ -68,7 +68,6 @@ function PlayerMeta:DoProcess(name, time, data)
 
 	if (self.ProcessTable.OnStart) then self.ProcessTable:OnStart() end
 
-	--Start think
 	GAMEMODE.AddProcessThink(self.ProcessTable)
 
 	timer.Create("GMS_ProcessTimer_" .. self:UniqueID(), time, 1, GAMEMODE.StopProcess, self)
@@ -90,12 +89,10 @@ end
 function GM.StopProcess(pl)
 	if (pl == nil or pl.ProcessTable == nil) then return end
 
-	--Run stop
 	local bool = pl.ProcessTable:BaseStop()
-	if pl.ProcessTable.OnStop then pl.ProcessTable:OnStop() end
-	--Stop think
-	if pl.ProcessTable.Think then GAMEMODE.RemoveProcessThink(pl.ProcessTable) end
-         
+	if (pl.ProcessTable.OnStop) then pl.ProcessTable:OnStop() end
+	if (pl.ProcessTable.Think) then GAMEMODE.RemoveProcessThink(pl.ProcessTable) end
+
 	pl.InProcess = false
 	pl.ProcessTable = nil
 end
@@ -107,10 +104,7 @@ local PROCESS = {}
 
 function PROCESS:BaseThink()
 	if (ValidEntity(ent)) then
-		if (self == nil or self.Owner == nil or !self.Owner:Alive()) then
-			return true
-		end
-
+		if (self == nil or self.Owner == nil or !self.Owner:Alive()) then return true end
 		if (!self.Owner:IsValid() or !self.Owner:IsConnected()) then return true end
 	end
 end
@@ -137,64 +131,62 @@ PROCESS.SideGain["orange"] = "Orange_Seeds"
 PROCESS.SideGain["banana"] = "Banana_Seeds"
 
 function PROCESS:OnStart()
-         self.Owner:MakeProcessBar("Eating Fruit", self.Time, self.Cancel)
-         self.Owner:Freeze(true)
-		 
-		 self.Owner:EmitSound(Sound("vo/SandwichEat09.wav"))
-		 
-		 local owner = nil
-		 local ent = self.Data.Entity
-         local plant = ent.PlantParent
-		 
-		if plant then
-			owner = plant:GetNWEntity("plantowner")
+	self.Owner:MakeProcessBar("Eating Fruit", self.Time, self.Cancel)
+	self.Owner:Freeze(true)
+
+	self.Owner:EmitSound(Sound("vo/SandwichEat09.wav"))
+
+	local owner = nil
+	local ent = self.Data.Entity
+	local plant = ent.PlantParent
+
+	if (plant) then owner = plant:GetNWEntity("plantowner") end
+
+	if (self.Data.Entity:GetModel() == "models/props_junk/watermelon01.mdl") then
+		self.SideGain = "Melon_Seeds"
+	elseif (self.Data.Entity:GetModel() == "models/props/cs_italy/orange.mdl") then
+		self.SideGain = "Orange_Seeds"
+	elseif (self.Data.Entity:GetModel() == "models/props/cs_italy/bananna_bunch.mdl") then
+		self.SideGain = "Banana_Seeds"
+	end
+
+	if (plant) then
+		plant.Children = plant.Children - 1
+		if (plant.Children <= 0) then
+			plant:Fadeout()
+			if (owner and owner != NULL) then
+				owner:SetNWInt("plants", owner:GetNWInt("plants") - 1)
+			end
 		end
-		
-         if self.Data.Entity:GetModel() == "models/props_junk/watermelon01.mdl" then
-            self.SideGain = "Melon_Seeds"
-         elseif self.Data.Entity:GetModel() == "models/props/cs_italy/orange.mdl" then
-            self.SideGain = "Orange_Seeds"
-         elseif self.Data.Entity:GetModel() == "models/props/cs_italy/bananna_bunch.mdl" then
-            self.SideGain = "Banana_Seeds"
-         end
+	end
 
-         if plant then
-            plant.Children = plant.Children - 1
-            if plant.Children <= 0 then
-               plant:Fadeout()
-			   if owner and owner != NULL then
-					owner:SetNWInt("plants", owner:GetNWInt("plants")-1)
-			   end
-            end
-         end
-
-         self.Data.Entity:Fadeout(2)
+	self.Data.Entity:Fadeout(2)
 end
 
 function PROCESS:OnStop()
-        if self.SideGain then
-	    local numto = 1
-	    local numstart = 0
-	    if self.Owner:GetActiveWeapon():GetClass() == "gms_woodenspoon" then 
-		numto = numto + 2 
-		numstart = numstart + 1
-	    end
-	    local num = math.random(numstart,numto)		
-			if num ~= 0 then
-				self.Owner:IncResource(self.SideGain,num)
-				self.Owner:SendMessage(string.gsub(self.SideGain,"_"," ").." ("..num.."x)", 3, Color(10,200,10,255))
-				self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
-			end
+	if (self.SideGain) then
+		local numto = 1
+		local numstart = 0
+		if (self.Owner:GetActiveWeapon():GetClass() == "gms_woodenspoon") then 
+			numto = numto + 2 
+			numstart = numstart + 1
 		end
-		
-        self.Owner:SetFood(self.Owner.Hunger + 250)
-        self.Owner:SendMessage("You feel a little less hungry now.",3,Color(255,255,255,255))
-        self.Owner:Freeze(false)
+		local num = math.random(numstart,numto)		
+		if (num ~= 0) then
+			self.Owner:IncResource(self.SideGain, num)
+			self.Owner:SendMessage(string.gsub(self.SideGain, "_", " ") .. " (x" .. num .. ")", 3, Color(10, 200, 10, 255))
+			self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
+		end
+	end
+
+	self.Owner:SetFood(self.Owner.Hunger + 250)
+	self.Owner:SendMessage("You feel a little less hungry now.",3,Color(255,255,255,255))
+	self.Owner:Freeze(false)
 end
 
 PROCESS.Cancel = false
 
-GMS.RegisterProcess("EatFruit",PROCESS)
+GMS.RegisterProcess("EatFruit", PROCESS)
 
 /*---------------------------------------------------------
   Eat Berry
@@ -211,7 +203,7 @@ end
 
 function PROCESS:OnStop()
 	self.Owner:DecResource("Berries", 1)
-	self.Owner:SendMessage("You're a little less hungry and thirsty now.", 3, Color(10,200,10,255))
+	self.Owner:SendMessage("You're a little less hungry and thirsty now.", 3, Color(10, 200, 10, 255))
 	if (self.Owner.Hunger <= 900) then
 		self.Owner:SetFood(self.Owner.Hunger + 100)
 	elseif (self.Owner.Hunger >= 900) then
@@ -230,6 +222,8 @@ end
 PROCESS.Cancel = false
 
 GMS.RegisterProcess("EatBerry", PROCESS)
+
+// The hax
 
 /*---------------------------------------------------------
   Foraging process

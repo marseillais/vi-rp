@@ -29,6 +29,30 @@ CampFires = {}
 -- Locals
 local PlayerMeta = FindMetaTable("Player")
 
+concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
+    local resPack = ply:GetEyeTrace().Entity
+    
+    local frame = vgui.Create("DFrame")
+    frame:SetSize(ScrW() / 2, ScrH() / 2)
+    frame:MakePopup()
+    frame:SetTitle("Resource pack")
+    frame:Center()
+    
+    local panelList = vgui.Create("DPanelList", frame)
+    panelList:SetPos(5, 25)
+    panelList:SetSize(frame:GetWide() - 10, frame:GetTall() - 30)
+    panelList:SetSpacing(5)
+    panelList:SetPadding(5)
+    panelList:EnableHorizontal(false)
+    panelList:EnableVerticalScrollbar(true)
+    
+    for res, num in pairs(resPack.Resources) do
+        local reso = vgui.Create("gms_resourceLine")
+        reso:SetRes(res, num)
+        panelList:AddItem(reso)
+    end
+end)
+
 /* Receive the campfires */
 
 usermessage.Hook("addCampFire", function(data)
@@ -259,7 +283,7 @@ function CheckName(ent, nametable)
 	end
 end
 
-function GM.GMS_ResourceDropsHUD() // RP EDIT THIS
+function GM.GMS_ResourceDropsHUD()
 	local ply = LocalPlayer()
 	local str = nil
 	local draw_loc = nil
@@ -302,11 +326,18 @@ function GM.GMS_ResourceDropsHUD() // RP EDIT THIS
 				draw_loc = cent:ToScreen()
 				surface.SetFont("ChatFont")
 				str = "Resource pack"
+				for res, num in pairs(v.Resources) do
+					str = str .. "\n" .. res .. ": " .. num
+				end
 				w, h = surface.GetTextSize(str)
  				draw.RoundedBox(4, draw_loc.x - (w / 2) - 3, draw_loc.y - (h / 2) - 3, w + 6, h + 6, Color(50, 50, 50, 200))
 				surface.SetTextColor(255, 255, 255, 200)
-				surface.SetTextPos(draw_loc.x - (w / 2), draw_loc.y -(h / 2))
-				surface.DrawText(str)
+				for id, st in pairs(string.Explode("\n", str)) do
+					id = id - 1
+					w2, h2 = surface.GetTextSize("hax")
+					surface.SetTextPos(draw_loc.x - (w / 2), draw_loc.y - (h / 2) + (id * h2))
+					surface.DrawText(st)
+				end
 			end
 		end
 
