@@ -333,7 +333,7 @@ function PlayerMeta:CreateBuildingSite(pos, angle, model, class, cost)
 	return rep
 end
 
---Spawning from a trace needs some correction.
+--Spawning from a trace needs some correction...
 function PlayerMeta:CreateStructureBuildingSite(pos, angle, model, class, cost, name)
 	local rep = ents.Create("gms_buildsite")
 	local tbl = rep:GetTable()
@@ -1246,51 +1246,29 @@ function GM:PlayerSpawn(ply)
 	ply:UpdateNeeds()
 end
 
-local allwep = {
-    "weapon_stunstick",
-	"weapon_crowbar",
-	"weapon_pistol",
-	"weapon_smg",
-	"weapon_grenade",
-	"weapon_crossbow",
-	"gms_ironpickaxe",
-	"gms_ironhatchet",
-	"gms_copperpickaxe",
-	"gms_copperhatchet",
-	"gms_stonepickaxe",
-	"gms_stonehatchet",
-	"gms_woodenspoon",
-	"gms_woodenfishingrod",
-	"gms_fryingpan",
-	"gms_sickle",
-	"gms_strainer",
-	"gms_shovel",
-	"gms_advancedfishingrod",
-	"gmod_tool"
-                }
-
-/*---------------------------------------------------------
- Admin trollface yeah
----------------------------------------------------------*/
-function AllWep( pl, text )
-    if pl:IsAdmin() or pl:IsSuperAdmin() then
-	    if text == "!aw" then 
-		    for id,wep in pairs( allwep ) do 
-			    pl:Give( wep )
-			end
-			return ""
-        end
-	end
-end
-hook.Add( "PlayerSay", "AllWep", AllWep )
-
 function GM:PlayerLoadout(ply)
 	ply:Give("gms_hands") --Tools
 
 	if (GetConVarNumber("gms_AllTools") == 1) then
-        for k,v in pairs( allwep ) do
-		    ply:Give( v )
-		end
+		ply:Give("gms_stonepickaxe")
+		ply:Give("gms_copperpickaxe")
+		ply:Give("gms_ironpickaxe")
+		ply:Give("gms_stonehatchet")
+		ply:Give("gms_copperhatchet")
+		ply:Give("gms_ironhatchet")
+		ply:Give("gms_woodenfishingrod")
+		ply:Give("gms_advancedfishingrod")
+		ply:Give("gms_fryingpan")
+		ply:Give("gms_shovel")
+		ply:Give("gms_strainer")
+		ply:Give("gms_sickle")
+		ply:Give("gms_woodenspoon")
+		ply:Give("weapon_crowbar")
+		ply:Give("weapon_stunstick")
+		ply:Give("gmod_tool")
+		ply:Give("weapon_pistol")
+		ply:Give("gmod_camera")
+		ply:Give("weapon_smg1")
 	end
 
 	--Gmod
