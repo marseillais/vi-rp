@@ -586,15 +586,15 @@ PANEL.Commands["Tribe: Create"] = {cmd = "gms_tribemenu", clr = Color(0, 128, 0,
 PANEL.Commands["Tribe: Join"] = {cmd = "gms_tribes", clr = Color(0, 128, 0, 176)}
 PANEL.Commands["Tribe: Leave"] = {cmd = "gms_leave", clr = Color(0, 128, 0, 176)}
 PANEL.Commands["Save character"] = {cmd = "gms_savecharacter", clr = Color(0, 128, 0, 176)}
-
+/*
 function checkAdmin(ply)
 	if (ply:IsAdmin()) then 
 		PANEL.Commands["Admin menu"] = {cmd = "gms_admin", clr = Color(0, 128, 0, 176)}
 	end
-end
+end*/
 
 function PANEL:Init()
-	checkAdmin(LocalPlayer())
+	//checkAdmin(LocalPlayer())
     self:SetPos(ScrW() - (ScrW() / 6) + 1, 33)
     self:SetSize(ScrW() / 6, 34)
     self:SetVisible(true)

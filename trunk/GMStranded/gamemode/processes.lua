@@ -1198,11 +1198,12 @@ function PROCESS:OnStop()
 	end
 
 	for k, v in pairs(self.Data.Res) do
+		self.Owner:IncXP("Weapon_Crafting", math.Clamp(math.Round(50 / self.Owner:GetSkill("Weapon_Crafting")), 1, 1000))
 		self.Owner:SendMessage("Made " .. string.gsub(k, "_", " ") .. " (" .. v .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:IncResource(k, v)
 	end
 
-         self.Owner:Freeze(false)
+	self.Owner:Freeze(false)
 end
 
 GMS.RegisterProcess("Processing", PROCESS)
