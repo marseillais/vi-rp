@@ -17,8 +17,8 @@ CROW.sounds.burrowOut = Sound("NPC_CROW.BurrowOut")
 CROW.Hooks = {}
 
 function CROW.Enable(player)
-	if player.CROW then return end
-	if CLIENT then
+	if (player.CROW) then return end
+	if (CLIENT) then
 		player.CROW = true
 		return
 	end
@@ -35,7 +35,7 @@ function CROW.Enable(player)
 	player:SetModel(CROW.model)
 	player.CROW.ghost = CROW.Ghost(player)
 	player:SetNetworkedEntity("CROW.ghost", player.CROW.ghost)
-	if not player.CROWHasPrinted then
+	if (!player.CROWHasPrinted) then
 		player:PrintMessage(HUD_PRINTTALK, "You're a Crow! AWESOME!\nJump to start flying and then jump again to speed up.\nSprint to hop forward.\nReload to make a cute noise.\n")
 		player.CROWHasPrinted = true
 	end
@@ -44,11 +44,13 @@ end
 
 function CROW.Disable(player)
 	player:ConCommand("-duck\n")
+	
 	if (CLIENT) then
 		player.CROW = false
 		return
 	end
-	if (not player.CROW) then return end
+
+	if (!player.CROW) then return end
 	CROW.BangHowdy(player)
 	player.CROW.ghost:Remove()
 	player:SetNetworkedEntity("CROW.ghost", nil)
@@ -63,47 +65,43 @@ function CROW.Disable(player)
 	end
 end
 
-if CLIENT then
+if (CLIENT) then
 	function CROW.EnableMessage(um)
 		local weapon = LocalPlayer():GetActiveWeapon()
-		if not weapon or not weapon:IsValid() or not weapon:IsWeapon() or weapon:GetClass() != "pill_pigeon" then
-			return
-		end
+		if (!weapon or !weapon:IsValid() or !weapon:IsWeapon() or weapon:GetClass() != "pill_pigeon") then return end
 		CROW.Enable(LocalPlayer())
 	end
 	usermessage.Hook("CROW.enable", CROW.EnableMessage)
 
 	function CROW.DisableMessage(um)
 		local weapon = LocalPlayer():GetActiveWeapon()
-		if weapon and weapon:IsValid() and weapon:IsWeapon() and weapon:GetClass() == "pill_pigeon" then
-			return
-		end
+		if (weapon and weapon:IsValid() and weapon:IsWeapon() and weapon:GetClass() == "pill_pigeon") then return end
 		CROW.Disable(LocalPlayer())
 	end
 	usermessage.Hook("CROW.disable", CROW.DisableMessage)
 end
 
 function CROW.AttackDamage(player, tr)
-	if tr.Entity:IsNPC() or tr.Entity:IsPlayer() then
+	if (tr.Entity:IsNPC() or tr.Entity:IsPlayer()) then
 		player:EmitSound(CROW.sounds.attackHit)
 	end
 end
 
 function CROW.AttackThink(player)
-	if not player.CROW.attacking then return end
-	if not player:OnGround() then
+	if (!player.CROW.attacking) then return end
+	if (!player:OnGround()) then
 		local t = {}
 		t.start = player:GetPos()
 		t.endpos = t.start + player:GetForward() * 10
 		t.filter = player
 		local tr = util.TraceEntity(t, player.CROW.ghost)
-		if tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid() then
+		if (tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid()) then
 			player.CROW.attacking = false
 			CROW.AttackDamage(player, tr)
 		else
 			t.endpos = t.start + Vector(0, 0, -20)
 			tr = util.TraceEntity(t, player.CROW.ghost)
-			if tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid() then
+			if (tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid()) then
 				player.CROW.attacking = false
 				CROW.AttackDamage(player, tr)
 			end
@@ -111,7 +109,7 @@ function CROW.AttackThink(player)
 	else
 		player.CROW.attacking = false
 	end
-	if player.CROW.LastEatenTimer >= CurTime() then
+	if (player.CROW.LastEatenTimer >= CurTime()) then
 		player.CROW.attackingTimer = CurTime() + 2
 	else
 		player.CROW.attackingTimer = CurTime() + 8
@@ -128,17 +126,15 @@ function CROW.BangHowdy(player)
 end
 
 function CROW.Burrow(player)
-	if player.CROW.burrowed != CROW.BURROWED and CurTime() < player.CROW.burrowedTimer then return end
-	if not player.CROW.burrowed then
-		if player.CROW.attacking or not player:OnGround() then
-			return
-		end 
+	if (player.CROW.burrowed != CROW.BURROWED and CurTime() < player.CROW.burrowedTimer) then return end
+	if (!player.CROW.burrowed) then
+		if (player.CROW.attacking or not player:OnGround()) then return end 
 		local t = {}
 		t.start = player:GetPos()
 		t.endpos = t.start + Vector(0, 0, -20)
 		t.filter = player
 		local tr = util.TraceLine(t)
-		if not tr.HitWorld or not (tr.MatType == MAT_DIRT or tr.MatType == MAT_FOLIAGE or tr.MatType == MAT_SAND) then
+		if (!tr.HitWorld or !(tr.MatType == MAT_DIRT or tr.MatType == MAT_FOLIAGE or tr.MatType == MAT_SAND)) then
 			player:PrintMessage(HUD_PRINTTALK, "You can't eat that. Look for some dirt!")
 			return
 		end
@@ -156,23 +152,22 @@ function CROW.Burrow(player)
 	player.CROW.LastEatenTimer = CurTime() + 15
 end
 
-
 function CROW.BurrowThink(player)
 	local health = player:Health()
-	if health >= player:GetMaxHealth() then
+	if (health >= player:GetMaxHealth()) then
 		player.CROW.burrowed = false
 	end
-	if not player.CROW.burrowed then return end
-	if CurTime() >= player.CROW.burrowedTimer then
-		if player.CROW.burrowed == CROW.BURROWIN then
+	if (!player.CROW.burrowed) then return end
+	if (CurTime() >= player.CROW.burrowedTimer) then
+		if (player.CROW.burrowed == CROW.BURROWIN) then
 			player:DrawShadow(false)
 			player.CROW.ghost:DrawShadow(false)
 			player.CROW.burrowed = CROW.BURROWED
-		elseif player.CROW.burrowed == CROW.BURROWOUT then
+		elseif (player.CROW.burrowed == CROW.BURROWOUT) then
 			player:SetMoveType(MOVETYPE_WALK)
 			player.CROW.burrowed = false
-		elseif player.CROW.burrowed == CROW.BURROWED then
-			if health < player:GetMaxHealth() then player:SetHealth(health + 2) end
+		elseif (player.CROW.burrowed == CROW.BURROWED) then
+			if (health < player:GetMaxHealth() then player:SetHealth(health + 2)) end
 			player.CROW.burrowedTimer = CurTime() + 1
 		end
 	end
@@ -194,14 +189,14 @@ function CROW.Ghost(player)
 end
 
 function CROW.Idle(player)
-	if CurTime() >= player.CROW.idleTimer then
+	if (CurTime() >= player.CROW.idleTimer) then
 		player.CROW.idleTimer = CurTime() + 2
-		player:EmitSound(Sound("npc/crow/idle"..math.random(1,4)..".wav", 100, 100))
+		player:EmitSound(Sound("npc/crow/idle" .. math.random(1, 4) .. ".wav", 100, 100))
 	end
 end
 
 function CROW.HooksEnable()
-	if CLIENT then
+	if (CLIENT) then
 		hook.Add("CalcView", "CROW.CalcView", CROW.Hooks.CalcView)
 	else
 		hook.Add("KeyPress", "CROW.KeyPress", CROW.Hooks.KeyPress)
@@ -213,7 +208,7 @@ function CROW.HooksEnable()
 end
 
 function CROW.HooksDisable()
-	if CLIENT then
+	if (CLIENT) then
 		hook.Remove("CalcView", "CROW.CalcView")
 	else
 		hook.Remove("KeyPress","CROW.KeyPress")
@@ -225,150 +220,133 @@ function CROW.HooksDisable()
 end
 
 function CROW.Hooks.CalcView(player, pos, ang, fov)
-	if not player.CROW then
-		return
-	end
+	if (!player.CROW) then return end
 	ang = player:GetAimVector():Angle()
 	local ghost = player:GetNetworkedEntity("CROW.ghost")
-	if ghost and ghost:IsValid() then
-		if GetViewEntity() == player then
+	if (ghost and ghost:IsValid()) then
+		if (GetViewEntity() == player) then
 			ghost:SetColor(255, 255, 255, 255)
 		else
 			ghost:SetColor(255, 255, 255, 0)
 			return
 		end
 	end
+	
 	local t = {}
 	t.start = player:GetPos() + ang:Up() * 20
 	t.endpos = t.start + ang:Forward() * -50
 	t.filter = player
 	local tr = util.TraceLine(t)
 	pos = tr.HitPos
-	if tr.Fraction < 1 then
-		pos = pos + tr.HitNormal * 2
-	end
+	
+	if (tr.Fraction < 1) then pos = pos + tr.HitNormal * 2 end
 	return GAMEMODE:CalcView(player, pos, ang, fov)
-
 end
 
 function CROW.Hooks.Hurt(player, attacker)
-	if player.CROW then
-		player:EmitSound(Sound("npc/crow/pain"..math.random(1,2)..".wav", 100, 100))
+	if (player.CROW) then
+		player:EmitSound(Sound("npc/crow/pain" .. math.random(1, 2) .. ".wav", 100, 100))
 	end
 end
 
 function CROW.Hooks.KeyPress(player, key)
 	local health = player:Health()
-	if not player.CROW then return end
+	if (!player.CROW) then return end
 
-	if player.CROW.burrowed then
+	if (player.CROW.burrowed) then
 		player:SetMoveType(0)
 		return
-		
 	end
 	
-	if health < 30 then
+	if (health < 30) then
 		GAMEMODE:SetPlayerSpeed(player, 50, 100)
 	end
-	if health >= 60 then
+
+	if (health >= 30) then
 		if (key == IN_JUMP and player:IsOnGround()) then
 			player:SetMoveType(4)
-			player:SetVelocity(player:GetForward() * 300 + Vector(0,0,100))
-			
+			player:SetVelocity(player:GetForward() * 300 + Vector(0, 0, 100))
 		elseif (key == IN_JUMP and player:IsOnGround()) then
 			player:SetMoveType(2)
-			
 		elseif (key == IN_JUMP and !player:IsOnGround()) then
 			player:SetVelocity(player:GetForward() * 300 + player:GetAimVector())
-			
 		elseif player:IsOnGround() then
 			player:SetMoveType(2)
-			
 		elseif (!player:IsOnGround() and key == IN_WALK) then
 			player:SetMaxSpeed(250)
-			
 		else
 			player:SetMoveType(0)
 		end
 	else
 		player:SetMoveType(0)
 	end
-	if health < 60 then
-	end
-	if health < 50 then
-		return
-	end
-	if player:OnGround() and key == IN_SPEED then
-		player:SetVelocity(player:GetForward() * 1500 + Vector(0,0,100))
+
+	if (health < 50) then return end
+
+	if (player:OnGround() and key == IN_SPEED) then
+		player:SetVelocity(player:GetForward() * 1500 + Vector(0, 0, 100))
 		player:SetMoveType(2)
 	end
-	
 end
 
 function CROW.Hooks.SetAnimation(player, animation)
-	if player.CROW then
-		return false
-	end
+	if (player.CROW) then return false end
 end
 
 function CROW.Hooks.SetModel(player)
-	if player.CROW then
-		return false
-	end
+	if (player.CROW) then return false end
 end
 
 function CROW.Hooks.UpdateAnimation(player)
-	if not player.CROW then
-		return
-	end
+	if (!player.CROW) then return end
 	local rate = 2
 	local sequence = "idle01"
 	local speed = player:GetVelocity():Length()
-	if not player.CROW.burrowed then
-		if player:IsOnGround() then
+	if (!player.CROW.burrowed) then
+		if (player:IsOnGround()) then
 			player:SetMoveType(2)
-			if speed > 0 then
+			if (speed > 0) then
 				sequence = "Walk"
-				player:SetMaxSpeed( 200 )
-				if speed > 200 then
+				player:SetMaxSpeed(200)
+				if (speed > 200) then
 					sequence = "Run"
 					rate = 1
 				end
 			end
-		elseif !player:IsOnGround() and player:Health() < 60 then
+		elseif (!player:IsOnGround() and player:Health() < 30) then
 			player:SetMoveType(2)
 			rate = 1
-			player:SetMaxSpeed( 100 )
+			player:SetMaxSpeed(100)
 			sequence = "Ragdoll"
-		elseif !player:IsOnGround() then
+		elseif (!player:IsOnGround()) then
 			player:SetMoveType(4)
 			rate = 1
-			player:SetMaxSpeed( 100 )
-			if speed > 0 then
+			player:SetMaxSpeed(100)
+			if (speed > 0) then
 				sequence = "Soar"
-				if speed > 400 then
+				if (speed > 400) then
 					sequence = "Fly01"
 				end
 			end
-		elseif !player:IsOnGround() and health <= 30 then
+		elseif (!player:IsOnGround() and health <= 30) then
 			sequence = "Run"
 			rate = 0.5
 		else
-			if player:WaterLevel() > 1 then
+			if (player:WaterLevel() > 1) then
 				sequence = "Soar"
 			else
 				sequence = "Idle01"
 			end
 		end
-	elseif player.CROW.burrowed == CROW.BURROWED then
+	elseif (player.CROW.burrowed == CROW.BURROWED) then
 		sequence = "Eat_a"
 	end
 	local sequenceIndex = player:LookupSequence(sequence)
-	if player:GetSequence() != sequenceIndex then
+	if (player:GetSequence() != sequenceIndex) then
 		player:ResetSequence(sequenceIndex)
 	end
 	sequenceIndex = player.CROW.ghost:LookupSequence(sequence)
-	if player.CROW.ghost:GetSequence() != sequenceIndex then
+	if (player.CROW.ghost:GetSequence() != sequenceIndex) then
 		player.CROW.ghost:Fire("setanimation", sequence, 0)
 	end
 	player:SetPlaybackRate(rate)

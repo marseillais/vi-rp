@@ -1,7 +1,7 @@
 
-AddCSLuaFile("SPropProtection/sh_SPropProtection.lua")
-AddCSLuaFile("SPropProtection/cl_Init.lua")
-AddCSLuaFile("SPropProtection/sh_CPPI.lua")
+AddCSLuaFile("sh_SPropProtection.lua")
+AddCSLuaFile("cl_Init.lua")
+AddCSLuaFile("sh_CPPI.lua")
 
 SPropProtection = {}
 SPropProtection.Version = 1.5

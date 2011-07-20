@@ -366,7 +366,8 @@ GMS.TreeModels = {
 	"models/props_foliage/oak_tree01.mdl",
 	"models/props_foliage/tree_cliff_01a.mdl",
 	"models/props_foliage/tree_deciduous_01a-lod.mdl",
-	"models/gm_forest/tree_oak1.mdl" -- The tree @ gms_rollinghills
+	"models/gm_forest/tree_oak1.mdl", -- The tree @ gms_rollinghills
+	"models/props_foliage/tree_cliff_02a.mdl" -- And from same map
 	-- "models/props_foliage/tree_pine04.mdl" -- HL2:EP2
 }
 
