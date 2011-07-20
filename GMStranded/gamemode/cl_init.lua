@@ -29,6 +29,17 @@ CampFires = {}
 -- Locals
 local PlayerMeta = FindMetaTable("Player")
 
+/* FIND TRIBE BY ID */
+function GM.FindTribeByID(id)
+	for name, tabl in pairs(Tribes) do
+		if (tabl.id == id) then
+			return tabl
+		end
+	end
+end
+
+/* Res pack GUI */
+
 concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
     local resPack = ply:GetEyeTrace().Entity
     
@@ -46,7 +57,7 @@ concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
     panelList:EnableHorizontal(false)
     panelList:EnableVerticalScrollbar(true)
     
-    for res, num in pairs(resPack.Resources) do
+    for res, num in SortedPairs(resPack.Resources) do
         local reso = vgui.Create("gms_resourceLine")
         reso:SetRes(res, num)
         panelList:AddItem(reso)
@@ -132,6 +143,7 @@ function GM.CreateHUD()
 	GAMEMODE.NeedHud = vgui.Create("gms_NeedHud")
 	GAMEMODE.SkillsHud = vgui.Create("gms_SkillsHud")
 	GAMEMODE.ResourcesHud = vgui.Create("gms_ResourcesHud")
+	GAMEMODE.CommandsHud = vgui.Create("gms_CommandsHud")
 	GAMEMODE.LoadingBar = vgui.Create("gms_LoadingBar")
 	GAMEMODE.LoadingBar:SetVisible(false)
 	GAMEMODE.SavingBar = vgui.Create("gms_SavingBar")
@@ -215,6 +227,10 @@ end)
 
 usermessage.Hook("gms_ToggleResourcesMenu", function(um)
 	GAMEMODE.ResourcesHud:ToggleExtend()
+end)
+
+usermessage.Hook("gms_ToggleCommandsMenu", function(um)
+	GAMEMODE.CommandsHud:ToggleExtend()
 end)
 
 usermessage.Hook("gms_OpenCombiMenu", function(um)
@@ -617,14 +633,6 @@ usermessage.Hook("gms_AddUnlock", function(um)
 end)
 
 /*---------------------------------------------------------
-  Drop resource menu
----------------------------------------------------------*/
-concommand.Add("gms_OpenDropResourceWindow", function()
-	local ResourceWindow = vgui.Create("GMS_ResourceDropWindow")
-	ResourceWindow:RefreshList()
-end)
-
-/*---------------------------------------------------------
   Admin menu
 ---------------------------------------------------------*/
 concommand.Add("gms_admin", function()
@@ -688,7 +696,7 @@ usermessage.Hook("recvTribes", function(data)
 	local hazpass = data:ReadBool()
 	team.SetUp(id, name, Color(red, green, blue))
 	
-	table.insert(Tribes, {name, hazpass})
+	table.insert(Tribes, {name = name, pass = hazpass, id = id, r = red, g = green, b = blue})
 end)
 
 function GM.ReceiveTribe(data)
@@ -700,6 +708,6 @@ function GM.ReceiveTribe(data)
 	local hazpass = data:ReadBool()
 	team.SetUp(id, name, Color(red, green, blue))
 	
-	table.insert(Tribes, {name, hazpass})
+	table.insert(Tribes, {name = name, pass = hazpass, id = id, r = red, g = green, b = blue})
 end
 usermessage.Hook("newTribe", GM.ReceiveTribe)

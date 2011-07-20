@@ -54,7 +54,6 @@ GM.Tribes["The Dynamics"] = {id = 5, red = 0, green = 72, blue = 255, Password =
 GM.Tribes["Scavengers"] = {id = 6, red = 8, green = 255, blue = 0, Password = false}
 GM.NumTribes = 6
 
-
 GM.AntlionBarrowSpawns = {}
 GM.AntlionBarrowSpawns['gms_rollinghills'] = {Vector(3131.2876, -980.5972, 519.5605), Vector(-4225.0200, 6009.3516, 513.1411)}
 GM.AntlionBarrowSpawns['gms_rollinghills_daynight'] = GM.AntlionBarrowSpawns['gms_rollinghills']
@@ -80,6 +79,15 @@ timer.Simple(3, function()
 		end
 	end
 end)
+
+/* FIND TRIBE BY ID */
+function GM.FindTribeByID(id)
+	for name, tabl in pairs(GAMEMODE.Tribes) do
+		if (tabl.id == id) then
+			return tabl
+		end
+	end
+end
 
 /* Cancel process */
 
@@ -158,7 +166,8 @@ function GM:ShowTeam(ply)
 end
 
 function GM:ShowSpare1(ply)
-	ply:ConCommand("gms_help")
+	umsg.Start("gms_ToggleCommandsMenu", ply)
+	umsg.End()
 end
 
 function GM:ShowSpare2(ply)
@@ -180,6 +189,7 @@ end
   Skill functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetSkill(skill, int)
+	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self.Skills[skill] = 0 end
 
 	self.Skills[skill] = int
@@ -191,11 +201,13 @@ function PlayerMeta:SetSkill(skill, int)
 end
 
 function PlayerMeta:GetSkill(skill)
+	skill = string.Capitalize(skill)
 	self:SetNWInt(skill, self.Skills[skill]) 
 	return self.Skills[skill] or 0	
 end
 
 function PlayerMeta:IncSkill(skill, int)
+	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self:SetSkill(skill, 0) end
 	if (!self.Experience[skill]) then self:SetXP(skill, 0) end
 
@@ -218,6 +230,7 @@ function PlayerMeta:IncSkill(skill, int)
 end
 
 function PlayerMeta:DecSkill(skill, int)
+	skill = string.Capitalize(skill)
 	self.Skills[skill] = self.Skills[skill] - int
 
 	umsg.Start("gms_SetSkill", self)
@@ -230,6 +243,7 @@ end
   XP functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetXP(skill, int)
+	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self:SetSkill(skill, 0) end
 	if (!self.Experience[skill]) then self.Experience[skill] = 0 end
 
@@ -242,10 +256,12 @@ function PlayerMeta:SetXP(skill, int)
 end
 
 function PlayerMeta:GetXP(skill)
+	skill = string.Capitalize(skill)
 	return self.Experience[skill] or 0
 end
 
 function PlayerMeta:IncXP(skill, int)
+	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self.Skills[skill] = 0 end
 	if (!self.Experience[skill]) then self.Experience[skill] = 0 end
 
@@ -263,6 +279,7 @@ function PlayerMeta:IncXP(skill, int)
 end
 
 function PlayerMeta:DecXP(skill, int)
+	skill = string.Capitalize(skill)
 	self.Experience[skill] = self.Experience[skill] - int
 
 	umsg.Start("gms_SetXP", self)
@@ -275,6 +292,7 @@ end
   Resource functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetResource(resource, int)
+	resource = string.Capitalize(resource)
 	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
 
 	self.Resources[resource] = int
@@ -286,10 +304,13 @@ function PlayerMeta:SetResource(resource, int)
 end
 
 function PlayerMeta:GetResource(resource)
+	resource = string.Capitalize(resource)
 	return self.Resources[resource] or 0
 end
 
 function PlayerMeta:IncResource(resource, int)
+	resource = string.Capitalize(resource)
+
 	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
 	local all = self:GetAllResources()
 	local max = self.MaxResources
@@ -1252,6 +1273,7 @@ function GM:PlayerLoadout(ply)
 	if (GetConVarNumber("gms_AllTools") == 1) then
 		ply:Give("gms_stonepickaxe")
 		ply:Give("gms_copperpickaxe")
+		ply:Give("gms_copperknife")
 		ply:Give("gms_ironpickaxe")
 		ply:Give("gms_stonehatchet")
 		ply:Give("gms_copperhatchet")
@@ -1910,7 +1932,13 @@ function GM.MakeCombination(ply,cmd,args)
 		data.Cost = table.Copy(tbl.Req)
 		local time = 10
 
-		ply:DoProcess("MakeWeapon",time,data)
+		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then
+			time = 8
+		end
+		
+		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 3), 4)
+
+		ply:DoProcess("MakeWeapon", time, data)
 	elseif (group == "Buildings") then
 		local data = {}
 		local trs = {}
@@ -2221,9 +2249,9 @@ function GM.SubtractNeeds()
 
 			--Kay you're worn out
 			if (ply.AFK != true) then
-				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 1 end
-				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 5 end
-				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 2 end
+				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 2 end
+				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 6 end
+				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 3 end
 			end
              
 			ply:UpdateNeeds()
