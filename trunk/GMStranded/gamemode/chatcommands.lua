@@ -308,6 +308,7 @@ function CHATCMD:Run(ply)
 	ply.Hunger = 1000
 	ply.Thirst = 1000
 	ply.Sleepiness = 1000
+	ply:UpdateNeeds()
 end
 
 GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
