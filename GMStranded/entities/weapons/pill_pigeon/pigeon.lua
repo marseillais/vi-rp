@@ -167,7 +167,7 @@ function CROW.BurrowThink(player)
 			player:SetMoveType(MOVETYPE_WALK)
 			player.CROW.burrowed = false
 		elseif (player.CROW.burrowed == CROW.BURROWED) then
-			if (health < player:GetMaxHealth() then player:SetHealth(health + 2)) end
+			if (health < player:GetMaxHealth()) then player:SetHealth(health + 2) end
 			player.CROW.burrowedTimer = CurTime() + 1
 		end
 	end
