@@ -25,6 +25,7 @@ usermessage.Hook("gms_SetResPackInfo", function(um)
         tbl.Index = index
 		table.insert(GMS.PendingRPDrops, tbl)
     else
+		if (!ent.Resources) then ent.Resources = {} end
 		ent.Resources[type] = int
     end
 end)

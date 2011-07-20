@@ -1585,6 +1585,33 @@ COMBI.Texture = "weapons/swep"
 COMBI.SwepClass = "gms_copperhatchet"
 
 GMS.RegisterCombi("Copper_Hatchet",COMBI,"CopperWeapons")
+
+/*---------------------------------------------------------
+  Copper Knife
+---------------------------------------------------------*/
+local COMBI = {}
+
+COMBI.Name = "Copper Knife"
+COMBI.Description = [[This copper knife is ideal for crafting weapons.
+You need:
+10 Copper
+5 Iron
+5 Wood
+Weapon Crafting 5
+]]
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 5
+COMBI.Req["Copper"] = 10
+COMBI.Req["Wood"] = 5
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 5
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_copperknife"
+
+GMS.RegisterCombi("Copper_Knife",COMBI,"CopperWeapons")
 /*---------------------------------------------------------
   Iron Hatchet
 ---------------------------------------------------------*/

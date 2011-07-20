@@ -1,10 +1,10 @@
 -- The Q Menu
 if (SERVER) then
-	AddCSLuaFile("QMenu/Qmenu.lua")
+	AddCSLuaFile("qmenu.lua")
 	return
 end
 
-include("QMenu/Qmenu.lua")
+include("qmenu.lua")
 
 Active = false
 
@@ -24,9 +24,7 @@ function GM:OnSpawnMenuOpen()
 end
 
 function GM:OnSpawnMenuClose()
-	if (GAMEMODE.MENU and GAMEMODE.MENU:IsValid() and GAMEMODE.MENU:IsVisible()) then
-		GAMEMODE.MENU:SetVisible(false)
-	end
+	if (GAMEMODE.MENU and GAMEMODE.MENU:IsValid() and GAMEMODE.MENU:IsVisible()) then GAMEMODE.MENU:SetVisible(false) end
 	RememberCursorPosition()
 	gui.EnableScreenClicker(false)
 end
@@ -38,10 +36,8 @@ function PANEL:Init()
 	self:ShowCloseButton(false)
 	
 	self.ContentPanel = vgui.Create("DPropertySheet", self)
-	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", false, false)
+	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", true, true)
 	self.ContentPanel:AddSheet("ToolMenu", vgui.Create("stranded_ToolMenu", self.ContentPanel), "gui/silkicons/wrench", true, true)
-	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_PlantSpawn", self.ContentPanel), "gui/silkicons/box", false, false)
-	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_Commands", self.ContentPanel), "gui/silkicons/application", true, true)
 	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_SPPMenu", self.ContentPanel), "gui/silkicons/shield", true, true)
 end
 
@@ -72,34 +68,641 @@ function PANEL:Init()
 
 	self.Name = "Name"
 
-	self:SetSize(ScrW() / 2, ScrH() / 2)
-	self:SetPos(ScrW() / 2 - (self:GetWide() / 2), ScrH() / 2 - (self:GetTall() / 2))
+	self:SetSize(ScrW() / 2, 250)
+	self:Center()
 
 	self.DescWindow = vgui.Create("RichText", self)
-	self.DescWindow:SetPos(5, self:GetTall() / 6 + 70)
-	self.DescWindow:SetSize(self:GetWide() - 10, self:GetTall() - (self:GetTall() / 6 + 70) - 20)
+	self.DescWindow:SetPos(5, 100)
+	self.DescWindow:SetSize(self:GetWide() - 10, self:GetTall() - 140)
 	self.DescWindow:SetText("Description.")
-end
 
-function PANEL:Close()
-	self:SetVisible(false)
-	gui.EnableScreenClicker(false)
+	self.Okay = vgui.Create("DButton", self)
+	self.Okay:SetSize(self:GetWide() - 10, 30)
+	self.Okay:SetPos(5, self:GetTall() - 35)
+	self.Okay:SetText("Okay")
+	self.Okay.DoClick = function()
+		self:Close()
+	end
 end
 
 function PANEL:Paint()
 	DFrame.Paint(self)
-	draw.SimpleTextOutlined(self.Name, "ScoreboardHead", self:GetWide() / 2, self:GetTall() / 6, Color(10, 200, 10, 255), 1, 1, 0.5, Color(100, 100, 100, 160))
+	draw.SimpleTextOutlined(self.Name, "ScoreboardHead", self:GetWide() / 2, 60, Color(10, 200, 10, 255), 1, 1, 0.5, Color(100, 100, 100, 160))
 	return true
 end
 
 function PANEL:SetUnlock(text)
 	local unlock = GMS.FeatureUnlocks[text]
+	if (!unlock) then return end
 
 	self.Name = unlock.Name
 	self.DescWindow:SetText(unlock.Description)
 end
 
 vgui.Register("GMS_UnlockWindow", PANEL, "DFrame") // The hax.
+
+
+/*---------------------------------------------------------
+  Tribe Menu
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+	self:SetTitle("Create-A-Tribe")
+	self:SetKeyboardInputEnabled(true)
+	self:SetMouseInputEnabled(true)
+	self:MakePopup()
+	self:SetSize(275, 305)
+	self:Center()
+
+	local tnamelabel = vgui.Create("DLabel", self)
+	tnamelabel:SetPos(5, 21)
+	tnamelabel:SetText("Tribe name")
+
+	local tname = vgui.Create("DTextEntry", self)
+	tname:SetSize(self:GetWide() - 10, 20)
+	tname:SetPos(5, 40)
+
+	local tpwlabel = vgui.Create("DLabel", self)
+	tpwlabel:SetPos(5, 65)
+	tpwlabel:SetText("Tribe password (Optional)")
+	tpwlabel:SizeToContents()
+
+	local tpw = vgui.Create("DTextEntry", self)
+	tpw:SetSize(self:GetWide() - 10, 20)
+	tpw:SetPos(5, 80)
+
+	local tcollabel = vgui.Create("DLabel", self)
+	tcollabel:SetPos(5, 105)
+	tcollabel:SetText("Tribe color")
+
+	local tcolor = vgui.Create("DColorMixer", self)
+	tcolor:SetSize(self:GetWide() + 15, 150)
+	tcolor:SetPos(5, 125)
+
+	local button = vgui.Create("DButton", self)
+	button:SetSize(self:GetWide() - 10, 20)
+	button:SetPos(5, 280)
+	button:SetText("Create Tribe!")
+	button.DoClick = function()
+		RunConsoleCommand("gms_createtribe", tname:GetValue(), tcolor:GetColor().r, tcolor:GetColor().g, tcolor:GetColor().b, tpw:GetValue())
+		self:SetVisible(false)
+	end
+end
+vgui.Register("GMS_TribeMenu", PANEL, "DFrame")
+
+/*---------------------------------------------------------
+  Tribes List
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+    self:SetTitle("Join-A-Tribe")
+    self:SetKeyboardInputEnabled(true)
+    self:SetMouseInputEnabled(true)
+    self:MakePopup()
+
+	local tid = 0 
+	
+	for id, tabl in pairs(Tribes) do
+		local name = tabl.name
+		local hazpass = tabl.pass
+		id = id - 1
+        local button = vgui.Create("DButton", self)
+        button:SetSize(ScrW() / 4 - 10, 20)
+        button:SetPos(5, 28 + id * 25)
+        button.DoClick = function()
+			if (hazpass) then
+				Derma_StringRequest("Please enter password", "Please enter password for the tribe.", "", function(text) RunConsoleCommand("gms_join", name, text) end)
+			else
+				RunConsoleCommand("gms_join", name)
+			end
+			self:Close()
+		end
+        button:SetText(name)
+		tid = id
+    end
+	
+	self:SetSize(ScrW() / 4, tid * 25 + 53)
+	self:Center()
+end
+vgui.Register("GMS_TribesList", PANEL, "DFrame")
+
+/*---------------------------------------------------------
+  Need HUD
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+    self:SetPos(0, 0)
+    self:SetSize(ScrW() / 6, 4 * 13 + 5)
+    self:SetVisible(true)
+end
+
+function PANEL:Paint()
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
+
+    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+
+	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	
+    local w = self:GetWide() - 10
+
+    //Health
+    local h = math.floor((LocalPlayer():Health() / 200) * w)
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 5, w, 8)
+
+    surface.SetDrawColor(170,0,0,255)
+	surface.DrawRect(5, 5, h, 8)
+
+	draw.SimpleTextOutlined("Health", "DefaultSmall", self:GetWide() / 2, 9, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+
+    //Hunger
+    local h = math.floor((Hunger / 1000) * w)
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 18, w, 8)
+
+    surface.SetDrawColor(0, 170, 0, 255)
+    surface.DrawRect(5, 18, h, 8)
+
+	draw.SimpleTextOutlined("Hunger","DefaultSmall",self:GetWide() / 2, 22, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+
+    //Thirst
+    local h = math.floor((Thirst / 1000) * w)
+    surface.SetDrawColor(0, 0, 0, 255)
+    surface.DrawRect(5, 31, w, 8)
+
+    surface.SetDrawColor(0, 0, 170, 255)
+    surface.DrawRect(5, 31, h, 8)
+
+	draw.SimpleTextOutlined("Thirst", "DefaultSmall", self:GetWide() / 2, 35, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+
+    //Sleepiness
+    local h = math.floor((Sleepiness / 1000) * w)
+    surface.SetDrawColor(0,0,0,255)
+    surface.DrawRect(5, 44, w, 8)
+
+    surface.SetDrawColor(170,0,140,255)
+    surface.DrawRect(5, 44, h, 8)
+
+	draw.SimpleTextOutlined("Fatigue", "DefaultSmall", self:GetWide() / 2, 48, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	return true
+end
+
+vgui.Register("gms_NeedHud", PANEL, "DPanel")
+
+/*---------------------------------------------------------
+  Skills panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+    self:SetPos(0, GAMEMODE.NeedHud:GetTall())
+    self:SetSize(ScrW() / 6, 34)
+
+    self:SetVisible(true)
+
+    self.Extended = false
+    self.SkillLabels = {}
+end
+
+function PANEL:Paint()
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
+
+	surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+	
+	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	if (self.Extended) then 
+		surface.DrawLine(0, 33, self:GetWide(), 33)
+	end
+
+	draw.SimpleText("Skills (F1)", "ScoreboardSub", self:GetWide() / 2, 17, Color(255, 255, 255, 255), 1, 1)
+	return true
+end
+
+function PANEL:RefreshSkills()
+	for k, v in pairs(self.SkillLabels) do v:Remove() end
+
+	self.SkillLabels = {}
+	self.Line = 39
+
+	for k, v in SortedPairs(Skills) do
+		local lbl = vgui.Create("gms_SkillPanel", self)
+		lbl:SetPos(0, self.Line)
+		lbl:SetSize(self:GetWide(), 16)
+		local val = string.gsub(k, "_", " ")
+		lbl:SetSkill(val)
+
+		self.Line = self.Line + lbl:GetTall() + 5
+		table.insert(self.SkillLabels, lbl)
+		if (!self.Extended) then lbl:SetVisible(false) end
+	end
+
+	if (self.Extended) then 
+		self:SetSize(ScrW() / 6, 40 + (table.Count(self.SkillLabels) * 21)) 
+    end
+end
+
+function PANEL:ToggleExtend()
+	if (!self.Extended) then
+		self:SetSize(ScrW() / 6, 40 + (table.Count(self.SkillLabels) * 21))
+		self.Extended = true
+
+		for k, v in pairs(self.SkillLabels) do v:SetVisible(true) end
+	else
+		self:SetSize(ScrW() / 6, 34)
+		self.Extended = false
+
+		for k, v in pairs(self.SkillLabels) do v:SetVisible(false) end
+	end
+end
+
+function PANEL:OnMousePressed(mc)
+	if (mc == 107) then
+		self:ToggleExtend()
+	end
+end
+
+vgui.Register("gms_SkillsHud", PANEL, "Panel")
+
+/*---------------------------------------------------------
+  Skill Sub-Panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+end
+
+function PANEL:Paint()
+	surface.SetDrawColor(0, 0, 0, 178) -- XP bar background
+	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+
+	local XP = math.floor(Experience[self.Skill] / 100 * (self:GetWide() - 10))
+	surface.SetDrawColor(0, 128, 0, 220) -- XP bar
+	if (self.TxtSkill == "Survival") then
+		surface.SetDrawColor(0, 128, 176, 220) -- XP bar
+	end
+	surface.DrawRect(5, 0, XP, self:GetTall())
+
+	draw.SimpleText(self.TxtSkill .. ": " .. Skills[self.Skill] .. " (" .. Experience[self.Skill] .. " / 100)", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	return true
+end
+
+function PANEL:SetSkill(str)
+    self.TxtSkill = str
+    self.Skill = string.gsub(str, " ", "_")
+end
+
+vgui.Register("gms_SkillPanel", PANEL, "Panel")
+
+/*---------------------------------------------------------
+  Resource panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+    self:SetPos(ScrW() - (ScrW() / 6) + 1, 0)
+    self:SetSize(ScrW() / 6, 34)
+    self:SetVisible(true)
+    self.Extended = false
+    self.ResourceLabels = {}
+end
+
+function PANEL:Paint()
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
+
+    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+
+    surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	if (self.Extended) then 
+		surface.DrawLine(0, 33, self:GetWide(), 33)
+	end
+
+    draw.SimpleText("Resources (F2)", "ScoreboardSub", self:GetWide() / 2, 17, Color(255, 255, 255, 255), 1, 1)
+    return true
+end
+
+function PANEL:RefreshResources()
+	for k, v in pairs(self.ResourceLabels) do v:Remove() end
+
+	self.ResourceLabels = {}
+	self.Line = 39
+	self.Resourcez = 0
+
+	for k, v in SortedPairs(Resources) do
+		if (v > 0) then
+			local lbl = vgui.Create("gms_ResourcePanel", self)
+			lbl:SetPos(0, self.Line)
+			lbl:SetSize(self:GetWide(), 16)
+			lbl:SetResource(k)
+			self.Resourcez = self.Resourcez + v
+
+			self.Line = self.Line + lbl:GetTall() + 5
+			table.insert(self.ResourceLabels, lbl)
+			if (!self.Extended) then lbl:SetVisible(false) end
+		end
+	end
+	
+	self.Line = self.Line + 21
+	
+	local lblT = vgui.Create("gms_ResourcePanelTotal", self)
+	lblT:SetPos(0, self.Line)
+	lblT:SetSize(self:GetWide(), 16)
+	lblT:SetResources(self.Resourcez)
+
+	table.insert(self.ResourceLabels, lblT)
+	if (!self.Extended) then lblT:SetVisible(false) end
+
+	if (self.Extended) then 
+		self:SetSize(ScrW() / 6,40 + ((table.Count(self.ResourceLabels) + 1) * 21)) 
+    end
+	
+	GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall())
+end
+
+function PANEL:ToggleExtend()
+    if (!self.Extended) then
+        self:SetSize(ScrW() / 6, 40 + ((table.Count(self.ResourceLabels) + 1) * 21))
+        self.Extended = true
+		for k,v in pairs(self.ResourceLabels) do
+			v:SetVisible(true)
+		end
+    else
+		self:SetSize(ScrW() / 6, 34)
+        self.Extended = false
+		for k, v in pairs(self.ResourceLabels) do
+			v:SetVisible(false)
+		end
+    end
+	GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall())
+end
+
+function PANEL:OnMousePressed(mc)
+    if (mc == 107) then
+        self:ToggleExtend()
+    end
+end
+vgui.Register("gms_ResourcesHud", PANEL, "Panel")
+
+/*---------------------------------------------------------
+  Resource Sub-Panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+PANEL.Actions = {}
+PANEL.Actions["Sprouts"] = {cmd = "gms_planttree", name = "Plant"}
+PANEL.Actions["Banana Seeds"] = {cmd = "gms_plantbanana", name = "Plant"}
+PANEL.Actions["Orange Seeds"] = {cmd = "gms_plantorange", name = "Plant"}
+PANEL.Actions["Grain Seeds"] = {cmd = "gms_plantgrain", name = "Plant"}
+PANEL.Actions["Melon Seeds"] = {cmd = "gms_plantmelon", name = "Plant"}
+PANEL.Actions["Berries"] = {cmd = "gms_plantbush", name = "Plant"}
+PANEL.Actions["Medicine"] = {cmd = "gms_TakeMedicine", name = "Take"}
+PANEL.Actions["Water Bottles"] = {cmd = "gms_DrinkBottle", name = "Drink"}
+
+PANEL.MoreActions = {}
+PANEL.MoreActions["Berries"] = {
+	{cmd = "gms_EatBerry", name = "Eat"}
+}
+
+function PANEL:Init()
+	self:SetText("")
+end
+
+function PANEL:Paint()
+	surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
+	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+
+	local XP = math.floor(Resources[self.Resource] / MaxResources * (self:GetWide() - 10))
+	surface.SetDrawColor(0, 128, 0, 200) -- Resource bar
+	surface.DrawRect(5, 0, XP, self:GetTall())
+
+	if (self.Hovered) then
+		surface.SetDrawColor(255, 255, 255, 64) -- Resource bar background
+		surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+	end
+	
+	draw.SimpleText(self.TxtResource .. ": " .. Resources[self.Resource], "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	return true
+end
+
+function PANEL:DoRightClick()
+	local menu = DermaMenu()
+	
+	if (self.Actions[self.TxtResource]) then
+		menu:AddOption(self.Actions[self.TxtResource].name, function() RunConsoleCommand(self.Actions[self.TxtResource].cmd) end)
+	end
+	
+	if (self.MoreActions[self.TxtResource]) then
+		for res, t in pairs(self.MoreActions[self.TxtResource]) do
+		menu:AddOption(t.name, function() RunConsoleCommand(t.cmd) end)
+		end
+	end
+	
+    menu:AddOption("Drop x1", function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 1") end)
+    menu:AddOption("Drop x10", function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 10") end)
+    menu:AddOption("Drop All", function() RunConsoleCommand("say", "!drop " .. self.Resource) end)
+    menu:AddOption("Cancel", function() end)
+    menu:Open()
+end
+
+function PANEL:DoClick()
+	if (self.Actions[self.TxtResource]) then
+		RunConsoleCommand(self.Actions[self.TxtResource].cmd)
+	end
+end
+
+function PANEL:SetResource(str)
+    self.TxtResource = string.gsub(str, "_", " ")
+    self.Resource = str
+end
+
+vgui.Register("gms_ResourcePanel", PANEL, "DButton")
+
+/*---------------------------------------------------------
+  Resource Total Sub-Panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+	self.Res = 0
+end
+
+function PANEL:Paint()
+	surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
+	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+
+	local XP = math.floor(self.Res / MaxResources * (self:GetWide() - 10))
+	surface.SetDrawColor(0, 128, 176, 220) -- Resource bar
+	surface.DrawRect(5, 0, XP, self:GetTall())
+
+	draw.SimpleText("Total: " .. self.Res .. " / " .. MaxResources, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	return true
+end
+
+function PANEL:SetResources(num)
+	self.Res = num
+end
+
+vgui.Register("gms_ResourcePanelTotal", PANEL, "Panel")
+
+
+/*---------------------------------------------------------
+  Command panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+PANEL.Commands = {}
+PANEL.Commands["AFK"] = {cmd = "gms_afk", clr = Color(0, 128, 255, 176)}
+PANEL.Commands["Sleep"] = {cmd = "gms_sleep", clr = Color(0, 128, 255, 176)}
+PANEL.Commands["Wake up"] = {cmd = "gms_wakeup", clr = Color(0, 128, 255, 176)}
+
+PANEL.Commands["Make campfire"] = {cmd = "gms_makefire", clr = Color(255, 0, 0, 176)}
+PANEL.Commands["Drop all resources"] = {cmd = "gms_dropall", clr = Color(255, 0, 0, 176)}
+PANEL.Commands["Eat some berries"] = {cmd = "gms_EatBerry", clr = Color(255, 0, 0, 176)}
+PANEL.Commands["Drink bottle of water"] = {cmd = "gms_DrinkBottle", clr = Color(255, 0, 0, 176)}
+PANEL.Commands["Take medicine"] = {cmd = "gms_TakeMedicine", clr = Color(255, 0, 0, 176)}
+
+PANEL.Commands["Combinations"] = {cmd = "gms_GenericCombi", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Structures"] = {cmd = "gms_BuildingsCombi", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Salvage prop"] = {cmd = "gms_salvage", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Drop weapon"] = {cmd = "gms_DropWeapon", clr = Color(255, 255, 0, 176)}
+
+PANEL.Commands["Help"] = {cmd = "gms_help", clr = Color(255, 64, 255, 176)}
+
+PANEL.Commands["Tribe: Create"] = {cmd = "gms_tribemenu", clr = Color(0, 128, 0, 176)}
+PANEL.Commands["Tribe: Join"] = {cmd = "gms_tribes", clr = Color(0, 128, 0, 176)}
+PANEL.Commands["Tribe: Leave"] = {cmd = "gms_leave", clr = Color(0, 128, 0, 176)}
+PANEL.Commands["Save character"] = {cmd = "gms_savecharacter", clr = Color(0, 128, 0, 176)}
+
+function checkAdmin(ply)
+	if (ply:IsAdmin()) then 
+		PANEL.Commands["Admin menu"] = {cmd = "gms_admin", clr = Color(0, 128, 0, 176)}
+	end
+end
+
+function PANEL:Init()
+	checkAdmin(LocalPlayer())
+    self:SetPos(ScrW() - (ScrW() / 6) + 1, 33)
+    self:SetSize(ScrW() / 6, 34)
+    self:SetVisible(true)
+    self.Extended = false
+    self.CommandLabels = {}
+
+	self:RefreshCommands()
+end
+
+function PANEL:Paint()
+    local col = StrandedColorTheme
+    local bordcol = StrandedBorderTheme
+
+    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+
+    surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+	if (self.Extended) then 
+		surface.DrawLine(0, 33, self:GetWide(), 33)
+	end
+
+    draw.SimpleText("Commands(F3)", "ScoreboardSub", self:GetWide() / 2, 17, Color(255, 255, 255, 255), 1, 1)
+    return true
+end
+
+function PANEL:RefreshCommands()
+	for k, v in pairs(self.CommandLabels) do v:Remove() end
+
+	self.CommandLabels = {}
+	self.Line = 39
+
+	for name, tabl in SortedPairs(self.Commands) do
+		local lbl = vgui.Create("gms_CommandPanel", self)
+		lbl:SetPos(0, self.Line)
+		lbl:SetSize(self:GetWide(), 16)
+		lbl:SetCommand(tabl.cmd, name, tabl.clr)
+
+		self.Line = self.Line + lbl:GetTall() + 5
+		table.insert(self.CommandLabels, lbl)
+		if (!self.Extended) then lbl:SetVisible(false) end
+	end
+
+	if (self.Extended) then 
+		self:SetSize(ScrW() / 6, 40 + (table.Count(self.CommandLabels) * 21)) 
+    end
+end
+
+function PANEL:ToggleExtend()
+    if (!self.Extended) then
+        self:SetSize(ScrW() / 6, 40 + (table.Count(self.CommandLabels) * 21))
+        self.Extended = true
+		for k,v in pairs(self.CommandLabels) do
+			v:SetVisible(true)
+		end
+    else
+		self:SetSize(ScrW() / 6, 34)
+        self.Extended = false
+		for k, v in pairs(self.CommandLabels) do
+			v:SetVisible(false)
+		end
+    end
+end
+
+function PANEL:OnMousePressed(mc)
+    if (mc == 107) then
+        self:ToggleExtend()
+    end
+end
+vgui.Register("gms_CommandsHud", PANEL, "Panel")
+
+/*---------------------------------------------------------
+  Command Sub-Panel
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+	self:SetText("")
+	self.Cmd = ""
+	self.Text = ""
+	self.Clr = Color(0, 128, 0, 178)
+end
+
+function PANEL:Paint()
+	surface.SetDrawColor(self.Clr.r, self.Clr.g, self.Clr.b, self.Clr.a) -- Resource bar background
+	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+
+	if (self.Hovered) then
+		surface.SetDrawColor(255, 255, 255, 64)
+		surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
+	end
+	
+	draw.SimpleText(self.Text, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	return true
+end
+
+function PANEL:DoClick()
+	RunConsoleCommand(self.Cmd)
+end
+
+function PANEL:SetCommand(str, text, clr)
+    self.Cmd = str
+	self.Text = text
+	self.Clr = clr
+end
+
+vgui.Register("gms_CommandPanel", PANEL, "DButton") // The hax.
 
 /*---------------------------------------------------------
   GMS dropdown
@@ -276,65 +879,6 @@ end
 
 
 vgui.Register("GMS_DropDown_Item",PANEL,"Panel")
-/*---------------------------------------------------------
-  Resource Drop window
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-         self:SetTitle("Drop Resources")
-		 self:SetDeleteOnClose(false)
-         self:SetKeyboardInputEnabled(true)
-         self:SetMouseInputEnabled(true)
-		 self:MakePopup()
-         
-         self:SetSize(ScrW() / 2, ScrH() / 2)
-         self:SetPos(ScrW() / 2 - (self:GetWide() / 2), ScrH() / 2 - (self:GetTall() / 2))
-
-         self.ResourceEntry = vgui.Create("DMultiChoice",self)
-         self.ResourceEntry:SetSize(self:GetWide() / 4, 20)
-         self.ResourceEntry:SetPos(self:GetWide() / 20, self:GetTall() / 2 - 10)
-
-         local lbl = vgui.Create("DLabel",self)
-         lbl:SetPos(self:GetWide() / 20, self:GetTall() / 2 - 35)
-         lbl:SetSize(self:GetWide() / 4,20)
-         lbl:SetText("Specify resource")
-         //lbl:SetFont("ScoreboardText")
-
-         self.AmountEntry = vgui.Create("DTextEntry",self)
-         self.AmountEntry:SetSize(self:GetWide() / 6, 20)
-         self.AmountEntry:SetPos(self:GetWide() / 20 + self.ResourceEntry:GetWide() + self:GetWide() / 20, self:GetTall() / 2 - 10)
-         
-         local lbl = vgui.Create("DLabel",self)
-         lbl:SetPos(self:GetWide() / 20 + self.ResourceEntry:GetWide() + self:GetWide() / 20, self:GetTall() / 2 - 35)
-         lbl:SetSize(self:GetWide() / 6,20)
-         lbl:SetText("Specify amount")
-         //lbl:SetFont("ScoreboardText")
-
-         local button = vgui.Create("gms_CommandButton",self)
-         button:SetSize(self:GetWide() / 3,self:GetTall() / 6)
-         button:SetPos(self:GetWide() / 2 - (button:GetWide() / 2), self:GetTall() / 1.5)
-         button:SetText("Drop")
-
-         function button.DoClick(button)
-               LocalPlayer():ConCommand("gms_DropResources "..string.Trim(self.ResourceEntry.TextEntry:GetValue()).." "..string.Trim(self.AmountEntry:GetValue()).."\n")
-               button:GetParent():SetVisible(false)
-               self.AmountEntry:SetText("")
-               self.ResourceEntry:SetText("")
-         end
-end
-
-function PANEL:RefreshList()
-         self.ResourceEntry:Clear()
-
-         for k,v in pairs(Resources) do
-             if v > 0 then
-                self.ResourceEntry:AddChoice(k,k)
-             end
-         end
-end
-
-vgui.Register("GMS_ResourceDropWindow",PANEL,"DFrame")
 
 /*---------------------------------------------------------
   Admin menu
@@ -649,441 +1193,6 @@ function PANEL:UpdateDots()
 end
 
 vgui.Register("gms_SavingBar",PANEL,"Panel")
-
-/*---------------------------------------------------------
-  Tribe Menu
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-	self:SetTitle("Create-A-Tribe")
-	self:SetKeyboardInputEnabled(true)
-	self:SetMouseInputEnabled(true)
-	self:MakePopup()
-	self:SetSize(275, 305)
-	self:Center()
-
-	local tnamelabel = vgui.Create("DLabel", self)
-	tnamelabel:SetPos(5, 21)
-	tnamelabel:SetText("Tribe name")
-
-	local tname = vgui.Create("DTextEntry", self)
-	tname:SetSize(self:GetWide() - 10, 20)
-	tname:SetPos(5, 40)
-
-	local tpwlabel = vgui.Create("DLabel", self)
-	tpwlabel:SetPos(5, 65)
-	tpwlabel:SetText("Tribe password (Optional)")
-	tpwlabel:SizeToContents()
-
-	local tpw = vgui.Create("DTextEntry", self)
-	tpw:SetSize(self:GetWide() - 10, 20)
-	tpw:SetPos(5, 80)
-
-	local tcollabel = vgui.Create("DLabel", self)
-	tcollabel:SetPos(5, 105)
-	tcollabel:SetText("Tribe color")
-
-	local tcolor = vgui.Create("DColorMixer", self)
-	tcolor:SetSize(self:GetWide() + 15, 150)
-	tcolor:SetPos(5, 125)
-
-	local button = vgui.Create("DButton", self)
-	button:SetSize(self:GetWide() - 10, 20)
-	button:SetPos(5, 280)
-	button:SetText("Create Tribe!")
-	button.DoClick = function()
-		RunConsoleCommand("gms_createtribe", tname:GetValue(), tcolor:GetColor().r, tcolor:GetColor().g, tcolor:GetColor().b, tpw:GetValue())
-		self:SetVisible(false)
-	end
-end
-vgui.Register("GMS_TribeMenu", PANEL, "DFrame")
-
-/*---------------------------------------------------------
-  Tribes List
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-    self:SetTitle("Join-A-Tribe")
-    self:SetKeyboardInputEnabled(true)
-    self:SetMouseInputEnabled(true)
-    self:MakePopup()
-
-	local tid = 0 
-	
-	for id, tabl in pairs(Tribes) do
-		local name = tabl[1]
-		local hazpass = tabl[2]
-		id = id - 1
-        local button = vgui.Create("DButton", self)
-        button:SetSize(ScrW() / 4 - 10, 20)
-        button:SetPos(5, 28 + id * 25)
-        button.DoClick = function()
-			if (hazpass) then
-				Derma_StringRequest("Please enter password", "Please enter password for the tribe.", "", function(text) RunConsoleCommand("gms_join", name, text) end)
-			else
-				RunConsoleCommand("gms_join", name)
-			end
-			self:Close()
-		end
-        button:SetText(name)
-		tid = id
-    end
-	
-	self:SetSize(ScrW() / 4, tid * 25 + 53)
-	self:Center()
-end
-vgui.Register("GMS_TribesList", PANEL, "DFrame")
-
-/*---------------------------------------------------------
-  Need HUD
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-    self:SetPos(0, 0)
-    self:SetSize(ScrW() / 6, 4 * 13 + 5)
-    self:SetVisible(true)
-end
-
-function PANEL:Paint()
-    local col = StrandedColorTheme
-    local bordcol = StrandedBorderTheme
-
-    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
-    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
-
-	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
-	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
-	
-    local w = self:GetWide() - 10
-
-    //Health
-    local h = math.floor((LocalPlayer():Health() / 200) * w)
-    surface.SetDrawColor(0, 0, 0, 255)
-    surface.DrawRect(5, 5, w, 8)
-
-    surface.SetDrawColor(170,0,0,255)
-	surface.DrawRect(5, 5, h, 8)
-
-	draw.SimpleTextOutlined("Health", "DefaultSmall", self:GetWide() / 2, 9, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
-
-    //Hunger
-    local h = math.floor((Hunger / 1000) * w)
-    surface.SetDrawColor(0, 0, 0, 255)
-    surface.DrawRect(5, 18, w, 8)
-
-    surface.SetDrawColor(0, 170, 0, 255)
-    surface.DrawRect(5, 18, h, 8)
-
-	draw.SimpleTextOutlined("Hunger","DefaultSmall",self:GetWide() / 2, 22, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
-
-    //Thirst
-    local h = math.floor((Thirst / 1000) * w)
-    surface.SetDrawColor(0, 0, 0, 255)
-    surface.DrawRect(5, 31, w, 8)
-
-    surface.SetDrawColor(0, 0, 170, 255)
-    surface.DrawRect(5, 31, h, 8)
-
-	draw.SimpleTextOutlined("Thirst", "DefaultSmall", self:GetWide() / 2, 35, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
-
-    //Sleepiness
-    local h = math.floor((Sleepiness / 1000) * w)
-    surface.SetDrawColor(0,0,0,255)
-    surface.DrawRect(5, 44, w, 8)
-
-    surface.SetDrawColor(170,0,140,255)
-    surface.DrawRect(5, 44, h, 8)
-
-	draw.SimpleTextOutlined("Fatigue", "DefaultSmall", self:GetWide() / 2, 48, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
-	return true
-end
-
-vgui.Register("gms_NeedHud", PANEL, "DPanel")
-
-/*---------------------------------------------------------
-  Skills panel
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-    self:SetPos(0, GAMEMODE.NeedHud:GetTall())
-    self:SetSize(ScrW() / 6, ScrH() / 22)
-
-    self:SetVisible(true)
-
-    self.Extended = false
-    self.SkillLabels = {}
-end
-
-function PANEL:Paint()
-    local col = StrandedColorTheme
-    local bordcol = StrandedBorderTheme
-
-	surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
-	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
-	
-	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
-	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
-	surface.DrawLine(0, ScrH() / 22 - 2, self:GetWide(), ScrH() / 22 - 2)
-
-	draw.SimpleText("Skills (F1)", "ScoreboardSub", 5, 5, Color(255, 255, 255, 255))
-	return true
-end
-
-function PANEL:RefreshSkills()
-	for k, v in pairs(self.SkillLabels) do
-		v:Remove()
-	end
-
-	self.SkillLabels = {}
-	self.Line = ScrH() / 22 + 5
-
-	for k, v in SortedPairs(Skills) do
-		local lbl = vgui.Create("gms_SkillPanel", self)
-		lbl:SetPos(0, self.Line)
-		lbl:SetSize(self:GetWide(), 16)
-		local val = string.gsub(k, "_", " ")
-		lbl:SetSkill(val)
-
-		self.Line = self.Line + lbl:GetTall() + 5
-		table.insert(self.SkillLabels, lbl)
-		if (!self.Extended) then lbl:SetVisible(false) end
-	end
-
-	if (self.Extended) then 
-		self:SetSize(ScrW() / 6, ScrH() / 22 + (table.Count(self.SkillLabels) * 21) + 6) 
-		GAMEMODE:RecalculateHUDPos()
-    end
-end
-
-function PANEL:ToggleExtend()
-	if (!self.Extended) then
-		self:SetSize(ScrW() / 6, ScrH() / 22 + (table.Count(self.SkillLabels) * 21) + 6)
-		self.Extended = true
-
-		GAMEMODE:RecalculateHUDPos()
-		for k, v in pairs(self.SkillLabels) do
-			v:SetVisible(true)
-		end
-	else
-		self:SetSize(ScrW() / 6, ScrH() / 22)
-		self.Extended = false
-
-		GAMEMODE:RecalculateHUDPos()
-		for k, v in pairs(self.SkillLabels) do
-			v:SetVisible(false)
-		end
-	end
-end
-
-function PANEL:OnMousePressed(mc)
-	if (mc == 107) then
-		self:ToggleExtend()
-	end
-end
-
-vgui.Register("gms_SkillsHud", PANEL, "Panel")
-
-function GM:RecalculateHUDPos()
-    GAMEMODE.ResourcesHud:SetPos(0, GAMEMODE.NeedHud:GetTall() + GAMEMODE.SkillsHud:GetTall())
-end
-
-/*---------------------------------------------------------
-  Skill Sub-Panel
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-end
-
-function PANEL:Paint()
-	surface.SetDrawColor(0, 0, 0, 178) -- XP bar background
-	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
-
-	local XP = math.floor(Experience[self.Skill] / 100 * (self:GetWide() - 10))
-	surface.SetDrawColor(0, 128, 0, 220) -- XP bar
-	if (self.TxtSkill == "Survival") then
-		surface.SetDrawColor(0, 128, 176, 220) -- XP bar
-	end
-	surface.DrawRect(5, 0, XP, self:GetTall())
-
-	draw.SimpleText(self.TxtSkill .. ": " .. Skills[self.Skill] .. " (" .. Experience[self.Skill] .. " / 100)", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
-	return true
-end
-
-function PANEL:SetSkill(str)
-    self.TxtSkill = str
-    self.Skill = string.gsub(str, " ", "_")
-end
-
-vgui.Register("gms_SkillPanel", PANEL, "Panel")
-
-/*---------------------------------------------------------
-  Resource panel
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-    self:SetPos(0, GAMEMODE.NeedHud:GetTall() + ScrH() / 22)
-    self:SetSize(ScrW() / 6, ScrH() / 22)
-    self:SetVisible(true)
-    self.Extended = false
-    self.ResourceLabels = {}
-end
-
-function PANEL:Paint()
-    local col = StrandedColorTheme
-    local bordcol = StrandedBorderTheme
-
-    surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
-    surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-
-    surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall()) -- Nice line instead of messy outlined rect
-	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
-	surface.DrawLine(0, ScrH() / 22 - 2, self:GetWide(), ScrH() / 22 - 2)
-
-    draw.SimpleText("Resources (F2)", "ScoreboardSub", 5, 5, Color(255, 255, 255, 255))
-    return true
-end
-
-function PANEL:RefreshResources()
-	for k, v in pairs(self.ResourceLabels) do
-		v:Remove()
-	end
-
-	self.ResourceLabels = {}
-	self.Line = ScrH() / 22 + 5
-	self.Resourcez = 0
-
-	for k, v in SortedPairs(Resources) do
-		if (v > 0) then
-			local lbl = vgui.Create("gms_ResourcePanel", self)
-			lbl:SetPos(0, self.Line)
-			lbl:SetSize(self:GetWide(), 16)
-			lbl:SetResource(k)
-			self.Resourcez = self.Resourcez + v
-
-			self.Line = self.Line + lbl:GetTall() + 5
-			table.insert(self.ResourceLabels, lbl)
-			if (!self.Extended) then lbl:SetVisible(false) end
-		end
-	end
-	
-	self.Line = self.Line + 21
-	
-	local lblT = vgui.Create("gms_ResourcePanelTotal", self)
-	lblT:SetPos(0, self.Line)
-	lblT:SetSize(self:GetWide(), 16)
-	lblT:SetResources(self.Resourcez)
-
-	table.insert(self.ResourceLabels, lblT)
-	if (!self.Extended) then lblT:SetVisible(false) end
-
-	if (self.Extended) then 
-		self:SetSize(ScrW() / 6, ScrH() / 22 + ((table.Count(self.ResourceLabels) + 1) * 21) + 6) 
-		GAMEMODE:RecalculateHUDPos()
-    end
-end
-
-function PANEL:ToggleExtend()
-    if !self.Extended then
-        self:SetSize(ScrW() / 6, ScrH() / 22 + ((table.Count(self.ResourceLabels) + 1) * 21) + 6)
-        self.Extended = true
-        GAMEMODE:RecalculateHUDPos()
-		for k,v in pairs(self.ResourceLabels) do
-			v:SetVisible(true)
-		end
-    else
-		self:SetSize(ScrW() / 6, ScrH() / 22)
-        self.Extended = false
-        GAMEMODE:RecalculateHUDPos()
-		for k, v in pairs(self.ResourceLabels) do
-			v:SetVisible(false)
-		end
-    end
-end
-
-function PANEL:OnMousePressed(mc)
-    if (mc == 107) then
-        self:ToggleExtend()
-    end
-end
-vgui.Register("gms_ResourcesHud", PANEL, "Panel")
-
-/*---------------------------------------------------------
-  Resource Sub-Panel
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-	self:SetText("")
-end
-
-function PANEL:Paint()
-	if (self.Hovered) then
-		surface.SetDrawColor(0, 64, 128, 178) -- Resource bar background
-	else
-		surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
-	end
-	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
-
-	local XP = math.floor(Resources[self.Resource] / MaxResources * (self:GetWide() - 10))
-	surface.SetDrawColor(0, 128, 0, 200) -- Resource bar
-	surface.DrawRect(5, 0, XP, self:GetTall())
-
-	draw.SimpleText(self.TxtResource .. ": " .. Resources[self.Resource], "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
-	return true
-end
-
-function PANEL:DoRightClick()
-	local menu = DermaMenu()
-    menu:AddOption("Drop x1",function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 1") end)
-    menu:AddOption("Drop x10",function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 10") end)
-    menu:AddOption("Drop All",function() RunConsoleCommand("say", "!drop " .. self.Resource) end)
-    menu:AddOption("Cancel",function() end)
-    menu:Open()
-end
-
-function PANEL:SetResource(str)
-    self.TxtResource = string.gsub(str, "_", " ")
-    self.Resource = str
-end
-
-vgui.Register("gms_ResourcePanel", PANEL, "DButton")
-
-
-/*---------------------------------------------------------
-  Resource Total Sub-Panel
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-	self.Res = 0
-end
-
-function PANEL:Paint()
-	surface.SetDrawColor(0, 0, 0, 178) -- Resource bar background
-	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
-
-	local XP = math.floor(self.Res / MaxResources * (self:GetWide() - 10))
-	surface.SetDrawColor(0, 128, 176, 220) -- Resource bar
-	surface.DrawRect(5, 0, XP, self:GetTall())
-
-	draw.SimpleText("Total: " .. self.Res .. " / " .. MaxResources, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
-	return true
-end
-
-function PANEL:SetResources(num)
-	self.Res = num
-end
-
-vgui.Register("gms_ResourcePanelTotal", PANEL, "Panel")
 
 /*---------------------------------------------------------
   Command button
