@@ -46,7 +46,7 @@ function PANEL:Close()
  	self:Remove()
 end
 
-function PANEL:PerformLayout( )
+function PANEL:PerformLayout()
 	self:SetSize(ScrW() / 2 - 10, ScrH() - 10)
 	self:SetPos(ScrW() / 2 + 5, 5)
 	self.ContentPanel:StretchToParent(5, 21, 5, 5)
@@ -269,6 +269,8 @@ function PANEL:Init()
 
     self.Extended = false
     self.SkillLabels = {}
+	
+	self:RefreshSkills()
 end
 
 function PANEL:Paint()
@@ -375,6 +377,8 @@ function PANEL:Init()
     self:SetVisible(true)
     self.Extended = false
     self.ResourceLabels = {}
+	
+	self:RefreshResources()
 end
 
 function PANEL:Paint()
@@ -427,10 +431,10 @@ function PANEL:RefreshResources()
 	if (!self.Extended) then lblT:SetVisible(false) end
 
 	if (self.Extended) then 
-		self:SetSize(ScrW() / 6,40 + ((table.Count(self.ResourceLabels) + 1) * 21)) 
+		self:SetSize(ScrW() / 6, 40 + ((table.Count(self.ResourceLabels) + 1) * 21)) 
     end
 	
-	GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall())
+	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall()) end
 end
 
 function PANEL:ToggleExtend()
@@ -447,7 +451,7 @@ function PANEL:ToggleExtend()
 			v:SetVisible(false)
 		end
     end
-	GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall())
+	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall()) end
 end
 
 function PANEL:OnMousePressed(mc)
@@ -503,12 +507,14 @@ function PANEL:DoRightClick()
 	
 	if (self.Actions[self.TxtResource]) then
 		menu:AddOption(self.Actions[self.TxtResource].name, function() RunConsoleCommand(self.Actions[self.TxtResource].cmd) end)
+		menu:AddSpacer()
 	end
 	
 	if (self.MoreActions[self.TxtResource]) then
 		for res, t in pairs(self.MoreActions[self.TxtResource]) do
-		menu:AddOption(t.name, function() RunConsoleCommand(t.cmd) end)
+			menu:AddOption(t.name, function() RunConsoleCommand(t.cmd) end)
 		end
+		menu:AddSpacer()
 	end
 	
     menu:AddOption("Drop x1", function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 1") end)
@@ -571,9 +577,6 @@ PANEL.Commands["Wake up"] = {cmd = "gms_wakeup", clr = Color(0, 128, 255, 176)}
 
 PANEL.Commands["Make campfire"] = {cmd = "gms_makefire", clr = Color(255, 0, 0, 176)}
 PANEL.Commands["Drop all resources"] = {cmd = "gms_dropall", clr = Color(255, 0, 0, 176)}
-PANEL.Commands["Eat some berries"] = {cmd = "gms_EatBerry", clr = Color(255, 0, 0, 176)}
-PANEL.Commands["Drink bottle of water"] = {cmd = "gms_DrinkBottle", clr = Color(255, 0, 0, 176)}
-PANEL.Commands["Take medicine"] = {cmd = "gms_TakeMedicine", clr = Color(255, 0, 0, 176)}
 
 PANEL.Commands["Combinations"] = {cmd = "gms_GenericCombi", clr = Color(255, 255, 0, 176)}
 PANEL.Commands["Structures"] = {cmd = "gms_BuildingsCombi", clr = Color(255, 255, 0, 176)}
@@ -618,7 +621,7 @@ function PANEL:Paint()
 		surface.DrawLine(0, 33, self:GetWide(), 33)
 	end
 
-    draw.SimpleText("Commands(F3)", "ScoreboardSub", self:GetWide() / 2, 17, Color(255, 255, 255, 255), 1, 1)
+    draw.SimpleText("Commands (F3)", "ScoreboardSub", self:GetWide() / 2, 17, Color(255, 255, 255, 255), 1, 1)
     return true
 end
 
@@ -651,12 +654,18 @@ function PANEL:ToggleExtend()
 		for k,v in pairs(self.CommandLabels) do
 			v:SetVisible(true)
 		end
+
+		gui.EnableScreenClicker(true)
+		RestoreCursorPosition()
     else
 		self:SetSize(ScrW() / 6, 34)
         self.Extended = false
 		for k, v in pairs(self.CommandLabels) do
 			v:SetVisible(false)
 		end
+		
+		RememberCursorPosition()
+		gui.EnableScreenClicker(false)
     end
 end
 
@@ -702,7 +711,53 @@ function PANEL:SetCommand(str, text, clr)
 	self.Clr = clr
 end
 
-vgui.Register("gms_CommandPanel", PANEL, "DButton") // The hax.
+vgui.Register("gms_CommandPanel", PANEL, "DButton")
+
+/*---------------------------------------------------------
+  HUDHint
+---------------------------------------------------------*/
+local PANEL = {}
+
+function PANEL:Init()
+	self:SetText("")
+	self.Text = ""
+end
+
+function PANEL:Paint()
+	local col = StrandedColorTheme
+	local bordcol = StrandedBorderTheme
+
+	surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
+	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+
+	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
+	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall())
+	surface.DrawLine(0, 0, self:GetWide(), 0)
+	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+    
+	local strs = string.Explode('\n', self.Text)
+	for id, str in pairs(strs) do
+		id = id - 1
+		draw.SimpleText(str, "DefaultBold", 5, 5 + id * 12, Color(255, 255, 255))
+	end
+
+	return true
+end
+
+function PANEL:DoClick()
+	self:Remove()
+end
+
+function PANEL:SetHint(text)
+	self.Text = text
+
+	surface.SetFont("DefaultBold")
+	local w, h = surface.GetTextSize(self.Text)
+	self:SetSize(w + 10, h)
+end
+
+vgui.Register("gms_HUDHint", PANEL, "DButton") // The hax.
 
 /*---------------------------------------------------------
   GMS dropdown
