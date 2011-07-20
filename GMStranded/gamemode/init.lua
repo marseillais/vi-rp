@@ -84,6 +84,7 @@ end)
 function GM.FindTribeByID(id)
 	for name, tabl in pairs(GAMEMODE.Tribes) do
 		if (tabl.id == id) then
+			tabl.name = name
 			return tabl
 		end
 	end
@@ -212,8 +213,8 @@ function PlayerMeta:IncSkill(skill, int)
 	if (!self.Experience[skill]) then self:SetXP(skill, 0) end
 
 	if (skill != "Survival") then
-		self:IncXP("Survival", 20)
-		self:SendMessage(skill .. " +1", 3, Color(10, 200, 10, 255))
+		for id=0,int do self:IncXP("Survival", 20) end
+		self:SendMessage(string.Replace(skill, "_", " ") .. " +" .. int, 3, Color(10, 200, 10, 255))
 	else
 		self.MaxResources = self.MaxResources + 5
 		self:SendAchievement("Level Up!")
@@ -1140,6 +1141,7 @@ function GM:PlayerInitialSpawn(ply)
 	umsg.End()
 
 	ply:SetTeam(1)
+	SPropProtection.TribePP(ply)
 	-- ply:ConCommand("gms_help\n")		 
 
 	--Serverside player variables
@@ -2244,7 +2246,12 @@ function GM.SubtractNeeds()
 					ply.Hunger = ply.Hunger - 20
 				end
 
-				if (ply.NeedShelter) then ply:SetHealth(ply:Health() - 10) end
+				if (ply.NeedShelter and ply:Health() >= 11) then
+					ply:SetHealth(ply:Health() - 10)
+				else
+					ply:Kill()
+					for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
+				end
 			end
 
 			--Kay you're worn out
@@ -2262,7 +2269,7 @@ function GM.SubtractNeeds()
 					ply:SetHealth(ply:Health() - 2)
 				else
 					ply:Kill()
-					for k, v in pairs(player.GetAll()) do ply:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
+					for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
 				end
 			end
 		end
@@ -2967,7 +2974,8 @@ function CreateTribe(ply, name, red, green, blue, password)
 	
 	team.SetUp(GAMEMODE.NumTribes, tostring(name), Color(red, green, blue, 255))
 	ply:SetTeam(GAMEMODE.NumTribes)
-	ply:SendMessage("Successfully Created A Tribe", 5, Color(255, 255, 255, 255))
+	SPropProtection.TribePP(ply)
+	ply:SendMessage("Successfully created", 5, Color(255, 255, 255, 255))
 end
 
 include("chatcommands.lua")
@@ -3025,16 +3033,18 @@ function GM:PlayerSay(ply, text, public)
 		if (!jname) then ply:ChatPrint("Syntax is: /jointribe \"tribename\" [password(if needed)]") return "" end
 		for i, v in pairs(GAMEMODE.Tribes) do
 			if (string.lower(i) == string.lower(jname)) then
-				if (v.Password and v.Password != pw) then ply:PrintMessage(3,"Incorrect Tribal Password") return "" end
+				if (v.Password and v.Password != pw) then ply:SendMessage("Incorrcet tribal password", 3, Color(255, 50, 50, 255)) return "" end
 				ply:SetTeam(v.id)
-				ply:SendMessage("Successfully Joined The Tribe", 5, Color(255, 255, 255, 255))
+				SPropProtection.TribePP(ply)
+				ply:SendMessage("Successfully joined " .. i, 5, Color(255, 255, 255, 255))
 				return ""
 			end
 		end
 		return ""
 	elseif (string.find(text, "/leavetribe") == 1) then
 		ply:SetTeam(1)
-		ply:SendMessage("Successfully Left The Tribe", 5, Color(255, 255, 255, 255))
+		SPropProtection.TribePP(ply)
+		ply:SendMessage("Successfully left the tribe", 5, Color(255, 255, 255, 255))
 		return ""
 	end
 	
@@ -3046,7 +3056,7 @@ function GM:PlayerSay(ply, text, public)
 		if (GMS.RunChatCmd(ply, unpack(args)) != "") then
 			for k, v in pairs(player.GetAll()) do
 				if (v and v:IsValid() and v:IsPlayer() and v:Team() == ply:Team()) then
-					v:PrintMessage(3, "<TRIBE>" .. ply:Nick() .. ": " .. text)
+					v:PrintMessage(3, "[TRIBE] " .. ply:Nick() .. ": " .. text)
 				end
 			end
 		end
@@ -3064,25 +3074,25 @@ function CreateTribeCmd(ply, cmd, args, argv)
 end
 concommand.Add("gms_createtribe", CreateTribeCmd)
 
-function joinTribe(ply, cmd, args)
+concommand.Add("gms_join", function (ply, cmd, args)
 	local pw = ""
 	if (!args[1] or args[1] == "") then ply:ChatPrint("Syntax is: gms_join \"tribename\" [password(if needed)]") return end
 	if (args[2] and args[2] != "") then pw = args[2] end
 	for i, v in pairs(GAMEMODE.Tribes) do
 		if (string.lower(i) == string.lower(args[1])) then
-			if (v.Password and v.Password != pw) then ply:PrintMessage(3, "Incorrect Tribal Password") return end
+			if (v.Password and v.Password != pw) then ply:SendMessage("Incorrcet tribal password", 3, Color(255, 50, 50, 255)) return end
 			ply:SetTeam(v.id)
-			ply:SendMessage("Successfully Joined The Tribe", 5, Color(255, 255, 255, 255))
+			SPropProtection.TribePP(ply)
+			ply:SendMessage("Successfully joined " .. i, 5, Color(255, 255, 255, 255))
 		end
 	end
-end
-concommand.Add("gms_join", joinTribe)
+end)
 
-function leaveTribe(ply, cmd, args)
+concommand.Add("gms_leave", function(ply, cmd, args)
 	ply:SetTeam(1)
-	ply:SendMessage("Successfully Left The Tribe", 5, Color(255, 255, 255, 255))
-end
-concommand.Add("gms_leave", leaveTribe)
+	SPropProtection.TribePP(ply)
+	ply:SendMessage("Successfully left the tribe", 5, Color(255, 255, 255, 255))
+end)
 
 /*---------------------------------------------------------
    Resource Box Touch

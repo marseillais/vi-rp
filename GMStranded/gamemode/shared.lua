@@ -15,6 +15,8 @@ team.SetUp(4, "The Gummies", Color(255, 23, 0, 255))
 team.SetUp(5, "The Dynamics", Color(0, 72, 255, 255))
 team.SetUp(6, "Scavengers", Color(8, 255, 0, 255))
 
+include("SPropProtection/sh_SPropProtection.lua")
+
 --Tables
 GMS_SpawnLists = {}
 GMS_SpawnLists["Wood - Tables/Desks"] = {

@@ -36,8 +36,10 @@ function PANEL:Init()
 	self:ShowCloseButton(false)
 	
 	self.ContentPanel = vgui.Create("DPropertySheet", self)
-	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", true, true)
+	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", false, false)
 	self.ContentPanel:AddSheet("ToolMenu", vgui.Create("stranded_ToolMenu", self.ContentPanel), "gui/silkicons/wrench", true, true)
+	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_PlantSpawn", self.ContentPanel), "gui/silkicons/box", false, false)
+	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_Commands", self.ContentPanel), "gui/silkicons/application", true, true)
 	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_SPPMenu", self.ContentPanel), "gui/silkicons/shield", true, true)
 end
 

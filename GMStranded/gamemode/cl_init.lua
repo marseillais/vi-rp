@@ -33,6 +33,7 @@ local PlayerMeta = FindMetaTable("Player")
 function GM.FindTribeByID(id)
 	for name, tabl in pairs(Tribes) do
 		if (tabl.id == id) then
+			tabl.name = name
 			return tabl
 		end
 	end
