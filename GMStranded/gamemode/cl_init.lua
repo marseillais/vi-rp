@@ -20,9 +20,9 @@ Experience = {}
 FeatureUnlocks = {}
 MaxResources = 25
 
-Sleepiness = 0
-Hunger = 0
-Thirst = 0
+Sleepiness = 1000
+Hunger = 1000
+Thirst = 1000
 
 CampFires = {}
 
@@ -137,17 +137,19 @@ function GM:HUDPaint()
 end
 
 function GM.CreateHUD()
-	Hunger = 1000
-	Sleepiness = 1000
-	Thirst = 1000
 	GAMEMODE.NeedHud = vgui.Create("gms_NeedHud")
 	GAMEMODE.SkillsHud = vgui.Create("gms_SkillsHud")
-	GAMEMODE.ResourcesHud = vgui.Create("gms_ResourcesHud")
 	GAMEMODE.CommandsHud = vgui.Create("gms_CommandsHud")
+	GAMEMODE.ResourcesHud = vgui.Create("gms_ResourcesHud")
 	GAMEMODE.LoadingBar = vgui.Create("gms_LoadingBar")
 	GAMEMODE.LoadingBar:SetVisible(false)
 	GAMEMODE.SavingBar = vgui.Create("gms_SavingBar")
 	GAMEMODE.SavingBar:SetVisible(false)
+	
+	// The hint.
+	local hint = vgui.Create("gms_HUDHint")
+	hint:SetHint("Pay attention!\n\nThese menues on the right are expandable.\nWhen you expand commnds menu the\ncursor appears. You can click the button\nyou wish.\n\nThe resoures in resource menu\nare also clickable. Right click a resource\nto see all it's actions. The first action will\nbe executed when you left click resource.\nPlanting seeds, eating berries and\nsuch stuff only availible throgh\nthe resources menu on the right.\n\nClick anywhere on this message to hide it.")
+	hint:SetPos(ScrW() - (ScrW() / 6 + hint:GetWide() + 5), 0)
 end
 usermessage.Hook("gms_CreateInitialHUD", GM.CreateHUD)
 
