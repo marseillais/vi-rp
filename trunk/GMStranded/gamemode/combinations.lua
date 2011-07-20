@@ -2018,6 +2018,64 @@ COMBI.SwepClass = "weapon_stunstick"
 
 GMS.RegisterCombi("Stunstick",COMBI,"Gunmaking")
 /*---------------------------------------------------------
+  Crossbow
+---------------------------------------------------------*/
+local COMBI = {}
+
+COMBI.Name = "Crossbow"
+COMBI.Description = [[ This is sniper weapon, very powerful, but slowly.
+You need:
+1 Gunbarrel
+1 Gunmagazine
+5 Iron
+5 Gunpowder
+Weapon Crafting Level 13
+]]
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 15
+COMBI.Req["Gunpowder"] = 5
+COMBI.Req["Gunbarrel"] = 1
+COMBI.Req["Gunmagazine"] = 3
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 25
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "weapon_crossbow"
+
+GMS.RegisterCombi("Crossbow",COMBI,"Gunmaking")
+/*---------------------------------------------------------
+  Grenade
+---------------------------------------------------------*/
+local COMBI = {}
+
+COMBI.Name = "Grenade"
+COMBI.Description = [[ This is sniper weapon, very powerful, but slowly.
+You need:
+20 Iron
+5 Plastic
+25 Sulphur
+1 Rope
+3 Gunpowder
+Weapon Crafting Level 13
+]]
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 20
+COMBI.Req["Gunpowder"] = 3
+COMBI.Req["Rope"] = 1
+COMBI.Req["Sulphur"] = 25
+COMBI.Req["Plastic"] = 5
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 27
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "weapon_grenade"
+
+GMS.RegisterCombi("Grenade",COMBI,"Gunmaking")
+/*---------------------------------------------------------
 
   Motorised Utility
 
