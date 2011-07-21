@@ -334,7 +334,7 @@ GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
 local CHATCMD = {}
 
 CHATCMD.Command = "!giveskill"
-CHATCMD.Desc = "<Skill> <Level> - Give resources to yourself"
+CHATCMD.Desc = "<Skill> <Level> - Give skill to yourself"
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
 	ply:IncSkill(arg[1], tonumber(arg[2]))

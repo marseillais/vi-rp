@@ -197,7 +197,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetPos(0, 0)
-    self:SetSize(ScrW() / 6, 4 * 13 + 5)
+    self:SetSize(ScrW() / 6, 5 * 13 + 5)
     self:SetVisible(true)
 end
 
@@ -246,13 +246,25 @@ function PANEL:Paint()
 
     //Sleepiness
     local h = math.floor((Sleepiness / 1000) * w)
-    surface.SetDrawColor(0,0,0,255)
+    surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(5, 44, w, 8)
 
-    surface.SetDrawColor(170,0,140,255)
+    surface.SetDrawColor(170, 0, 140, 255)
     surface.DrawRect(5, 44, h, 8)
 
 	draw.SimpleTextOutlined("Fatigue", "DefaultSmall", self:GetWide() / 2, 48, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	
+	//Oxygen
+	if (Oxygen < 1000) then
+		local h = math.floor((Oxygen / 1000) * w)
+		surface.SetDrawColor(0, 0, 0,255)
+		surface.DrawRect(5, 57, w, 8)
+
+		surface.SetDrawColor(0, 255, 255, 255)
+		surface.DrawRect(5, 57, h, 8)
+
+		draw.SimpleTextOutlined("Oxygen", "DefaultSmall", self:GetWide() / 2, 61, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	end
 	return true
 end
 
