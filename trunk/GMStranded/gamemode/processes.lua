@@ -1033,7 +1033,7 @@ function PROCESS:OnStop()
 		food:Spawn()
 
 		food:SetFoodInfo(self.Data.Name)
-            
+
 		for k, v in pairs(self.Data.Cost) do
 			self.Owner:DecResource(k, v)
 		end
@@ -1151,7 +1151,7 @@ function PROCESS:OnStop()
 		self.Owner:SendMessage("Made " .. string.gsub(k, "_", " ") .. " (" .. v .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:IncResource(k, v)
 		
-		self.Owner:IncXP("Smelting", v * 2)
+		self.Owner:IncXP("Smelting", v)
 	end
 
 	self.Owner:Freeze(false)

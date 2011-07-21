@@ -190,7 +190,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetPos(0, 0)
-    self:SetSize(ScrW() / 6, 5 * 13 + 5)
+    self:SetSize(ScrW() / 6, 7 * 13 + 5)
     self:SetVisible(true)
 end
 
@@ -258,6 +258,14 @@ function PANEL:Paint()
 
 		draw.SimpleTextOutlined("Oxygen", "DefaultSmall", self:GetWide() / 2, 61, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
 	end
+	
+	// Time
+	local hours = tostring(math.floor(Time / 60))
+	local mins = tostring(Time % 60)
+	local tim = ""
+	if (string.len(hours) == 1) then tim = "0" .. hours else tim = hours end
+	if (string.len(mins) == 1) then tim = tim .. ":0" .. mins else tim = tim .. ":" .. mins end
+	draw.SimpleText(tim, "ScoreboardSub", self:GetWide() / 2, 82, Color(255, 255, 255, 255), 1, 1)
 	return true
 end
 

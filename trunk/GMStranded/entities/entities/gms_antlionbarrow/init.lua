@@ -72,7 +72,9 @@ function ENT:CheckSurroundings()
             end
         end
     end
-	if (#self.Antlions < self.MaxAntlions and !self.Spawning) then
+	local max = self.MaxAntlions
+	if (IsNight) then max = math.ceil(max * 1.4) end
+	if (#self.Antlions < max and !self.Spawning) then
         timer.Create("gms_antlionspawntimers_" .. self.Entity:EntIndex(), math.random(20, 60), 1, self.AddAntlion, self)
         self.Spawning = true
     end
