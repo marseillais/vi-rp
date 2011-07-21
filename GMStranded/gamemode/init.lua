@@ -213,7 +213,7 @@ function PlayerMeta:IncSkill(skill, int)
 	if (!self.Experience[skill]) then self:SetXP(skill, 0) end
 
 	if (skill != "Survival") then
-		for id=0,int do self:IncXP("Survival", 20) end
+		for id=1,int do self:IncXP("Survival", 20) end
 		self:SendMessage(string.Replace(skill, "_", " ") .. " +" .. int, 3, Color(10, 200, 10, 255))
 	else
 		self.MaxResources = self.MaxResources + 5
