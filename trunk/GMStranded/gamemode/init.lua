@@ -1213,6 +1213,8 @@ function GM:PlayerInitialSpawn(ply)
 			end
 		end
 		
+		ply:StripAmmo()
+		
 		if (tbl["ammo"]) then
 			for k, v in pairs(tbl["ammo"]) do
 				ply:GiveAmmo(v, k)
@@ -1236,6 +1238,7 @@ function GM:PlayerInitialSpawn(ply)
 		ply:SetXP("Survival", 0)
 		ply.MaxResources = 25
 	end
+
 	ply:SetNWInt("plants", 0)
 	for k, v in pairs(ents.GetAll()) do
 		if (v and v:IsValid() and v:GetNWEntity("plantowner") and v:GetNWEntity("plantowner"):IsValid() and v:GetNWEntity("plantowner") == ply) then
@@ -2910,9 +2913,11 @@ timer.Create("Oxygen.Timer", 1, 0, function()
 	for _, v in ipairs(player.GetAll()) do
 		if (v:WaterLevel() > 2) then
 			if (v.Oxygen > 0) then
-				v.Oxygen = math.max(v.Oxygen - (250 / v:GetSkill("Swimming")), 0)
+				v.Oxygen = math.max(v.Oxygen - math.min(1600 / v:GetSkill("Swimming"), 500), 0)
 				v:UpdateNeeds()
-				v:IncXP("Swimming", math.Clamp(math.Round(50 / v:GetSkill("Swimming")), 1, 1000))
+				if (v.AFK == false) then
+					v:IncXP("Swimming", math.Clamp(math.Round(50 / v:GetSkill("Swimming")), 1, 1000))
+				end
 			end
 		else
 			if (v.Oxygen < 1000) then

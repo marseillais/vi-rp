@@ -17,6 +17,16 @@ function GMS.RunChatCmd( ply, ... )
 	end
 end
 
+function player.FindByName(str)
+	if (str == nil or str == "") then return false end
+    for id,ply in pairs(player.GetAll()) do
+        if (string.find(string.lower(ply:Name()),string.lower(str)) != nil) then
+            return ply
+        end
+    end
+    return false
+end
+
 /*---------------------------------------------------------
   Help List
 ---------------------------------------------------------*/
@@ -301,14 +311,22 @@ GMS.RegisterChatCmd(CHATCMD.Command,CHATCMD)
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
-CHATCMD.Command = "!resetneeds"
+CHATCMD.Command = "!rn"
 CHATCMD.Desc = " - Reset your needs"
-function CHATCMD:Run(ply)
+function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	ply.Hunger = 1000
-	ply.Thirst = 1000
-	ply.Sleepiness = 1000
-	ply:UpdateNeeds()
+	if (#arg == 3) then
+		pl = player.FindByName(arg[1])
+		pl.Hunger = 1000
+		pl.Thirst = 1000
+		pl.Sleepiness = 1000
+		pl:UpdateNeeds()
+	else
+		ply.Hunger = 1000
+		ply.Thirst = 1000
+		ply.Sleepiness = 1000
+		ply:UpdateNeeds()
+	end
 end
 
 GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
@@ -318,26 +336,52 @@ GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
-CHATCMD.Command = "!giveres"
-CHATCMD.Desc = "<Resource> <Amount> - Give resources to yourself"
+CHATCMD.Command = "!res"
+CHATCMD.Desc = "[player] <Resource> <Amount> - Give resources to yourself/someone"
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	ply:IncResource(arg[1], tonumber(arg[2]))
+	if (#arg == 3) then
+		player.FindByName(arg[1]):IncResource(arg[2], tonumber(arg[3]))
+	else
+		ply:IncResource(arg[1], tonumber(arg[2]))
+	end
 end
 
 GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
 
 
 /*---------------------------------------------------------
-  ADMIN: Give Skill
+  ADMIN: Set Skill
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
-CHATCMD.Command = "!giveskill"
-CHATCMD.Desc = "<Skill> <Level> - Give skill to yourself"
+CHATCMD.Command = "!setskill"
+CHATCMD.Desc = "[player] <Skill> <Level> - Give skill to yourself/someone"
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	ply:IncSkill(arg[1], tonumber(arg[2]))
+	if (#arg == 3) then
+		player.FindByName(arg[1]):SetSkill(arg[2], tonumber(arg[3]))
+	else
+		ply:SetSkill(arg[1], tonumber(arg[2]))
+	end
+end
+
+GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)
+
+/*---------------------------------------------------------
+  ADMIN: Inc Skill
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!incskill"
+CHATCMD.Desc = "[player] <Skill> <Level> - Give skill to yourself/someone"
+function CHATCMD:Run(ply, ...)
+	if (!ply:IsAdmin()) then return end
+	if (#arg == 3) then
+		player.FindByName(arg[1]):IncSkill(arg[2], tonumber(arg[3]))
+	else
+		ply:IncSkill(arg[1], tonumber(arg[2]))
+	end
 end
 
 GMS.RegisterChatCmd(CHATCMD.Command, CHATCMD)

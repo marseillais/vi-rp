@@ -16,6 +16,7 @@ team.SetUp(5, "The Dynamics", Color(0, 72, 255, 255))
 team.SetUp(6, "Scavengers", Color(8, 255, 0, 255))
 
 include("SPropProtection/sh_SPropProtection.lua")
+include("daytime.lua")
 
 --Tables
 GMS_SpawnLists = {}
