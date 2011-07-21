@@ -1989,6 +1989,8 @@ function GM.MakeCombination(ply,cmd,args)
 			timecount = timecount + v
 		end 
 		local time = timecount * 0.5
+		
+		//time = time * (math.max(self.Owner:GetSkill("Smelting") - 15, 0))
 
 		ply:DoProcess("Smelt", time, data)
 
