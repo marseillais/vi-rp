@@ -2264,19 +2264,21 @@ function GM.SubtractNeeds()
 					ply.Hunger = ply.Hunger - 20
 				end
 
-				if (ply.NeedShelter and ply:Health() >= 11) then
-					ply:SetHealth(ply:Health() - 10)
-				else
-					ply:Kill()
-					for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
+				if (ply.NeedShelter) then
+					if (ply:Health() >= 11) then
+						ply:SetHealth(ply:Health() - 10)
+					else
+						ply:Kill()
+						for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
+					end
 				end
 			end
 
 			--Kay you're worn out
 			if (ply.AFK != true) then
-				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 4 end // 2
-				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 12 end // 6
-				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 6 end // 3
+				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 1 end // 2
+				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 3 end // 6
+				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 2 end // 3
 			end
 
 			ply:UpdateNeeds()
@@ -2908,11 +2910,12 @@ timer.Create("Oxygen.Timer", 1, 0, function()
 	for _, v in ipairs(player.GetAll()) do
 		if (v:WaterLevel() > 2) then
 			if (v.Oxygen > 0) then
-				v.Oxygen = v.Oxygen - (20)
+				v.Oxygen = math.max(v.Oxygen - (250 / v:GetSkill("Swimming")), 0)
 				v:UpdateNeeds()
+				v:IncXP("Swimming", math.Clamp(math.Round(50 / v:GetSkill("Swimming")), 1, 1000))
 			end
 		else
-			if (v.Oxygen <= 1000) then
+			if (v.Oxygen < 1000) then
 				v.Oxygen = math.min(v.Oxygen + 100, 1000)
 				v:UpdateNeeds()
 			end

@@ -31,10 +31,9 @@ CampFires = {}
 local PlayerMeta = FindMetaTable("Player")
 
 /* FIND TRIBE BY ID */
-function GM.FindTribeByID(id)
-	for name, tabl in pairs(Tribes) do
-		if (tabl.id == id) then
-			tabl.name = name
+function GM.FindTribeByID(Tid)
+	for id, tabl in pairs(Tribes) do
+		if (tabl.id == Tid) then
 			return tabl
 		end
 	end
