@@ -1150,7 +1150,8 @@ function PROCESS:OnStop()
 	for k, v in pairs(self.Data.Res) do
 		self.Owner:SendMessage("Made " .. string.gsub(k, "_", " ") .. " (" .. v .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:IncResource(k, v)
-		for id=1,v do self.Owner:IncXP("Smelting", math.Clamp(math.Round(50 / self.Owner:GetSkill("Smelting")), 1, 1000)) end
+		
+		self.Owner:IncXP("Smelting", v * 2)
 	end
 
 	self.Owner:Freeze(false)
