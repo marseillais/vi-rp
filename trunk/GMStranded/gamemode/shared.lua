@@ -3,10 +3,10 @@
 ---------------------------------------------------------*/
 GMS = {}
 
-GM.Name 	= "Gmod Stranded 2.3"
-GM.Author 	= "Robotboy655 and many others :)"
-GM.Email 	= ""
-GM.Website 	= "http://gmsbugs.tk/"
+GM.Name = "Gmod Stranded 2.3"
+GM.Author = "Robotboy655 and many others :)"
+GM.Email = ""
+GM.Website = "http://gmsbugs.tk/"
 
 team.SetUp(1, "The Stranded", Color(200, 200, 0, 255))
 team.SetUp(2, "Survivalists", Color(255, 255, 255, 255))
