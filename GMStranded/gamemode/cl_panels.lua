@@ -1,10 +1,3 @@
--- The Q Menu
-if (SERVER) then
-	AddCSLuaFile("qmenu.lua")
-	return
-end
-
-include("qmenu.lua")
 
 Active = false
 

@@ -6,6 +6,7 @@ DeriveGamemode("sandbox")
 
 include("shared.lua")
 include("cl_scoreboard.lua")
+include("qmenu.lua")
 include("cl_panels.lua") -- Custom panels
 include("unlocks.lua") -- Unlocks
 include("combinations.lua") -- Combis

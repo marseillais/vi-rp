@@ -3,17 +3,18 @@ DeriveGamemode("sandbox")
 
 -- Send clientside files
 AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
 AddCSLuaFile("cl_scoreboard.lua")
+AddCSLuaFile('qmenu.lua')
 AddCSLuaFile("cl_panels.lua")
+AddCSLuaFile("shared.lua")
 AddCSLuaFile("unlocks.lua")
 AddCSLuaFile("combinations.lua")
+AddCSLuaFile('daytime.lua')
 
 include("shared.lua")
 include("processes.lua") -- Processes
 include("unlocks.lua") -- Unlocks
 include("combinations.lua") -- Combis
-include("cl_panels.lua") -- Spawnmenu
 include("resources.lua") -- Resources
 
 --Convars
@@ -2917,7 +2918,7 @@ timer.Create("Oxygen.Timer", 1, 0, function()
 			if (v.Oxygen > 0) then
 				v.Oxygen = math.max(v.Oxygen - math.min(1600 / v:GetSkill("Swimming"), 500), 0)
 				v:UpdateNeeds()
-				if (v.AFK == false) then
+				if (v.AFK != true) then
 					v:IncXP("Swimming", math.Clamp(math.Round(50 / v:GetSkill("Swimming")), 1, 1000))
 				end
 			end
