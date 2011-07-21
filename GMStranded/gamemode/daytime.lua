@@ -1,4 +1,3 @@
-Time = 0
 
 NightLight = string.byte('a')
 DayLight = string.byte('m')
@@ -6,15 +5,27 @@ DayLight = string.byte('m')
 TargetPattern = DayLight
 CurrentPattern = DayLight
 
-if (CLIENT) then
-elseif (SERVER) then
-	timer.Create("DayTime.Timer", 1, 0, function()
-		Time = os.time() - (math.floor(os.time() / 1440) * 1440)
-		local hours = math.floor(Time / 60)
-		local mins = (Time % 60)
+DayTime = 355 -- Day: 710 seconds, Night: 730 seconds
+NightTime = 1085
+Time = DayTime + 1
 
-		//print("[" .. hours .. ":" .. mins .. "]")
-		
+IsNight = false
+
+if (CLIENT) then
+	timer.Create("DayTime.TimerClient", 1, 0, function()
+		Time = Time + 1
+	end)
+elseif (SERVER) then
+	local light_environments = ents.FindByClass('light_environment')
+	if (#light_environments > 0) then
+		for _,light in pairs(light_environments) do -- Initial fade	
+			light:Fire('FadeToPattern', string.char(CurrentPattern), 0)
+			light:Activate()    
+		end
+	end
+
+	timer.Create("DayTime.TimerServer", 1, 0, function()
+		Time = Time + 1
 		local suns = ents.FindByClass("env_sun")
 		if (#suns > 0) then
 			for id, sun in pairs(suns) do
@@ -22,23 +33,19 @@ elseif (SERVER) then
 				sun:Activate() -- Update it!
 			end
 		end
-		
-		light_environments = ents.FindByClass('light_environment')
+
+		local light_environments = ents.FindByClass('light_environment')
 		if (#light_environments > 0) then
 			for _,light in pairs(light_environments) do
-				if (hours == 18 and mins > 30) then
+				if ((Time < DayTime or Time > NightTime) and TargetPattern != NightLight) then
 					TargetPattern = NightLight
-				elseif (hours == 6) then
+					IsNight = true
+				elseif ((Time >= DayTime or Time <= NightTime) and TargetPattern != DayLight) then
 					TargetPattern = DayLight
+					IsNight = false
 				end
 				
-				if (hours > 6 and hours < 18) then
-					TargetPattern = DayLight
-				else
-					TargetPattern = NightLight
-				end
-				
-				if (TargetPattern != CurrentPattern) then
+				if ((Time % 3) == 0 and TargetPattern != CurrentPattern) then
 					if (TargetPattern > CurrentPattern) then
 						CurrentPattern = math.Clamp(CurrentPattern + 1, NightLight, DayLight)
 					else

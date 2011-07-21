@@ -522,6 +522,7 @@ function GM.SetNeeds(um)
 	Hunger = um:ReadShort()
 	Thirst = um:ReadShort()
 	Oxygen = um:ReadShort()
+	Time = um:ReadShort()
 end
 usermessage.Hook("gms_setneeds", GM.SetNeeds)
 

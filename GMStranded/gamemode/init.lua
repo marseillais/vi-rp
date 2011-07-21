@@ -1924,7 +1924,7 @@ function GM.MakeCombination(ply,cmd,args)
 		local time = 5
 
 		ply:DoProcess("MakeGeneric", time, data)
-	elseif (group == "Factory" or group == "Gunmaking" or group == "Utilities") then
+	elseif (group == "Gunmaking" or group == "Utilities") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -1947,7 +1947,29 @@ function GM.MakeCombination(ply,cmd,args)
 		else		
 			ply:DoProcess("Processing", time, data)
 		end
+	elseif (group == "Factory") then
+		local data = {}
+		data.Name = tbl.Name
+		if (tbl.AllSmelt == true) then
+			local sourcetable = ply:AllSmelt(tbl)
+			data.Res = sourcetable.Results
+			data.Cost = table.Copy(sourcetable.Req)
+		else		
+			data.Res = tbl.Results
+			data.Cost = table.Copy(tbl.Req)
+		end
+		local timecount = 1
+		for k, v in pairs(data.Cost) do
+			timecount  = timecount + v
+		end 
+		local time = timecount * 0.3
 
+		if (tbl.SwepClass != nil) then
+			data.Class = tbl.SwepClass
+			ply:DoProcess("MakeWeapon", time, data)
+		else		
+			ply:DoProcess("Smelt", time, data)
+		end
 	elseif (group == "StoneWeapons" or group == "CopperWeapons" or group == "IronWeapons") then
 		local data = {}
 		data.Name = tbl.Name
@@ -1956,10 +1978,10 @@ function GM.MakeCombination(ply,cmd,args)
 		local time = 10
 
 		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then
-			time = 8
+			time = 6
 		end
 		
-		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 3), 4)
+		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 4), 4)
 
 		ply:DoProcess("MakeWeapon", time, data)
 	elseif (group == "Buildings") then
@@ -2233,6 +2255,7 @@ function PlayerMeta:UpdateNeeds()
 		umsg.Short(self.Hunger)
 		umsg.Short(self.Thirst)
 		umsg.Short(self.Oxygen)
+		umsg.Short(Time)
 	umsg.End()
 end
 
