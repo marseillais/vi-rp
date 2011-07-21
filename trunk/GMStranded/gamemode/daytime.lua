@@ -9,8 +9,7 @@ CurrentPattern = DayLight
 if (CLIENT) then
 elseif (SERVER) then
 	timer.Create("DayTime.Timer", 1, 0, function()
-		local ost = os.time()
-		Time = ost - (math.floor(ost / 1440) * 1440)
+		Time = os.time() - (math.floor(os.time() / 1440) * 1440)
 		local hours = math.floor(Time / 60)
 		local mins = (Time % 60)
 
@@ -29,7 +28,7 @@ elseif (SERVER) then
 			for _,light in pairs(light_environments) do
 				if (hours == 18 and mins > 30) then
 					TargetPattern = NightLight
-				elseif (hours == 6 and mins > 30) then
+				elseif (hours == 6) then
 					TargetPattern = DayLight
 				end
 				
