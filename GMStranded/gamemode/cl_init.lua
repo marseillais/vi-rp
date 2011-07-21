@@ -23,6 +23,7 @@ MaxResources = 25
 Sleepiness = 1000
 Hunger = 1000
 Thirst = 1000
+Oxygen = 1000
 
 CampFires = {}
 
@@ -511,7 +512,7 @@ function GM.DrawAchievementMessages()
 		end
 	end
 end
-hook.Add("HUDPaint","gms_drawachievementmessages", GM.DrawAchievementMessages)
+hook.Add("HUDPaint", "gms_drawachievementmessages", GM.DrawAchievementMessages)
 
 /*---------------------------------------------------------
   Needs
@@ -520,16 +521,9 @@ function GM.SetNeeds(um)
 	Sleepiness = um:ReadShort()
 	Hunger = um:ReadShort()
 	Thirst = um:ReadShort()
+	Oxygen = um:ReadShort()
 end
 usermessage.Hook("gms_setneeds", GM.SetNeeds)
-
-function GM.DecNeeds()
-	if (Sleepiness > 0) then Sleepiness = Sleepiness - 1 end
-	if (Thirst > 0) then Thirst = Thirst - 3 end
-	if (Hunger > 0) then Hunger = Hunger - 1 end
-	timer.Simple(1, GAMEMODE.DecNeeds)
-end
-timer.Simple(1, GM.DecNeeds)
 
 /*---------------------------------------------------------
   Help Menu

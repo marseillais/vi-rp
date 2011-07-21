@@ -511,6 +511,22 @@ function PlayerMeta:GetThirst()
 end
 
 /*---------------------------------------------------------
+  Oxygen functions
+---------------------------------------------------------*/
+function PlayerMeta:SetOxygen(int)
+	if (int > 1000) then
+		int = 1000
+	end
+
+	self.Oxygen = int
+	self:UpdateNeeds()
+end
+
+function PlayerMeta:GetOxygen()
+	return self.Oxygen
+end
+
+/*---------------------------------------------------------
   Sleep functions
 ---------------------------------------------------------*/
 function PlayerMeta:SetSleepiness(int)
@@ -1264,6 +1280,7 @@ function GM:PlayerSpawn(ply)
 	ply.Sleepiness = 1000
 	ply.Hunger = 1000
 	ply.Thirst = 1000
+	ply.Oxygen = 1000
 	if (ply:HasUnlock("Adept_Survivalist")) then ply:SetHealth(150) end
 	if (ply:HasUnlock("Master_Survivalist")) then ply:SetHealth(200) end
 	ply:UpdateNeeds()
@@ -2209,6 +2226,7 @@ function PlayerMeta:UpdateNeeds()
 		umsg.Short(self.Sleepiness)
 		umsg.Short(self.Hunger)
 		umsg.Short(self.Thirst)
+		umsg.Short(self.Oxygen)
 	umsg.End()
 end
 
@@ -2256,20 +2274,29 @@ function GM.SubtractNeeds()
 
 			--Kay you're worn out
 			if (ply.AFK != true) then
-				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 2 end
-				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 6 end
-				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 3 end
+				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 4 end // 2
+				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 12 end // 6
+				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 6 end // 3
 			end
-             
+
 			ply:UpdateNeeds()
 
 			--Are you dying?
 			if (ply.Sleepiness <= 0 or ply.Thirst <= 0 or ply.Hunger <= 0) then
-				if (ply:Health() > 4) then
+				if (ply:Health() >= 3) then
 					ply:SetHealth(ply:Health() - 2)
 				else
 					ply:Kill()
 					for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " didn't survive.", 3, Color(170, 0, 0, 255)) end
+				end
+			end
+			
+			if (ply.Oxygen <= 0) then
+				if (ply:Health() >= 11) then
+					ply:SetHealth(ply:Health() - 10)
+				else
+					ply:Kill()
+					for k, v in pairs(player.GetAll()) do v:SendMessage(ply:Nick() .. " has drowned.", 3, Color(170, 0, 0, 255)) end
 				end
 			end
 		end
@@ -2867,20 +2894,37 @@ hook.Add("KeyReleased", "GMS_SprintKeyReleaseHook", GM.SprintKeyReleaseHook)
 /*---------------------------------------------------------
   Misc functions
 ---------------------------------------------------------*/
-function GM.WaterExtinguish()
+hook.Add("Think", "GM_WaterExtinguish", function()
 	for _, v in ipairs(ents.GetAll()) do
 		if (v:WaterLevel() > 0 and v:IsOnFire()) then
 			v:Extinguish()
 		end 
 	end
-end
-hook.Add("Think", "GM_WaterExtinguish", GM.WaterExtinguish)
+end)
+
+/* Oxygen */
+
+timer.Create("Oxygen.Timer", 1, 0, function()
+	for _, v in ipairs(player.GetAll()) do
+		if (v:WaterLevel() > 2) then
+			if (v.Oxygen > 0) then
+				v.Oxygen = v.Oxygen - (20)
+				v:UpdateNeeds()
+			end
+		else
+			if (v.Oxygen <= 1000) then
+				v.Oxygen = math.min(v.Oxygen + 100, 1000)
+				v:UpdateNeeds()
+			end
+		end 
+	end
+end)
 
 local AlertSounds = {"citizen_beaten1.wav", "citizen_beaten4.wav", "citizen_beaten5.wav", "cough1.wav", "cough2.wav", "cough3.wav", "cough4.wav"}
 /*---------------------------------------------------------
   Alert Message: Thirst
 ---------------------------------------------------------*/
-local function AlertMessagesT(ply)
+timer.Create("AlertTimerT", 5, 0, function(ply)
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
 			if (ply.Thirst < 125 and ply:Alive()) then
@@ -2888,13 +2932,12 @@ local function AlertMessagesT(ply)
 			end
 		end
 	end
-end
-timer.Create("AlertTimerT", 5, 0, AlertMessagesT)
+end)
 
 /*---------------------------------------------------------
   Alert Message: Hunger
 ---------------------------------------------------------*/
-local function AlertMessagesH()
+timer.Create("AlertTimerH", 5, 0, function()
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
 			if (ply.Hunger < 125 and ply:Alive()) then
@@ -2902,13 +2945,12 @@ local function AlertMessagesH()
 			end
 		end
 	end
-end
-timer.Create("AlertTimerH", 5, 0, AlertMessagesH)
+end)
 
 /*---------------------------------------------------------
   Alert Message: Sleepiness
 ---------------------------------------------------------*/
-local function AlertMessagesS()
+timer.Create("AlertTimerS", 5, 0, function()
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
 			if (ply.Sleepiness < 125 and ply:Alive()) then
@@ -2916,8 +2958,7 @@ local function AlertMessagesS()
 			end
 		end
 	end
-end
-timer.Create("AlertTimerS", 5, 0, AlertMessagesS)
+end)
 
 /*---------------------------------------------------------
    Tribe system
