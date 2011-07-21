@@ -544,5 +544,6 @@ GMS.ProhibitedStools = {
 	"statue",
 	"trails",
 	"camera",
+	"paint",
 	"rtcamera"
 }
