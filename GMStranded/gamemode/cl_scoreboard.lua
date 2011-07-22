@@ -176,6 +176,7 @@ function GM:HUDDrawScoreBoard()
 		surface.SetTextColor( 0, 0, 0, 255 )
 		
 		txWidth, txHeight = surface.GetTextSize( teamText )
+		if (info.Color.r < 50 and info.Color.g < 50 and info.Color.b < 50) then info.Color = Color(255, 255, 255) end
 		surface.SetDrawColor( info.Color.r, info.Color.g, info.Color.b, 255 )
 		surface.DrawRect( xOffset+1, yPosition, boardWidth-2, txHeight + 4)
 		yPosition = yPosition + 2

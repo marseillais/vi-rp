@@ -194,6 +194,9 @@ function PlayerMeta:SetSkill(skill, int)
 	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self.Skills[skill] = 0 end
 
+	if (skill != "Survival") then
+		int = math.Clamp(int, 0, 200)
+	end
 	self.Skills[skill] = int
 
 	umsg.Start("gms_SetSkill", self)
@@ -214,6 +217,7 @@ function PlayerMeta:IncSkill(skill, int)
 	if (!self.Experience[skill]) then self:SetXP(skill, 0) end
 
 	if (skill != "Survival") then
+		int = math.Clamp(int, 0, 200)
 		for id=1,int do self:IncXP("Survival", 20) end
 		self:SendMessage(string.Replace(skill, "_", " ") .. " +" .. int, 3, Color(10, 200, 10, 255))
 	else
@@ -233,7 +237,7 @@ end
 
 function PlayerMeta:DecSkill(skill, int)
 	skill = string.Capitalize(skill)
-	self.Skills[skill] = self.Skills[skill] - int
+	self.Skills[skill] = math.max(self.Skills[skill] - int, 0)
 
 	umsg.Start("gms_SetSkill", self)
 		umsg.String(skill)
@@ -889,8 +893,6 @@ concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
 	ent:SetKeyValue("MaxAntlions", args[1])
 end)
 
-concommand.Add("gms_admin_MakeAntlionBarrow",GM.MakeAntlionBarrow)
-
 concommand.Add("gms_admin_makebush", function(ply)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 
@@ -1154,6 +1156,7 @@ end)
 ---------------------------------------------------------*/
 function GM:PlayerInitialSpawn(ply)
 	--Create HUD
+	ply.Loaded = false
 	umsg.Start("gms_CreateInitialHUD", ply)
 	umsg.End()
 
@@ -1234,6 +1237,7 @@ function GM:PlayerInitialSpawn(ply)
 
 		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
 		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
+		ply.Loaded = true
 	else
 		ply:SetSkill("Survival", 0)
 		ply:SetXP("Survival", 0)
@@ -1368,6 +1372,11 @@ end
 function GM.SaveCharacter(ply,cmd,args)
 	if (!file.IsDir("GMStranded")) then file.CreateDir("GMStranded") end
 	if (!file.IsDir("GMStranded/Saves")) then file.CreateDir("GMStranded/Saves") end
+	if (!ply.Loaded) then
+		print("Player " .. ply:Name() .. " tried to save before he has loaded!")
+		ply:SendMessage("Character save failed: Not yet loaded!", 3, Color(255, 50, 50, 255))
+		return
+	end
 
 	local tbl = {}
 	tbl["skills"] = {}
