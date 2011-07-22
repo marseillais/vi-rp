@@ -315,7 +315,7 @@ CHATCMD.Command = "!rn"
 CHATCMD.Desc = " - Reset your needs"
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	if (#arg == 3) then
+	if (#arg == 1) then
 		pl = player.FindByName(arg[1])
 		pl.Hunger = 1000
 		pl.Thirst = 1000

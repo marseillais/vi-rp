@@ -194,7 +194,7 @@ end
 
 function SPropProtection.CheckForEmptyTribes()
 	for name, t in pairs(GAMEMODE.Tribes) do
-		if (team.NumPlayers(t.id) == 0 and t.Password != false) then
+		if (team.NumPlayers(t.id) == 0 and t.Password != false and !timer.IsTimer("SPropProtection.RemoveTribeProps: " .. t.id)) then
 			timer.Create("SPropProtection.RemoveTribeProps: " .. t.id, tonumber(SPropProtection["Config"]["delay"]), 1, SPropProtection.RemoveTribeProps, t.id)
 		end
 	end

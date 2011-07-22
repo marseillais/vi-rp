@@ -125,7 +125,7 @@ GMS_SpawnLists["Iron - Shelving/Storage"] = {
 	"models/props_wasteland/kitchen_shelf001a.mdl",
 	"models/props_c17/display_cooler01a.mdl"
 }
-
+/*
 GMS_SpawnLists["Iron - Lighting"] = {
 	"models/props_c17/light_cagelight02_on.mdl",
 	"models/props_c17/light_cagelight01_on.mdl",
@@ -151,7 +151,7 @@ GMS_SpawnLists["Iron - Lighting"] = {
 	"models/props_trainstation/light_Signal001a.mdl",
 	"models/props_trainstation/light_Signal001b.mdl"
 }
-
+*/
 GMS_SpawnLists["Iron - Containers"] = {
 	"models/props_junk/garbage_metalcan001a.mdl",
 	"models/props_junk/garbage_metalcan002a.mdl",

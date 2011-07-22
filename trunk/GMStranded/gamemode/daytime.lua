@@ -7,11 +7,17 @@ CurrentPattern = DayLight
 
 DayTime = 355 -- Day: 710 seconds, Night: 730 seconds
 NightTime = 1065
+ZombieTime = 1400
 Time = DayTime + 1
 
 IsNight = false
 
 if (CLIENT) then
+	RunConsoleCommand('pp_sunbeams', '1')
+	RunConsoleCommand('pp_sunbeams_darken', '0.8')
+	RunConsoleCommand('pp_sunbeams_multiply', '1')
+	RunConsoleCommand('pp_sunbeams_sunsize', '0.3')
+
 	timer.Create("DayTime.TimerClient", 1, 0, function()
 		Time = Time + 1
 		if(Time > 1440) then Time = 0 end
@@ -48,6 +54,44 @@ elseif (SERVER) then
 
 					light:Fire('FadeToPattern', string.char(CurrentPattern), 0)
 					light:Activate()    
+				end
+			end
+		end
+
+		if (Time == ZombieTime) then // >:)
+			local boxes = {}
+			local res = ents.FindByClass("gms_resourcedrop")
+			if (#res > 10) then
+				for _, v in ipairs(res) do
+					if (math.random(0, 100) > 50 and #boxes < math.floor(#res / 2)) then
+						table.insert(boxes, v)
+					end
+				end
+				
+				for id, box in pairs(boxes) do // To do: add admin no delete?
+					box:Fadeout()
+				end
+				
+				for i=0, math.random(2, 10) do
+					local pos = Vector(math.random(-6000, 6000), math.random(-6000, 6000), 1800)
+				
+					local trace = {}
+					trace.start = pos
+					trace.endpos = pos - Vector(0, 0, 9999)
+					local tr = util.TraceLine(trace)
+				
+					local aah = ents.Create('npc_zombie')
+					aah:SetPos(tr.HitPos + Vector(0, 0, 64))
+					aah:Spawn()
+				end
+				
+				for id, ply in pairs(player.GetAll()) do
+					ply:SendMessage("Something happened outside...", 5, Color(255, 10, 10, 255))
+					
+					timer.Simple(5, function()
+						ply:SendMessage("Remember to store your resources in resoucepack, ", 5, Color(255, 10, 10, 255))
+						ply:SendMessage("So they didn't get stolen at night.", 5, Color(255, 10, 10, 255))
+					end)
 				end
 			end
 		end

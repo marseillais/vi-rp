@@ -49,6 +49,7 @@ function ENT:SpawnAntlion()
 	ant:SetPos(tr.HitPos + Vector(0, 0, 5))
 	ant:SetNWString("Owner", "World")
     ant:Spawn()
+	ant:SetHealth(60)
     ant:Fadein(2)
     table.insert(self.Antlions, ant)
 end
