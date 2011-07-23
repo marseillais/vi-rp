@@ -36,14 +36,14 @@ local PlayerMeta = FindMetaTable("Player")
 HintsRus = {
 	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
 	"А заете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
-	"Храните вашу еду в холодильнике, чтобы она не портилась.",
+	//"Храните вашу еду в холодильнике, чтобы она не портилась.",
 	"Чтобы племя могло использовать вещи друг друга, это племя должно иметь пароль."
 }
 
 HintsEng = {
 	"Store your resources in resource pack, so they wont get stolen at night.",
 	"Did you know that resources in Resources menu (F2) are clickable?",
-	"Keep your food in fridge, so it does not spoil.",
+	//"Keep your food in fridge, so it does not spoil.",
 	"In order to share items within a tribe, the tribe must have a password."
 }
 
