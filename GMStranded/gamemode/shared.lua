@@ -3,7 +3,7 @@
 ---------------------------------------------------------*/
 GMS = {}
 
-GM.Name = "Gmod Stranded 2.3"
+GM.Name = "Custom Stranded 2.4"
 GM.Author = "Robotboy655 and many others :)"
 GM.Email = ""
 GM.Website = "http://gmsbugs.tk/"

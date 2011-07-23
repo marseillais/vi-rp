@@ -104,8 +104,8 @@ local PROCESS = {}
 
 function PROCESS:BaseThink()
 	if (ValidEntity(ent)) then
-		if (self == nil or self.Owner == nil or !self.Owner:Alive()) then return true end
-		if (!self.Owner:IsValid() or !self.Owner:IsConnected()) then return true end
+		if (self == nil or self.Owner == nil) then return true end
+		if (!self.Owner:IsValid() or !self.Owner:IsConnected() or !self.Owner:Alive()) then return true end
 	end
 end
 
@@ -549,7 +549,7 @@ function PROCESS:OnStop()
 		self.Owner:SendMessage("Wood (" .. num2 .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
 
-		if (self.Data.Entity) then self.Data.Entity.Uses = self.Data.Entity.Uses - num2 end
+		if (self.Data.Entity and self.Data.Entity.Uses) then self.Data.Entity.Uses = self.Data.Entity.Uses - num2 end
 	else
 		self.Owner:SendMessage("Failed.", 3, Color(200, 0, 0, 255))
 	end
@@ -622,7 +622,7 @@ function PROCESS:OnStop()
 
 		self.Owner:IncXP("Mining", math.Clamp(math.Round(50 / self.Owner:GetSkill("Mining")), 1, 1000))
 		self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
-		if (self.Data.Entity) then self.Data.Entity.Uses = self.Data.Entity.Uses - num3 end
+		if (self.Data.Entity and self.Data.Entity.Uses) then self.Data.Entity.Uses = self.Data.Entity.Uses - num3 end
 	else
 		self.Owner:SendMessage("Failed.", 3, Color(200, 0, 0, 255))
 	end

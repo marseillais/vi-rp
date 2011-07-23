@@ -31,6 +31,28 @@ CampFires = {}
 -- Locals
 local PlayerMeta = FindMetaTable("Player")
 
+/* The chat hints */
+
+HintsRus = {
+	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
+	"А заете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
+	"Храните вашу еду в холодильнике, чтобы она не портилась."
+}
+
+HintsEng = {
+	"Store your resources in resource pack, so they wont get stolen at night.",
+	"Did you know that resources in Resources menu (F2) are clickable?",
+	"Keep your food in fridge, so it does not spoil."
+}
+
+timer.Create("Client.HINTS", 300, 0, function()
+	if (math.random(0, 100) > 50) then
+		chat.AddText(Color(50, 255, 50), "[HINT] ", Color(255, 255, 255), HintsRus[math.random(1, #HintsRus)])
+	else
+		chat.AddText(Color(50, 255, 50), "[HINT] ", Color(255, 255, 255), HintsEng[math.random(1, #HintsEng)])
+	end
+end)
+
 /* FIND TRIBE BY ID */
 function GM.FindTribeByID(Tid)
 	for id, tabl in pairs(Tribes) do

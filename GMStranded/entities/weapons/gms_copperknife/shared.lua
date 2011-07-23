@@ -13,7 +13,7 @@ if (CLIENT) then
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
 	SWEP.Slot = 2
-	SWEP.SlotPos = 5
+	SWEP.SlotPos = 1
 end
 
 SWEP.Author	= "Robotboy655"
@@ -25,8 +25,8 @@ SWEP.Instructions = "Craft weapons faster."
 SWEP.Spawnable = false
 SWEP.AdminSpawnable	= false
 
-SWEP.ViewModel = "models/weapons/v_crowbar.mdl"
-SWEP.WorldModel = "models/weapons/w_crowbar.mdl" -- "models/props_c17/metalpot002a.mdl"
+SWEP.ViewModel = "models/Weapons/V_hands.mdl"
+SWEP.WorldModel = "models/Weapons/w_bullet.mdl"
 
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -51,19 +51,11 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:Deploy()
-    timer.Simple(0.1, self.HideWeapon, self, false)
-    return true
-end
-
-function SWEP:HideWeapon(bool)
-	if (SERVER and self.Owner) then 
-		self.Owner:DrawViewModel(bool) 
-		self.Owner:DrawWorldModel(bool) 
-	end
+	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
+	return true
 end
 
 function SWEP:Holster()
-    timer.Simple(0.1, self.HideWeapon, self, true)
 	//if (self.Owner.InProcess) then return false end
     return true
 end

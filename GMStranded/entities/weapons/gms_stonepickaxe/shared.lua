@@ -13,7 +13,7 @@ if (CLIENT) then
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes = false
 	SWEP.Slot = 1
-	SWEP.SlotPos = 2
+	SWEP.SlotPos = 1
 end
 
 SWEP.Author = "Stranded Team"
@@ -71,6 +71,11 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+end
+
+function SWEP:Deploy()
+	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
+	return true
 end
 
 function SWEP:Holster()
