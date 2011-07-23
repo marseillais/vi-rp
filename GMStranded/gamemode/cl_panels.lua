@@ -729,52 +729,6 @@ end
 vgui.Register("gms_CommandPanel", PANEL, "DButton")
 
 /*---------------------------------------------------------
-  HUDHint
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Init()
-	self:SetText("")
-	self.Text = ""
-end
-
-function PANEL:Paint()
-	local col = StrandedColorTheme
-	local bordcol = StrandedBorderTheme
-
-	surface.SetDrawColor(col.r, col.g, col.b, math.Clamp(col.a - 60, 1, 255))
-	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
-
-	surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
-	surface.DrawLine(self:GetWide() - 1, 0, self:GetWide() - 1, self:GetTall())
-	surface.DrawLine(0, 0, self:GetWide(), 0)
-	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
-    
-	local strs = string.Explode('\n', self.Text)
-	for id, str in pairs(strs) do
-		id = id - 1
-		draw.SimpleText(str, "DefaultBold", 5, 5 + id * 12, Color(255, 255, 255))
-	end
-
-	return true
-end
-
-function PANEL:DoClick()
-	self:Remove()
-end
-
-function PANEL:SetHint(text)
-	self.Text = text
-
-	surface.SetFont("DefaultBold")
-	local w, h = surface.GetTextSize(self.Text)
-	self:SetSize(w + 10, h)
-end
-
-vgui.Register("gms_HUDHint", PANEL, "DButton") // The hax.
-
-/*---------------------------------------------------------
   GMS dropdown
 ---------------------------------------------------------*/
 local PANEL = {}
@@ -1509,19 +1463,29 @@ function PANEL:Paint()
 	draw.SimpleText(self.Text .. ": " .. self.Num, "DefaultBold", 5, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 0, 1)
 end
 
-function PANEL:SetRes(str, num)
+function PANEL:SetRes(str, num, isResPack)
 	self.Text = str
 	self.Num = num
-	self.TakeX:SetRes(str, nil, false)
-	self.TakeAll:SetRes(str, num, true)
+	
+	
+	if (isResPack) then
+		self.TakeX:SetRes(str, nil, false)
+		self.TakeAll:SetRes(str, num, true, false)
+	else
+		self.TakeX:Remove()
+		self.TakeX = nil
+		self.TakeAll:SetRes(str, 1, true, true)
+	end
 end
 
 function PANEL:PerformLayout()
 	self.TakeAll:SetSize(64, self:GetTall())
 	self.TakeAll:SetPos(self:GetWide() - 68, 0)
     
-	self.TakeX:SetSize(64, self:GetTall())
-	self.TakeX:SetPos(self:GetWide() - 136, 0)
+	if (self.TakeX and self.TakeX != NULL) then
+		self.TakeX:SetSize(64, self:GetTall())
+		self.TakeX:SetPos(self:GetWide() - 136, 0)
+	end
 end
 
 vgui.Register("gms_resourceLine", PANEL, "Panel")
@@ -1532,6 +1496,7 @@ function PANEL:Init()
 	self.Text = ""
 	self.Num = 0
 	self.IsAll = false
+	self.IsFridge = false
 	self:SetText("")
 end
 
@@ -1546,7 +1511,9 @@ function PANEL:Paint()
 		draw.RoundedBox(0, 0, 0, self:GetWide(), self:GetTall(), Color(100, 100, 100, 255))
 	end
 
-	if (self.IsAll) then
+	if (self.IsFridge) then
+		draw.SimpleText("Take", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+	elseif (self.IsAll) then
 		draw.SimpleText("Take All", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
 	else
 		draw.SimpleText("Take X", "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
@@ -1565,10 +1532,11 @@ function PANEL:DoClick()
 	self:GetParent():GetParent():GetParent():GetParent():Remove()
 end
 
-function PANEL:SetRes(str, num, isAll)
+function PANEL:SetRes(str, num, isAll, isFridge)
 	self.Text = str
 	self.Num = num
 	self.IsAll = isAll
+	self.IsFridge = isFridge
 end
 
 vgui.Register("gms_takeButton", PANEL, "DButton")

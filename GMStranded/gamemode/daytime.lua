@@ -5,8 +5,8 @@ DayLight = string.byte('m')
 TargetPattern = DayLight
 CurrentPattern = DayLight
 
-DayTime = 355 -- Day: 710 seconds, Night: 730 seconds
-NightTime = 1065
+DayTime = 330
+NightTime = 1170
 ZombieTime = 1400
 Time = DayTime + 1
 
@@ -88,9 +88,9 @@ elseif (SERVER) then
 				for id, ply in pairs(player.GetAll()) do
 					ply:SendMessage("Something happened outside...", 5, Color(255, 10, 10, 255))
 					
-					timer.Simple(5, function()
-						ply:SendMessage("Remember to store your resources in resoucepack, ", 5, Color(255, 10, 10, 255))
-						ply:SendMessage("So they didn't get stolen at night.", 5, Color(255, 10, 10, 255))
+					timer.Simple(10, function()
+						ply:SendMessage("So they didn't get stolen at night.", 5, Color(255, 150, 150, 255))
+						ply:SendMessage("Remember to store your resources in resoucepack, ", 5, Color(255, 150, 150, 255))
 					end)
 				end
 			end

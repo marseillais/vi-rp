@@ -38,7 +38,7 @@ function ENT:Draw()
     cam.End3D2D()
 end
 
-function GMS.SetFoodInfo(um)
+usermessage.Hook("gms_SetFoodDropInfo", function(um)
     local index = um:ReadString()
     local type = um:ReadString()
 
@@ -51,11 +51,10 @@ function GMS.SetFoodInfo(um)
     else
 		ent.Food = type
     end
-end
-usermessage.Hook("gms_SetFoodDropInfo", GMS.SetFoodInfo)
+end)
 
 GMS.PendingFoodDrops = {}
-function GMS.CheckForFoodDrop()
+hook.Add("Think", "gms_CheckForPendingFoodDrops", function()
     for k, tbl in pairs(GMS.PendingFoodDrops) do
     local ent = ents.GetByIndex(tbl.Index)
 		if (ent != NULL) then
@@ -63,8 +62,7 @@ function GMS.CheckForFoodDrop()
 			table.remove(GMS.PendingFoodDrops, k)
         end
     end
-end
-hook.Add("Think", "gms_CheckForPendingFoodDrops", GMS.CheckForFoodDrop)
+end)
 
 function ENT:IsTranslucent()
 end
