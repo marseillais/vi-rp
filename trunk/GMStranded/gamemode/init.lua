@@ -573,9 +573,14 @@ function PlayerMeta:AddUnlock(text)
 		umsg.String(text)
 	umsg.End()
 
-	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end
+	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end //
 end
 
+/*
+L 07/22/2011 - 23:23:58: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:118] Tried to use a NULL entity!
+L 07/22/2011 - 21:59:17: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:1252] Tried to use a NULL entity!
+L 07/22/2011 - 21:59:18: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:3003] Tried to use a NULL entity!
+*/
 function PlayerMeta:HasUnlock(text)
 	if (self.FeatureUnlocks[text]) then return true end
 	return false
@@ -1800,18 +1805,16 @@ concommand.Add("gms_TakeResources", GM.TakeResource)//ply:PickupResourceEntityPa
 /*---------------------------------------------------------
   Buildings menu
 ---------------------------------------------------------*/
-function GM.OpenBuildingsCombi(ply)
+concommand.Add("gms_BuildingsCombi", function (ply)
 	ply:OpenCombiMenu("Buildings")
-end
-concommand.Add("gms_BuildingsCombi", GM.OpenBuildingsCombi)
+end)
 
 /*---------------------------------------------------------
   Generic combi menu
 ---------------------------------------------------------*/
-function GM.OpenGenericCombi(ply)
+concommand.Add("gms_GenericCombi", function(ply)
 	ply:OpenCombiMenu("Generic")
-end
-concommand.Add("gms_GenericCombi", GM.OpenGenericCombi)
+end)
 
 /*---------------------------------------------------------
   Make combination
@@ -2112,7 +2115,7 @@ function GM:CanTool(ply,tr,mode)
 		if (ply:GetResource("Rope") < 1) then ply:SendMessage("You need rope to use this tool.", 3, Color(200, 0, 0, 255)) return false end
 	end
 	
-	if (mode == "weld") then
+	if (mode == "weld" or mode == "weld_ez") then
 		if (ply:GetResource("Welder") < 1) then ply:SendMessage("You need a Welder to use this tool.", 3, Color(200, 0, 0, 255)) return false end
 	end
 

@@ -88,6 +88,11 @@ end
 function SWEP:SecondaryAttack()
 end
 
+function SWEP:Deploy()
+	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
+	return true
+end
+
 function SWEP:Holster()
 	//if (self.Owner.InProcess) then return false end
 	return true

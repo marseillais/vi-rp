@@ -32,7 +32,7 @@ end
 
 function ENT:SpawnAntlion()
     local offset = Vector(math.random(-500, 500), math.random(-500, 500), 100)
-    local retries = 50
+    local retries = 100
 
     while ((!util.IsInWorld(offset) and retries > 0) or offset:Distance(self.Entity:GetPos()) < 200) do
         offset = Vector(math.random(-400, 400), math.random(-400, 400), 100)
@@ -49,7 +49,7 @@ function ENT:SpawnAntlion()
 	ant:SetPos(tr.HitPos + Vector(0, 0, 5))
 	ant:SetNWString("Owner", "World")
     ant:Spawn()
-	ant:SetHealth(60)
+	ant:SetHealth(75)
     ant:Fadein(2)
     table.insert(self.Antlions, ant)
 end

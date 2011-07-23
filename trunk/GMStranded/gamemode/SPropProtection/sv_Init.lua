@@ -56,7 +56,7 @@ function SPropProtection.PlayerMakePropOwner(ply, ent)
 			SPropProtection.PlayerMakePropOwner(ply, v)
 		end
 	end
-	if(ent:IsPlayer()) then return end
+	if (ent == NULL or ply == NULL or !ply or !ply:IsValid() or !ply:IsPlayer() or !ent:IsValid() or !ent or ent:IsPlayer()) then return end
 	SPropProtection["Props"][ent:EntIndex()] = {ply:SteamID(), ent}
 	ent:SetNetworkedString("Owner", ply:Nick())
 	ent:SetNetworkedString("Ownerid", ply:EntIndex())
@@ -67,6 +67,7 @@ end
 
 function SPropProtection.PlayerIsPropOwner(ply, ent)
 	if (ent:IsPlayer() or !ent or ent == NULL) then return end
+	if (!SPropProtection["Props"][ent:EntIndex()]) then return true end
 
 	if (SPropProtection["Props"][ent:EntIndex()][1] == ply:SteamID() and ent:GetNetworkedString("Owner") == ply:Nick() and ent:GetNetworkedString("Ownerid") == ply:EntIndex()) then
 		return true
