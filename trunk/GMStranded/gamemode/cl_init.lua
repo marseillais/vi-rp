@@ -567,7 +567,7 @@ function GM.OpenHelpMenu()
 	GM.HelpMenu.HTML = vgui.Create("HTML", GM.HelpMenu)
 	GM.HelpMenu.HTML:SetSize(GM.HelpMenu:GetWide() - 50, GM.HelpMenu:GetTall() - 50)
 	GM.HelpMenu.HTML:SetPos(25, 25)
-	GM.HelpMenu.HTML:SetHTML(file.Read("../gamemodes/GMStranded/content/help/help2.htm"))
+	GM.HelpMenu.HTML:SetHTML(file.Read("../gamemodes/GMStranded/content/help/helpnew.htm"))
 end
 
 concommand.Add("gms_help", GM.OpenHelpMenu)

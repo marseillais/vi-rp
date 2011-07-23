@@ -60,7 +60,7 @@ GM.AntlionBarrowSpawns['gms_rollinghills'] = {Vector(3131.2876, -980.5972, 519.5
 GM.AntlionBarrowSpawns['gms_rollinghills_daynight'] = GM.AntlionBarrowSpawns['gms_rollinghills']
 GM.AntlionBarrowSpawns['gms_rollinghills_daynight_b1'] = GM.AntlionBarrowSpawns['gms_rollinghills']
 
-resource.AddFile("gamemodes/GMStranded/content/help/help2.htm")
+resource.AddFile("gamemodes/GMStranded/content/help/helpnew.htm")
 for k, v in pairs(file.Find("../materials/gui/GMS/*")) do
 	resource.AddFile("materials/gui/GMS/" .. v)
 end
