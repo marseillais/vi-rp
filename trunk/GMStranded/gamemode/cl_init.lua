@@ -34,15 +34,17 @@ local PlayerMeta = FindMetaTable("Player")
 /* The chat hints */
 
 HintsRus = {
-	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
-	"А заете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
-	"Храните вашу еду в холодильнике, чтобы она не портилась."
+	"Р”РµСЂР¶РёС‚Рµ СЃРІРѕРё СЂРµСЃСѓСЂСЃС‹ РІ СЂРµСЃСѓСЂСЃ РїР°РєРµ, С‡С‚РѕР±С‹ РёС… РЅРµ СѓРєСЂР°Р»Рё РЅРѕС‡СЊСЋ.",
+	"Рђ Р·Р°РµС‚Рµ Р»Рё РІС‹, С‡С‚Рѕ СЂРµСЃСѓСЂСЃС‹ РІ РјРµРЅСЋ СЂРµСЃСѓСЂСЃРѕРІ (F2) РЅР°Р¶РёРјР°РµРјС‹ РјС‹С€СЊСЋ?",
+	"РҐСЂР°РЅРёС‚Рµ РІР°С€Сѓ РµРґСѓ РІ С…РѕР»РѕРґРёР»СЊРЅРёРєРµ, С‡С‚РѕР±С‹ РѕРЅР° РЅРµ РїРѕСЂС‚РёР»Р°СЃСЊ.",
+	"Р§С‚РѕР±С‹ РїР»РµРјСЏ РјРѕРіР»Рѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІРµС‰Рё РґСЂСѓРі РґСЂСѓРіР°, СЌС‚Рѕ РїР»РµРјСЏ РґРѕР»Р¶РЅРѕ РёРјРµС‚СЊ РїР°СЂРѕР»СЊ."
 }
 
 HintsEng = {
 	"Store your resources in resource pack, so they wont get stolen at night.",
 	"Did you know that resources in Resources menu (F2) are clickable?",
-	"Keep your food in fridge, so it does not spoil."
+	"Keep your food in fridge, so it does not spoil.",
+	"In order to share items within a tribe, the tribe must have a password."
 }
 
 timer.Create("Client.HINTS", 300, 0, function()
