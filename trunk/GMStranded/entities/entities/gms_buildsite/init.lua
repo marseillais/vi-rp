@@ -75,7 +75,7 @@ function ENT:Use(ply)
     end
 
     if (table.Count(self.Costs) > 0) then
-        local str = "You need: "
+        local str = "You need:"
         for k, v in pairs(self.Costs) do
             str = str .. " " .. string.Replace(k, "_", " ") .. " (" .. v .. "x)"
         end

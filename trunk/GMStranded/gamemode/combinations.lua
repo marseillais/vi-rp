@@ -26,6 +26,25 @@ COMBI.BuildSiteModel = "models/items/item_item_crate.mdl"
 
 GMS.RegisterCombi("ResourcePack", COMBI, "Buildings")
 
+/* Fridge */
+
+local COMBI = {}
+
+COMBI.Name = "Fridge"
+COMBI.Description = [[You can use the fridge to store food in it. It will not spoil inside. Highly recommended.
+You need:
+20 Iron
+]]
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 20
+
+COMBI.Results = {}
+COMBI.Results = "gms_fridge"
+COMBI.BuildSiteModel = "models/props_c17/FurnitureFridge001a.mdl"
+
+GMS.RegisterCombi("Fridge", COMBI, "Buildings")
+
 /*---------------------------------------------------------
   Stone Workbench
 ---------------------------------------------------------*/
@@ -1414,7 +1433,7 @@ COMBI.Req["Iron"] = 2
 COMBI.Req["Herbs"] = 1
 COMBI.FoodValue = 50
  
-GMS.RegisterCombi("Rock_Cake", COMBI, "Cooking")
+GMS.RegisterCombi("RockCake", COMBI, "Cooking")
 /*---------------------------------------------------------
   Salad
 ---------------------------------------------------------*/
@@ -1539,7 +1558,7 @@ COMBI.SkillReq["Cooking"] = 3
 
 COMBI.FoodValue = 850
  
-GMS.RegisterCombi("Burger", COMBI, "Cooking")
+GMS.RegisterCombi("Hamburger", COMBI, "Cooking")
 /*---------------------------------------------------------
 
   Weapons crafting

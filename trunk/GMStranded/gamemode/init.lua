@@ -110,18 +110,6 @@ concommand.Add("gms_cancelprocess", function(ply, cmd, args)
 	GAMEMODE.RemoveProcessThink(v)
 end)
 
-/* Send all campfires */
-
-hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
-	timer.Simple(5, function()
-		for i, v in pairs(GAMEMODE.CampFireProps) do
-			umsg.Start("addCampFire", ply)
-				umsg.Short(v:EntIndex())
-			umsg.End()
-		end
-	end)
-end)
-
 /*---------------------------------------------------------
   Custom player messages
 ---------------------------------------------------------*/
@@ -376,9 +364,10 @@ function PlayerMeta:CreateStructureBuildingSite(pos, angle, model, class, cost, 
 	rep:SetNetworkedString('Name', name)
 	rep:SetNetworkedString('Resources', str)
 	rep:Spawn()
+
 	local cormin,cormax = rep:WorldSpaceAABB()
-	local offset = cormax-cormin 
-	rep:SetPos(Vector(pos.x, pos.y, pos.z + (offset.z / 2)))
+	local offset = cormax-cormin
+	rep:SetPos(Vector(pos.x, pos.y, pos.z + (offset.z / 2) + 500))
 	if (model != "models/props_c17/factorymachine01.mdl" and model != "models/props_c17/furniturefireplace001a.mdl" and model != "models/Gibs/airboat_broken_engine.mdl" and model != "models/props_c17/furniturestove001a.mdl" and model != "models/props_wasteland/controlroom_desk001b.mdl") then
 		rep:DropToGround()	
 	end
@@ -1161,7 +1150,6 @@ end)
 ---------------------------------------------------------*/
 function GM:PlayerInitialSpawn(ply)
 	--Create HUD
-	ply.Loaded = false
 	umsg.Start("gms_CreateInitialHUD", ply)
 	umsg.End()
 
@@ -1190,6 +1178,7 @@ function GM:PlayerInitialSpawn(ply)
 
 	--Character loading
 	if (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then
+		ply.Loaded = false
 		local tbl = util.KeyValuesToTable(file.Read("GMStranded/Saves/" .. ply:UniqueID() .. ".txt"))
 
 		if (tbl["skills"]) then
@@ -1256,7 +1245,7 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end
 	
-	timer.Simple(4, function()
+	timer.Simple(5, function()
 		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
 			umsg.Start("gms_SetResourceDropInfo", ply)
 				umsg.String(v:EntIndex())
@@ -1266,17 +1255,76 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end)
 	
-	timer.Simple(6, function()
+	timer.Simple(7, function()
 		local time = 0
 		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
 			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function() v:SetResPackInfo(res, num) end)
+				timer.Simple(time, function()
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end)
+				time = time + 0.5
+			end
+			time = time + 1
+		end
+		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function()
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end)
 				time = time + 0.5
 			end
 			time = time + 1
 		end
 	end)
+	
+	timer.Simple(6, function()
+		for _, v in ipairs(ents.FindByClass("gms_food")) do
+			umsg.Start("gms_SetFoodDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Name, "_", " "))
+			umsg.End()
+		end
+	end)
 end
+
+/* Send all campfires */
+
+hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
+	timer.Simple(3, function()
+		for i, v in pairs(GAMEMODE.CampFireProps) do
+			umsg.Start("addCampFire", ply)
+				umsg.Short(v:EntIndex())
+			umsg.End()
+		end
+	end)
+end)
+
+hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
+	timer.Simple(4, function()
+		for i, v in pairs(GAMEMODE.Tribes) do
+			umsg.Start("recvTribes", ply)
+			umsg.Short(v.id)
+			umsg.String(i)
+			umsg.Short(v.red)
+			umsg.Short(v.green)
+			umsg.Short(v.blue)
+			if (v.Password == false) then 
+				umsg.Bool(false)
+			else
+				umsg.Bool(true)
+			end
+			umsg.End()
+		end
+	end)
+end)
 
 function GM:PlayerSpawn(ply)
 	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
@@ -1751,7 +1799,7 @@ concommand.Add("gms_ADropResources", GM.ADropResource)
 /*---------------------------------------------------------
   Take resource command
 ---------------------------------------------------------*/
-function GM.TakeResource(ply, cmd, args)
+concommand.Add("gms_TakeResources", function(ply, cmd, args)
 	if (ply.InProcess) then return end
 
 	if (args == nil or args[1] == nil) then ply:SendMessage("You need to at least give a resource type!", 3, Color(200, 0, 0, 255)) return end
@@ -1763,9 +1811,9 @@ function GM.TakeResource(ply, cmd, args)
 
 	local tr = ply:TraceFromEyes(150)
 	local ent = tr.Entity
-	local cls = tr.Entity:GetClass()
+	local cls = ent:GetClass()
 
-	if (cls != "gms_resourcedrop" and cls != "gms_resourcepack") then return end
+	if (cls != "gms_resourcedrop" and cls != "gms_resourcepack" and cls != "gms_fridge") then return end
 	if (!(SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
 	if ((ply:GetPos() - ent:LocalToWorld(ent:OBBCenter())):Length() >= 100) then return end
 
@@ -1799,13 +1847,32 @@ function GM.TakeResource(ply, cmd, args)
 			end
 		end
 	end
-end
-concommand.Add("gms_TakeResources", GM.TakeResource)//ply:PickupResourceEntityPack(ent)
+	
+	if (cls == "gms_fridge") then
+		for res, num in pairs(ent.Resources) do
+			if (res == args[1]) then
+				ent.Resources[res] = num - 1
+				ent:SetResPackInfo(res, ent.Resources[res]) 
+				if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
+
+				local food = ents.Create("gms_food")
+				food:SetPos(ent:GetPos() + Vector(0, 0, ent:OBBMaxs().z + 16))
+				SPropProtection.PlayerMakePropOwner(ply, food)
+				food.Value = GMS.Combinations["Cooking"][string.Replace(res, "_", "")].FoodValue
+				food.Name = res
+				food:Spawn()
+				food:SetFoodInfo(res)
+				
+				timer.Simple(300, function(food) if (food:IsValid()) then food:Fadeout(2) end end, food)
+			end
+		end
+	end
+end)//ply:PickupResourceEntityPack(ent)
 
 /*---------------------------------------------------------
   Buildings menu
 ---------------------------------------------------------*/
-concommand.Add("gms_BuildingsCombi", function (ply)
+concommand.Add("gms_BuildingsCombi", function(ply)
 	ply:OpenCombiMenu("Buildings")
 end)
 
@@ -1990,7 +2057,7 @@ function GM.MakeCombination(ply,cmd,args)
 		local time = 10
 
 		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then
-			time = 6
+			time = 7
 		end
 		
 		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 4), 4)
@@ -2462,7 +2529,7 @@ function GM:OnNPCKilled(npc, killer, weapon)
 			tbl.Resources = res
 			loot:SetPos(npc:GetPos() + Vector(0, 0, 64))
 			loot:Spawn()
-			timer.Simple(180, function(loot) if (loot:IsValid()) then loot:Remove() end end, loot)
+			timer.Simple(180, function(loot) if (loot:IsValid()) then loot:Fadeout(2) end end, loot)
 			npc:Fadeout(5)
 
 			killer:IncXP("Hunting", math.Clamp(math.Round(50 / killer:GetSkill("Hunting")), 1, 1000))
@@ -2603,6 +2670,8 @@ function GM.UseKeyHook(ply, key)
 			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
 			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
+				ply:ConCommand("gms_openrespackmenu")
+			elseif (cls == "gms_fridge" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:ConCommand("gms_openrespackmenu")
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end
@@ -3009,24 +3078,6 @@ end)
 /*---------------------------------------------------------
    Tribe system
 ---------------------------------------------------------*/
-hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
-	timer.Simple(5, function()
-		for i, v in pairs(GAMEMODE.Tribes) do
-			umsg.Start("recvTribes", ply)
-			umsg.Short(v.id)
-			umsg.String(i)
-			umsg.Short(v.red)
-			umsg.Short(v.green)
-			umsg.Short(v.blue)
-			if (v.Password == false) then 
-				umsg.Bool(false)
-			else
-				umsg.Bool(true)
-			end
-			umsg.End()
-		end
-	end)
-end)
 
 function CreateTribe(ply, name, red, green, blue, password)
 	local Password = false
@@ -3220,6 +3271,28 @@ function big_gms_combineresourcepack(respack, ent_b)
 	end 	
 end
 
+/* Fridge touches Food */
+
+function big_gms_combinefood(fridge, food)
+	local ent_a_owner = fridge:GetNetworkedString("Owner")
+	local ent_b_owner = food:GetNetworkedString("Owner")
+	local ply = player.GetByID(fridge:GetNetworkedString("Ownerid"))
+	local plyb = player.GetByID(food:GetNetworkedString("Ownerid"))
+	local foodname = string.gsub(food.Name, " ", "_")
+
+	if (ent_a_owner != nil and ent_b_owner != nil and ply != nil) then
+		if (ent_a_owner == ent_b_owner or (SPropProtection.PlayerCanTouch(ply, food) and SPropProtection.PlayerCanTouch(plyb, fridge))) then
+			if (fridge.Resources[foodname]) then
+				fridge.Resources[foodname] = fridge.Resources[foodname] + 1
+			else
+				fridge.Resources[foodname] = 1
+			end
+			fridge:SetResPackInfo(foodname, fridge.Resources[foodname])
+			food:Remove()
+		end
+	end 	
+end
+
 /*---------------------------------------------------------
    Resource Box Buildsite Touch
 ---------------------------------------------------------*/
@@ -3321,7 +3394,7 @@ end
    Resource Box versus Player Damage
 ---------------------------------------------------------*/
 function playershouldtakedamage(victim, attacker)
-	if (victim:IsPlayer() and (attacker:GetClass() == "gms_resourcedrop" or attacker:IsPlayerHolding() or attacker:GetClass() == "gms_resourcepack")) then
+	if (victim:IsPlayer() and (attacker:GetClass() == "gms_resourcedrop" or attacker:IsPlayerHolding() or attacker:GetClass() == "gms_resourcepack" or attacker:GetClass() == "gms_fridge")) then
 		return false
 	end
 	return true

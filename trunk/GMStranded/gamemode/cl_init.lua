@@ -35,15 +35,15 @@ local PlayerMeta = FindMetaTable("Player")
 
 HintsRus = {
 	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
-	"А заете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
-	//"Храните вашу еду в холодильнике, чтобы она не портилась.",
+	"А знаете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
+	"Храните вашу еду в холодильнике, чтобы она не портилась.",
 	"Чтобы племя могло использовать вещи друг друга, это племя должно иметь пароль."
 }
 
 HintsEng = {
 	"Store your resources in resource pack, so they wont get stolen at night.",
 	"Did you know that resources in Resources menu (F2) are clickable?",
-	//"Keep your food in fridge, so it does not spoil.",
+	"Keep your food in fridge, so it does not spoil.",
 	"In order to share items within a tribe, the tribe must have a password."
 }
 
@@ -65,14 +65,18 @@ function GM.FindTribeByID(Tid)
 end
 
 /* Res pack GUI */
-
 concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
     local resPack = ply:GetEyeTrace().Entity
     
     local frame = vgui.Create("DFrame")
     frame:SetSize(ScrW() / 2, ScrH() / 2)
     frame:MakePopup()
-    frame:SetTitle("Resource pack")
+	if (resPack:GetClass() == "gms_fridge") then
+		frame:SetTitle("Fridge")
+	else
+		frame:SetTitle("Resource pack")
+	end
+   
     frame:Center()
     
     local panelList = vgui.Create("DPanelList", frame)
@@ -85,13 +89,16 @@ concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
     
     for res, num in SortedPairs(resPack.Resources) do
         local reso = vgui.Create("gms_resourceLine")
-        reso:SetRes(res, num)
+		if (resPack:GetClass() == "gms_fridge") then
+			reso:SetRes(res, num, false)
+		else
+			reso:SetRes(res, num, true)
+		end
         panelList:AddItem(reso)
     end
 end)
 
 /* Receive the campfires */
-
 usermessage.Hook("addCampFire", function(data)
 	table.insert(CampFires, Entity(data:ReadShort()))
 end)
@@ -118,7 +125,7 @@ hook.Add("Think", "CampFireLight", function()
 				Hax.g = 128
 				Hax.b = 0
 				Hax.Brightness = math.random(2, 3)
-				Hax.Size = math.random(400, 512) 
+				Hax.Size = math.random(448, 512) 
 				Hax.Decay = 400 * 5
 				Hax.DieTime = CurTime() + 0.25
 			end
@@ -171,11 +178,6 @@ function GM.CreateHUD()
 	GAMEMODE.LoadingBar:SetVisible(false)
 	GAMEMODE.SavingBar = vgui.Create("gms_SavingBar")
 	GAMEMODE.SavingBar:SetVisible(false)
-	
-	// The hint.
-	local hint = vgui.Create("gms_HUDHint")
-	hint:SetHint("Pay attention!\n\nThese menues on the right are expandable.\nWhen you expand commnds menu the\ncursor appears. You can click the button\nyou wish.\n\nThe resoures in resource menu\nare also clickable. Right click a resource\nto see all it's actions. The first action will\nbe executed when you left click resource.\nPlanting seeds, eating berries and\nsuch stuff only availible throgh\nthe resources menu on the right.\n\nClick anywhere on this message to hide it.")
-	hint:SetPos(ScrW() - (ScrW() / 6 + hint:GetWide() + 5), 0)
 end
 usermessage.Hook("gms_CreateInitialHUD", GM.CreateHUD)
 
@@ -358,7 +360,7 @@ function GM.GMS_ResourceDropsHUD()
 			end
 		end
 		
-		if (v:GetClass() == "gms_resourcepack") then
+		if (v:GetClass() == "gms_resourcepack" or v:GetClass() == "gms_fridge") then
 			cent = v:LocalToWorld(v:OBBCenter())
 			
 			tr = {}
@@ -370,6 +372,7 @@ function GM.GMS_ResourceDropsHUD()
 				draw_loc = cent:ToScreen()
 				surface.SetFont("ChatFont")
 				str = "Resource pack"
+				if (v:GetClass() == "gms_fridge") then str = "Fridge" end
 				for res, num in pairs(v.Resources) do
 					str = str .. "\n" .. res .. ": " .. num
 				end
@@ -378,7 +381,7 @@ function GM.GMS_ResourceDropsHUD()
 				surface.SetTextColor(255, 255, 255, 200)
 				for id, st in pairs(string.Explode("\n", str)) do
 					id = id - 1
-					w2, h2 = surface.GetTextSize("hax")
+					w2, h2 = surface.GetTextSize(st)
 					surface.SetTextPos(draw_loc.x - (w / 2), draw_loc.y - (h / 2) + (id * h2))
 					surface.DrawText(st)
 				end
