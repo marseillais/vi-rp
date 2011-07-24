@@ -1162,6 +1162,7 @@ function GM:PlayerInitialSpawn(ply)
 	ply.Resources = {}
 	ply.Experience = {}
 	ply.FeatureUnlocks = {}	
+	ply.Loaded = true
 
 	--Admin info, needed clientside
 	if (ply:IsAdmin()) then
