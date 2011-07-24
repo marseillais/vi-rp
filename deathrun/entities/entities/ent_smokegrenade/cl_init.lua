@@ -7,9 +7,8 @@ function ENT:Draw()
 	self.Entity:DrawModel()
 end
 function ENT:Think()
-	if self.Entity:GetDTBool(0) then
+	if (self.Entity:GetNWBool("Bang", false) == true) then
 		self:Smoke()
-		self.Entity:SetDTBool(0, false)
 	end
 end
 

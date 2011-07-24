@@ -10,6 +10,7 @@ resource.AddFile("sound/music/your_team_win.mp3")
 
 GM.MapFixes = {}
 GM.MapFixes['deathrun_italy_rats_final'] = function()
+	print("DOING EET")
 	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
 		ent:SetKeyValue("spawnflags", 1)
 	end
@@ -23,8 +24,10 @@ end
 function GM:OnPreRoundStart(num)
 	game.CleanUpMap()
 	
-	if (GM.MapFixes[game.GetMap()]) then
-		GM.MapFixes[game.GetMap()]()
+	print('Loading... ' .. game.GetMap() .. '...')
+	if (self.MapFixes[game.GetMap()]) then
+		print('Found! Loading...')
+		self.MapFixes[game.GetMap()]()
 	end
 
 	local OldRun = team.GetPlayers(TEAM_RUN)
@@ -65,9 +68,9 @@ function GM:ProcessResultText(result, resulttext)
 	if (resulttext == nil) then resulttext = "" end
 
 	if (result == TEAM_RUN) then
-		resulttext = "The Runners Win!"
+		resulttext = "Runners have won!"
 	elseif (result == TEAM_KILLER) then
-		resulttext = "Killers Win!"
+		resulttext = "Killers have won!"
 	end
 
 	return resulttext
@@ -108,11 +111,11 @@ function GM:PlayerDeathSound()
 end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
-	if (ply:Team() == TEAM_RUN) then
+	/*if (ply:Team() == TEAM_RUN) then
 		ply:EmitSound(DrunDieSounds[math.random(1, #DrunDieSounds)])
 	elseif (ply:Team() == TEAM_KILLER) then
 		ply:EmitSound(DrunDieSounds[math.random(1, #DrunDieSounds)], 90, 80)
-	end
+	end*/
 
 	self.BaseClass:DoPlayerDeath(ply, attacker, dmginfo)
 end
@@ -123,7 +126,7 @@ local LastSawDie_Death = 0
 function GM:PlayerDeath(ply, inflictor, attacker)
 	self.BaseClass:PlayerDeath(ply, inflictor, attacker)
 
-	for _, ent in RandomPairs(ents.FindInSphere(ply:GetPos(), 750)) do
+	/*for _, ent in RandomPairs(ents.FindInSphere(ply:GetPos(), 750)) do
 		if (ent:IsValid() and ent:IsPlayer() and ent:Alive() and ent:Team() == ply:Team() and ent != ply) then
 			if (ent:Team() == TEAM_RUN) then
 				if (LastSawDie_Run + 5 <= CurTime()) then
@@ -138,7 +141,7 @@ function GM:PlayerDeath(ply, inflictor, attacker)
 			end
 			break
 		end
-	end
+	end*/
 end
 
 function GM:PlayerRequestClass(ply, class, disablemessage)
@@ -155,4 +158,19 @@ hook.Add("Think", "Deathrun_fixes", function()
 	end
 
 	//ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
+end)
+
+hook.Add("EntityTakeDamage", "Sounds", function(ent,inflictor,attacker,amount,dmginfo)
+	if (!ent:IsPlayer()) then return end
+	local Model = string.lower(ent:GetModel())
+	if (PainSounds[Model] != nil) then
+		ent:EmitSound(PainSounds[Model][math.random(1, #PainSounds[Model])], 100, math.random(95, 105))
+	end
+end)
+
+hook.Add("PlayerDeath", "DeathSounds", function(victim,inflictor,attacker)
+	local Model = string.lower(victim:GetModel())
+	if (PainSounds[Model] != nil) then
+		victim:EmitSound(PainSounds[Model][math.random(1, #PainSounds[Model])], 100, math.random(95, 105))
+	end
 end)

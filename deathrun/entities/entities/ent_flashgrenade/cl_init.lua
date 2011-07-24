@@ -7,14 +7,11 @@ local EFFECT_DELAY = 2; --time, in seconds when the effects still are going on, 
 Initialize
 ---------------------------------------------------------*/
 function ENT:Initialize()
-
-	local Pos = self:GetPos()
-
-	timer.Simple(2, function()
-		local dynamicflash = DynamicLight( self:EntIndex() )
+	timer.Simple(2.9, function(ent)
+		local dynamicflash = DynamicLight( ent:EntIndex() )
 
 		if ( dynamicflash ) then
-			dynamicflash.Pos = Pos
+			dynamicflash.Pos = ent:GetPos()
 			dynamicflash.r = 255
 			dynamicflash.g = 255
 			dynamicflash.b = 255
@@ -23,7 +20,7 @@ function ENT:Initialize()
 			dynamicflash.Decay = 1000
 			dynamicflash.DieTime = CurTime() + 0.5
 		end 
-	end)
+	end, self.Entity)
 end
 
 /*---------------------------------------------------------
@@ -36,7 +33,6 @@ end
 Draw
 ---------------------------------------------------------*/
 function ENT:Draw()
-
 	self.Entity:DrawModel()
 end
 
@@ -44,7 +40,6 @@ end
 IsTranslucent
 ---------------------------------------------------------*/
 function ENT:IsTranslucent()
-
 	return true
 end
 
