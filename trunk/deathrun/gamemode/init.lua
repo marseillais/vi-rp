@@ -8,6 +8,13 @@ include('bhop.lua')
 resource.AddFile("sound/music/your_team_lost.mp3")
 resource.AddFile("sound/music/your_team_win.mp3")
 
+GM.MapFixes = {}
+GM.MapFixes['deathrun_italy_rats_final'] = function()
+	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
+		ent:SetKeyValue("spawnflags", 1)
+	end
+end
+
 function GM:CanStartRound()
 	if (#team.GetPlayers(TEAM_RUN) + #team.GetPlayers(TEAM_KILLER) >= 2) then return true end
 	return false
@@ -16,21 +23,9 @@ end
 function GM:OnPreRoundStart(num)
 	game.CleanUpMap()
 	
-	/* Fixes */
-	for id, ent in pairs(ents.FindByClass("weapon_*")) do
-		local phys = ent:GetPhysicsObject()
-    
-		if (phys and phys:IsValid()) then
-			phys:Sleep()
-		end
+	if (GM.MapFixes[game.GetMap()]) then
+		GM.MapFixes[game.GetMap()]()
 	end
-	
-	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
-		ent:SetKeyValue("spawnflags", 1)
-	end
-
-	//ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
-	/*Fixes*/
 
 	local OldRun = team.GetPlayers(TEAM_RUN)
 	local OldDeath = team.GetPlayers(TEAM_KILLER)
@@ -43,17 +38,17 @@ function GM:OnPreRoundStart(num)
 			pl:SetTeam(TEAM_RUN)
 		end
 
-		local count=0
+		local count = 0
 
 		for _, pl in RandomPairs(OldRun) do
 			if (count < NrDeath) then
 				pl:SetTeam(TEAM_KILLER)
-				count=count + 1
+				count = count + 1
 			end
 		end
 
 		for _, pl in RandomPairs(OldDeath) do
-			if count < NrDeath then
+			if (count < NrDeath) then
 				pl:SetTeam(TEAM_KILLER)
 				count = count + 1
 			end
@@ -145,3 +140,19 @@ function GM:PlayerDeath(ply, inflictor, attacker)
 		end
 	end
 end
+
+function GM:PlayerRequestClass(ply, class, disablemessage)
+	if (ply:Team() == TEAM_KILLER) then return false end
+end
+
+hook.Add("Think", "Deathrun_fixes", function()
+	for id, ent in pairs(ents.FindByClass("weapon_*")) do
+		local phys = ent:GetPhysicsObject()
+    
+		if (phys and phys:IsValid()) then
+			phys:Sleep()
+		end
+	end
+
+	//ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
+end)

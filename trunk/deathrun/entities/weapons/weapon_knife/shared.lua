@@ -133,8 +133,6 @@ function SWEP:SecondaryAttack()
 	self.Weapon:SetNextPrimaryFire(CurTime() + 0.5)
 	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
-
-
 	if ( trace.Hit ) then
 		self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
 		if trace.Entity:IsPlayer() then
