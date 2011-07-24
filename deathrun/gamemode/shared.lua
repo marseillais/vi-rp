@@ -52,11 +52,11 @@ DrunSawDieSounds = {
 function GM:CreateTeams()
 	if (!GAMEMODE.TeamBased) then return end
 
-	team.SetUp(TEAM_RUN, "Runners", Color(20, 20, 200), true)
+	team.SetUp(TEAM_RUN, "Runners", Color(0, 64, 200), true)
 	team.SetSpawnPoint(TEAM_RUN, "info_player_counterterrorist")
 	team.SetClass(TEAM_RUN, {"Runner"})
 
-	team.SetUp(TEAM_KILLER, "Killers", Color(200, 20, 20), false)
+	team.SetUp(TEAM_KILLER, "Killers", Color(255, 64, 32), false)
 	team.SetSpawnPoint(TEAM_KILLER, "info_player_terrorist")
 	team.SetClass(TEAM_KILLER, {"Killer"})
 end
