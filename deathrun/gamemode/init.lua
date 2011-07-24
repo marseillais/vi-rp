@@ -129,7 +129,13 @@ function GM:CountVotesForChange() // Little haxxy bullshit :)
 		fraction = GAMEMODE:GetFractionOfPlayersThatWantChange()
 		
 		if (fraction > fretta_votesneeded:GetFloat()) then
-			GAMEMODE:StartGamemodeVote()
+			if(!GAMEMODE.m_bVotingStarted) then
+				GAMEMODE:ClearPlayerWants()
+				BroadcastLua("GAMEMODE:ShowGamemodeChooser()")
+				SetGlobalBool("InGamemodeVote", true)
+				SetGlobalFloat("VoteEndTime", CurTime() + fretta_votetime:GetFloat())
+				GAMEMODE.m_bVotingStarted = true
+			end
 			GAMEMODE.WinningGamemode = GAMEMODE.FolderName
 			GAMEMODE:FinishGamemodeVote()
 			return false
