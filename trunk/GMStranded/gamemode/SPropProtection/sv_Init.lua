@@ -103,10 +103,10 @@ function SPropProtection.IsBuddy(ply, ent)
 	local Players = player.GetAll()
 	if (table.Count(Players) == 1) then return true end
 	if (ply:IsAdmin()) then return true end
+	if (ply:Team() == tonumber(ent:GetNetworkedString("TribeID", "1")) and GAMEMODE.FindTribeByID(ply:Team()).Password != false) then return true end
 	for k, v in pairs(Players) do
 		if (v and v:IsValid() and v != ply) then
 	        if (SPropProtection["Props"][ent:EntIndex()][1] == v:SteamID()) then
-				if (ply:Team() == tonumber(ent:GetNetworkedString("TribeID", "1")) and GAMEMODE.FindTribeByID(ply:Team()).Password != false) then return true end
                 if (table.HasValue(SPropProtection[v:SteamID()], ply:SteamID())) then
 					return true
 				else
