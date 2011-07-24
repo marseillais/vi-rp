@@ -15,6 +15,22 @@ end
 
 function GM:OnPreRoundStart(num)
 	game.CleanUpMap()
+	
+	/* Fixes */
+	for id, ent in pairs(ents.FindByClass("weapon_*")) do
+		local phys = ent:GetPhysicsObject()
+    
+		if (phys and phys:IsValid()) then
+			phys:Sleep()
+		end
+	end
+	
+	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
+		ent:SetKeyValue("spawnflags", 1)
+	end
+
+	//ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
+	/*Fixes*/
 
 	local OldRun = team.GetPlayers(TEAM_RUN)
 	local OldDeath = team.GetPlayers(TEAM_KILLER)
@@ -129,20 +145,3 @@ function GM:PlayerDeath(ply, inflictor, attacker)
 		end
 	end
 end
-
-hook.Add("Think","Deathrun_fixes",function()
-	for id, ent in pairs(ents.FindByClass("weapon_*")) do
-		local phys = ent:GetPhysicsObject()
-    
-		if (phys and phys:IsValid()) then
-			phys:Sleep()
-		end
-	end
-	
-	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
-		ent:SetKeyValue("spawnflags", 1)
-	end
-	
-	
-	ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
-end)
