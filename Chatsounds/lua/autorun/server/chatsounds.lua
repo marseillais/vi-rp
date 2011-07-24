@@ -1010,26 +1010,26 @@ SoundList[ "om nom nom nom" ] = { {2, "vo/SandwichEat09.wav" }}
 
 
 local soundkeys = { }
-for k,v in pairs(SoundList) do
+for k, v in pairs(SoundList) do
 	table.insert(soundkeys, k)
 end
-table.sort(soundkeys, function(a,b) return string.len(a) > string.len(b) end) -- Sort the list into size descending
+table.sort(soundkeys, function(a, b) return string.len(a) > string.len(b) end) -- Sort the list into size descending
 
 
 local function GetList(text)
-	local TextList = { }
-	for k,v in pairs(soundkeys) do
-		if v ~= "" then
+	local TextList = {}
+	for k, v in pairs(soundkeys) do
+		if (v ~= "") then
 			local last_find = 0
 			local incpos = 0
 			while last_find ~= nil do
 				local Find, FindEnd = string.find(string.lower(text), string.lower(v))
-				if Find then
-					local beforec = string.sub(text, Find-1, Find-1)
-					local afterc = string.sub(text, FindEnd+1, FindEnd+1)--EndingOnlyPunctuation
-					if k == "%." or (table.HasValue(Punctuation, beforec) and ((table.HasValue(Punctuation, afterc) or table.HasValue(EndingOnlyPunctuation, afterc)) or afterc == string.sub(text, FindEnd, FindEnd))) then
+				if (Find) then
+					local beforec = string.sub(text, Find - 1, Find - 1)
+					local afterc = string.sub(text, FindEnd + 1, FindEnd + 1) --EndingOnlyPunctuation
+					if (k == "%." or (table.HasValue(Punctuation, beforec) and ((table.HasValue(Punctuation, afterc) or table.HasValue(EndingOnlyPunctuation, afterc)) or afterc == string.sub(text, FindEnd, FindEnd)))) then
 						table.insert(TextList, {Find, v})
-						text = string.sub(text, 1, Find-1) .. string.rep(" ", string.len(v)) .. string.sub(text, FindEnd+1)
+						text = string.sub(text, 1, Find - 1) .. string.rep(" ", string.len(v)) .. string.sub(text, FindEnd + 1)
 					else
 						FindEnd = nil
 					end
@@ -1041,31 +1041,30 @@ local function GetList(text)
 	return TextList
 end
 
-local function DoSound( ply, snd, num )
+local function DoSound(ply, snd, num)
 	if ValidEntity(ply) then
-		if MutedPlayers[ply:UniqueID( )] then return; end
+		if (!ply:Alive()) then return end
+		if (MutedPlayers[ply:UniqueID()]) then return end
 		num = num or 0
-		local pitch = math.random( 94, 102 )
-		for i = 1, num+1 do
-			ply:EmitSound(Sound(snd), 90, pitch)
+		for i = 1, num + 1 do
+			ply:EmitSound(Sound(snd), 90, math.random(94, 102))
 		end
 	end
 end
 
-local function PlayerSay( ply, text )
-	if MutedPlayers[ply:UniqueID( )] then return; end
+local function PlayerSay(ply, text)
+	if (!ply:Alive()) then return end
+	if (MutedPlayers[ply:UniqueID()]) then return end
 	local TextList = GetList(text)
 	
-	if #TextList > 1 then
-		table.sort(TextList, function(a, b) return a[1] < b[1] end)
-	end
+	if (#TextList > 1) then table.sort(TextList, function(a, b) return a[1] < b[1] end) end
 	
 	local _, num = string.gsub(text, "[!]", "")
 	local Time = 0
-	for k,v in pairs(TextList) do
+	for k, v in pairs(TextList) do
 		local sound = SoundList[v[2]][math.random(#SoundList[v[2]])]
-		if not sound then return; end
-		if sound[2] and sound[2] ~= "" then
+		if (!sound) then return end
+		if (sound[2] and sound[2] ~= "") then
 			local i
 			timer.Simple(Time, DoSound, ply, sound[2], num)
 		end
@@ -1074,36 +1073,31 @@ local function PlayerSay( ply, text )
 end
 hook.Add("PlayerSay", "ChatSounds2", PlayerSay)
 
-local function PlaySound( ply, c, arg )
-	PlayerSay( ply, table.concat(arg, " "))
-end
-concommand.Add("saysound", PlaySound)
+concommand.Add("saysound", function(ply, c, arg)
+	PlayerSay(ply, table.concat(arg, " "))
+end)
 
-
-local function MutePlayer( ply, c, arg )
-	if not ply:IsAdmin( ) then return; end
-	if not arg[1] or not arg[2] then
-		ply:PrintMessage(HUD_PRINTCONSOLE, "Usage: chatsounds_mute <player name> <1/0>\n\t1 for muted, 0 for not muted.")
-	end
+concommand.Add("chatsounds_mute", function(ply, c, arg)
+	if (!ply:IsAdmin()) then return end
+	if (!arg[1] or !arg[2]) then ply:PrintMessage(HUD_PRINTCONSOLE, "Usage: chatsounds_mute <player name> <1/0>\n\t1 for muted, 0 for not muted.") end
 	
 	local mutee
-	for k,v in pairs(player.GetAll( )) do
-		if string.find(string.lower(v:GetName( )), string.lower(arg[1])) then mutee = v; break end
+	for k, v in pairs(player.GetAll()) do
+		if (string.find(string.lower(v:GetName()), string.lower(arg[1]))) then mutee = v; break end
 	end
-	if not mutee then return end
+	if (!mutee) then return end
 	
-	if arg[2] == "1" then
-		ply:PrintMessage( HUD_PRINTTALK, "Muted player: " .. mutee:GetName( ) )
-		MutedPlayers[mutee:UniqueID( )] = true; 
+	if (arg[2] == "1") then
+		ply:PrintMessage(HUD_PRINTTALK, "Muted player: " .. mutee:GetName())
+		MutedPlayers[mutee:UniqueID()] = true; 
 	else
-		ply:PrintMessage( HUD_PRINTTALK, "Unmuted player: " .. mutee:GetName( ) )
-		MutedPlayers[mutee:UniqueID( )] = nil; 
+		ply:PrintMessage(HUD_PRINTTALK, "Unmuted player: " .. mutee:GetName())
+		MutedPlayers[mutee:UniqueID()] = nil; 
 	end
-end
-concommand.Add("chatsounds_mute", MutePlayer)
+end)
 
-local function FindSound( ply, c, arg )
-	if not arg[1] then
+concommand.Add("chatsounds_find", function(ply, c, arg)
+	if (!arg[1]) then
 		ply:PrintMessage(HUD_PRINTCONSOLE, "Usage: chatsounds_find <pattern>\n\tPattern can be either a normal string or a regex pattern, escape char is %. Normal strings may need escaping.")
 		return;
 	end
@@ -1112,12 +1106,10 @@ local function FindSound( ply, c, arg )
 			ply:PrintMessage(HUD_PRINTCONSOLE, v)
 		end
 	end
-end
-concommand.Add("chatsounds_find", FindSound)
+end)
 
-function print_sounds(p,c,a)
-    for k,v in pairs(SoundList) do
-        p:PrintMessage(HUD_PRINTCONSOLE, k )
+concommand.Add("print_sounds", function(p, c, a)
+    for k, v in pairs(SoundList) do
+        p:PrintMessage(HUD_PRINTCONSOLE, k)
     end
-end
-concommand.Add("print_sounds", print_sounds)
+end)
