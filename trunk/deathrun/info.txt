@@ -3,9 +3,9 @@
 	"name"		"Deathrun"
 	"version"	"1"
 
-	"author_name"	"Torengo com"
+	"author_name"	"Robotboy655"
 	"author_email"	""
-	"author_url"	"http://torengoi.dyndns.org/"
+	"author_url"	"http://serverscape.net"
 	
 	"icon"		""
 	"info"		""
@@ -23,5 +23,5 @@
 	}
 
 	"selectable"	"1"
-	"description"	"Survive a level full of traps and kill the Deaths."
+	"description"	"blah"
 }

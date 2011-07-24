@@ -1,5 +1,5 @@
 GM.Name = "Deathrun"
-GM.Author = "Gred, FeliX , Robo"
+GM.Author = "Robotboy655"//fuckyou>"Gred, FeliX , Robo"
 GM.Email = ""
 GM.Website = ""
 GM.Help = "As killer, you need to defeat all of the runners. As runner, you need to finish the map and kill killers."
