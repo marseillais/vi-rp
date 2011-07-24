@@ -32,7 +32,7 @@ function ENT:Think()
 			tracedata.filter = self
 			local trace = util.TraceLine(tracedata)
 		
-			if (trace.Entity != NULL and trace.Entity:IsPlayer()) then
+			if (trace.Entity != NULL and trace.Entity:IsPlayer() and self:GetPos():Distance(trace.Entity:GetPos()) < 1024) then
 				umsg.Start("flashbang_flash", ply)
 					umsg.Long(CurTime())
 					umsg.Long(CurTime() + 6)

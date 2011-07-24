@@ -7,8 +7,8 @@ local EFFECT_DELAY = 2; --time, in seconds when the effects still are going on, 
 Initialize
 ---------------------------------------------------------*/
 function ENT:Initialize()
-	timer.Simple(2.9, function(ent)
-		local dynamicflash = DynamicLight( ent:EntIndex() )
+	timer.Simple(2.98, function(ent)
+		local dynamicflash = DynamicLight(ent:EntIndex())
 
 		if ( dynamicflash ) then
 			dynamicflash.Pos = ent:GetPos()

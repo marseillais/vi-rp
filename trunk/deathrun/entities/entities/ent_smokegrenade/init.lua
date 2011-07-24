@@ -29,7 +29,6 @@ function ENT:Think()
 		self.Entity:EmitSound(Sound("BaseSmokeEffect.Sound"))
 		self.Entity:SetNWBool("Bang", true)
 		self.timer = CurTime() + 999
-		self.Entity:SetNWBool("Bang", false)
 		timer.Simple(49, function(ent) if (ent != NULL) then ent:Remove() end end, self)
 	end
 end
