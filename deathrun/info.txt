@@ -23,5 +23,5 @@
 	}
 
 	"selectable"	"1"
-	"description"	"blah"
+	"description"	"As a runner, try to reach the end. As a killer, try to prevert runners reach their goal."
 }
