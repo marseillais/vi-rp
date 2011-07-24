@@ -107,10 +107,6 @@ function SWEP:Deploy()
 	self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
 	self.Weapon:EmitSound( self.DeploySound, 50, 100 )
-	if SERVER then
-		self.Owner:GiveAmmo(9999,"smg1")
-		self.Owner:GiveAmmo(100,"buckshot")
-	end
 	return true
 end
 
