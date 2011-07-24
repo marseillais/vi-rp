@@ -1,32 +1,46 @@
-SWEP.Base 				= "weapon_smokegrenade"
-SWEP.ViewModelFlip		= true
-SWEP.ViewModel 			= "models/weapons/v_eq_smokegrenade.mdl"
-SWEP.WorldModel 		= "models/weapons/w_eq_smokegrenade.mdl"
-SWEP.Spawnable			= true
-SWEP.AdminSpawnable		= false
+if (SERVER) then
+  
+	AddCSLuaFile ("shared.lua")
+	SWEP.Weight 			= 5
+	SWEP.AutoSwitchTo 		= false
+	SWEP.AutoSwitchFrom 		= false
+end
 
-SWEP.Primary.Recoil			= 5
-SWEP.Primary.Damage			= 0
-SWEP.Primary.NumShots		= 0
-SWEP.Primary.Cone			= 0.075
-SWEP.Primary.Delay 			= 1.5
-SWEP.Primary.ClipSize		= -1					
-SWEP.Primary.DefaultClip	= 1					
-SWEP.Primary.Automatic		= false				
-SWEP.Primary.Ammo			= "Grenade"
-SWEP.Secondary.ClipSize		= -1					
-SWEP.Secondary.DefaultClip	= -1					
-SWEP.Secondary.Automatic	= false				
-SWEP.Secondary.Ammo			= "none"
-SWEP.ShellEffect			= "none"
-SWEP.ShellDelay				= 0
-SWEP.Pistol					= true
-SWEP.Rifle					= false
-SWEP.Shotgun				= false
-SWEP.Sniper					= false
-SWEP.Primed 				= 0
-SWEP.Throw 					= CurTime()
-SWEP.GrenadeType			= "ent_smokegrenade"
-SWEP.GrenadeName			= "weapon_smokegrenade"
-SWEP.GrenadeTime			= "3"
-SWEP.CookGrenade			= false
+if (CLIENT) then
+
+	SWEP.PrintName 			= "Smoke Grenade"
+	SWEP.Slot 				= 3
+	SWEP.SlotPos 			= 1
+	SWEP.DrawAmmo 			= false
+	SWEP.DrawCrosshair 		= false
+	SWEP.ViewModelFOV			= 65
+	SWEP.ViewModelFlip		= true
+	SWEP.CSMuzzleFlashes		= false
+
+	SWEP.IconLetter 			= "P"
+	killicon.AddFont("weapon_smokegrenade", "CSKillIcons", SWEP.IconLetter, Color( 255, 80, 0, 255 ))
+end
+
+SWEP.Base 					= "weapon_grenade_base"
+
+SWEP.Author 				= "kna_rus"
+SWEP.Contact 				= ""
+SWEP.Purpose 				= ""
+
+SWEP.Spawnable 				= true
+SWEP.AdminSpawnable 			= true
+
+SWEP.ViewModel 				= "models/weapons/v_eq_smokegrenade.mdl"
+SWEP.WorldModel 				= "models/weapons/w_eq_smokegrenade.mdl"
+
+SWEP.Primary.ClipSize 			= -1
+SWEP.Primary.DefaultClip 		= -1
+SWEP.Primary.Automatic 			= true
+SWEP.Primary.Ammo 			= "none"
+
+SWEP.Secondary.ClipSize 		= -1
+SWEP.Secondary.DefaultClip 		= -1
+SWEP.Secondary.Automatic 		= true
+SWEP.Secondary.Ammo 			= "none"
+
+SWEP.NadeClass = "ent_smokegrenade"
