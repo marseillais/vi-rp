@@ -1,0 +1,4 @@
+"AddonInfo"
+{
+	"name"				"Chatsounds by Vicis and CapsAdmin"
+}
