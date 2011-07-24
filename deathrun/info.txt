@@ -1,0 +1,27 @@
+"Gamemode"
+{
+	"name"		"Deathrun"
+	"version"	"1"
+
+	"author_name"	"Torengo com"
+	"author_email"	""
+	"author_url"	"http://torengoi.dyndns.org/"
+	
+	"icon"		""
+	"info"		""
+	"hide"		"0"
+
+	"fretta_maps"
+	{
+		"1"	"^deathrun_"
+		"2"	"^dr_"
+	}
+	"mappattern"
+	{
+		"1"	"^deathrun_"
+		"2"	"^dr_"
+	}
+
+	"selectable"	"1"
+	"description"	"Survive a level full of traps and kill the Deaths."
+}
