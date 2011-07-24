@@ -2,13 +2,15 @@ include('shared.lua')
 language.Add("ent_smokegrenade", "Grenade")
 
 function ENT:Initialize()
+	self.Bang = false
 end
 function ENT:Draw()
 	self.Entity:DrawModel()
 end
 function ENT:Think()
-	if (self.Entity:GetNWBool("Bang", false) == true) then
+	if (self.Entity:GetNWBool("Bang", false) == true and self.Bang == false) then
 		self:Smoke()
+		self.Bang = true
 	end
 end
 
