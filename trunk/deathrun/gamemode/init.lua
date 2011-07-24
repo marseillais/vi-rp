@@ -16,6 +16,8 @@ GM.MapFixes['deathrun_italy_rats_final'] = function()
 	end
 end
 
+MapEntities = {}
+
 function GM:CanStartRound()
 	if (#team.GetPlayers(TEAM_RUN) + #team.GetPlayers(TEAM_KILLER) >= 2) then return true end
 	return false
@@ -29,12 +31,8 @@ function GM:OnPreRoundStart(num)
 		self.MapFixes[game.GetMap()]()
 	end
 	
-	for id, ent in pairs(ents.FindByClass("weapon_*")) do
-		local phys = ent:GetPhysicsObject()
-    
-		if (phys and phys:IsValid()) then
-			phys:EnableMotion(false)
-		end
+	for i, e in pairs(ents.FindByClass("weapon_*")) do
+		table.insert(MapEntities, e)
 	end
 	/* Fixes */
 
@@ -144,16 +142,20 @@ function GM:CountVotesForChange() // Little haxxy bullshit :)
 
 	return true
 end
-/*
+
 hook.Add("Think", "Deathrun_fixes", function()
-	for id, ent in pairs(ents.FindByClass("weapon_*")) do
-		local phys = ent:GetPhysicsObject()
-    
-		if (phys and phys:IsValid()) then
-			phys:Sleep()
+	for id, ent in pairs(MapEntities) do
+		if (ent and ent != NULL and ent:IsValid()) then
+			local phys = ent:GetPhysicsObject()
+		
+			if (phys and phys:IsValid()) then
+				phys:Sleep()
+			end
+		else
+			table.remove(MapEntities, id)
 		end
 	end
 
 	//ent:Fire("addoutput", "OnStartTouch speedmod,ModifySpeed,1", 0.1) 
 	//<output name> <target name>:<input name>:<parameter>:<delay>:<max times to fire (-1 == infinite)>
-end)*/
+end)

@@ -9,5 +9,5 @@ hook.Add("Move", "Bhop", function(ply, data)
 	if (data:GetMaxSpeed() ~= 1000) then data:SetMaxSpeed(1000) end
 	local SVel = data:GetSideSpeed()
 	local Vel = ((data:GetMaxSpeed()) / abs(SVel))
-	data:SetVelocity(data:GetVelocity() + clamp(data:GetVelocity() / 400, Vector(-1, -1, 0), Vector(1, 1, 0) * Vel)) // 175 def
+	data:SetVelocity(data:GetVelocity() + clamp(data:GetVelocity() / 500, Vector(-1, -1, 0), Vector(1, 1, 0) * Vel)) // 175 def
 end)
