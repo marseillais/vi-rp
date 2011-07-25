@@ -367,8 +367,9 @@ function PlayerMeta:CreateStructureBuildingSite(pos, angle, model, class, cost, 
 
 	local cormin,cormax = rep:WorldSpaceAABB()
 	local offset = cormax-cormin
-	rep:SetPos(Vector(pos.x, pos.y, pos.z + (offset.z / 2) + 500))
-	if (model != "models/props_c17/factorymachine01.mdl" and model != "models/props_c17/furniturefireplace001a.mdl" and model != "models/Gibs/airboat_broken_engine.mdl" and model != "models/props_c17/furniturestove001a.mdl" and model != "models/props_wasteland/controlroom_desk001b.mdl") then
+	if (model == "models/props_c17/FurnitureFridge001a.mdl") then pos = pos + Vector(0, 0, 10) end
+	rep:SetPos(Vector(pos.x, pos.y, pos.z + (offset.z / 2)))
+	if (model != "models/props_c17/factorymachine01.mdl" and model != "models/props_c17/furniturefireplace001a.mdl" and model != "models/Gibs/airboat_broken_engine.mdl" and model != "models/props_c17/furniturestove001a.mdl" and model != "models/props_wasteland/controlroom_desk001b.mdl" and model != "models/props_c17/FurnitureFridge001a.mdl") then
 		rep:DropToGround()	
 	end
 	self:SetNetworkedEntity('Hasbuildingsite', rep)
