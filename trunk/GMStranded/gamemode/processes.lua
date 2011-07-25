@@ -1055,7 +1055,7 @@ function PROCESS:OnStop()
 	end
 
 	local pos = self.Owner:TraceFromEyes(250).HitPos
-	local site = self.Owner:CreateStructureBuildingSite(pos + Vector(0, 0, 999), self.Owner:GetAngles(), self.Data.BuildSiteModel, self.Data.Class, self.Data.Cost, self.Data.Name)
+	local site = self.Owner:CreateStructureBuildingSite(pos, self.Owner:GetAngles(), self.Data.BuildSiteModel, self.Data.Class, self.Data.Cost, self.Data.Name)
 end
 
 GMS.RegisterProcess("MakeBuilding", PROCESS)
