@@ -26,7 +26,7 @@ hook.Add("HUDPaint", "spp.hudpaint", function()
 			local tribeID = tonumber(ent:GetNetworkedString("TribeID", "1"))
 			if (tribeID != 1) then
 				local HisTribe = GAMEMODE.FindTribeByID(tribeID)
-				if (HisTribe.pass == true) then
+				if (HisTribe and HisTribe.pass == true) then
 					PropOwner = "Owner tribe: " .. HisTribe.name
 				end
 			end

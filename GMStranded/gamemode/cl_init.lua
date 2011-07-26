@@ -71,6 +71,7 @@ function GM.FindTribeByID(Tid)
 			return tabl
 		end
 	end
+	return false
 end
 
 /* Res pack GUI */
