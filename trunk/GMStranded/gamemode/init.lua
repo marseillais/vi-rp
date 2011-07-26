@@ -14,8 +14,9 @@ AddCSLuaFile('daytime.lua')
 include("shared.lua")
 include("processes.lua") -- Processes
 include("unlocks.lua") -- Unlocks
-include("combinations.lua") -- Combis
+include("combinations.lua") -- Combinations
 include("resources.lua") -- Resources
+include("chatcommands.lua") -- Chat commands
 
 --Convars
 CreateConVar("gms_FreeBuild", "0")
@@ -60,15 +61,7 @@ GM.AntlionBarrowSpawns['gms_rollinghills'] = {Vector(3131.2876, -980.5972, 519.5
 GM.AntlionBarrowSpawns['gms_rollinghills_daynight'] = GM.AntlionBarrowSpawns['gms_rollinghills']
 GM.AntlionBarrowSpawns['gms_rollinghills_daynight_b1'] = GM.AntlionBarrowSpawns['gms_rollinghills']
 
-resource.AddFile("gamemodes/GMStranded/content/help/helpnew.htm")
-for k, v in pairs(file.Find("../materials/gui/GMS/*")) do
-	resource.AddFile("materials/gui/GMS/" .. v)
-end
-
-/*---------------------------------------------------------
-	Custom auto anlion barrow placement
------------------------------------------------------------*/
-
+/* Custom auto anlion barrow auto placement */
 timer.Simple(3, function()	
 	if (GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) then
 		for id, pos in pairs(GAMEMODE.AntlionBarrowSpawns[game.GetMap()]) do
@@ -81,7 +74,7 @@ timer.Simple(3, function()
 	end
 end)
 
-/* FIND TRIBE BY ID */
+/* Find tribe by ID */
 function GM.FindTribeByID(id)
 	for name, tabl in pairs(GAMEMODE.Tribes) do
 		if (tabl.id == id) then
@@ -92,7 +85,6 @@ function GM.FindTribeByID(id)
 end
 
 /* Cancel process */
-
 concommand.Add("gms_cancelprocess", function(ply, cmd, args)
 	if (!ply.InProcess) then return end
 	v = ply.ProcessTable
@@ -110,9 +102,7 @@ concommand.Add("gms_cancelprocess", function(ply, cmd, args)
 	GAMEMODE.RemoveProcessThink(v)
 end)
 
-/*---------------------------------------------------------
-  Custom player messages
----------------------------------------------------------*/
+/* Custom player messages */
 function PlayerMeta:SendMessage(text, duration, color)
 	local duration = duration or 3
 	local color = color or Color(255, 255, 255, 255)
@@ -124,6 +114,37 @@ function PlayerMeta:SendMessage(text, duration, color)
 	umsg.End()
 end
 
+/* Menu toggles */
+function GM:ShowHelp(ply)
+	umsg.Start("gms_toggleskillsmenu", ply)
+	umsg.End()
+end
+
+function GM:ShowTeam(ply)
+	umsg.Start("gms_toggleresourcesmenu", ply)
+	umsg.End()
+end
+
+function GM:ShowSpare1(ply)
+	umsg.Start("gms_togglecommandsmenu", ply)
+	umsg.End()
+end
+
+function GM:ShowSpare2(ply)
+	umsg.Start("gms_cancelprocess", ply)
+	umsg.End()
+end
+
+/*------------------------ Player Meta ------------------------*/
+
+/* Open combination menu */
+function PlayerMeta:OpenCombiMenu(str)
+	umsg.Start("gms_OpenCombiMenu", self)
+		umsg.String(str)
+	umsg.End()
+end
+
+/* Achievements */
 function PlayerMeta:SendAchievement(text)
 	umsg.Start("gms_sendachievement", self)
 		umsg.String(text)
@@ -131,53 +152,10 @@ function PlayerMeta:SendAchievement(text)
 
 	local sound = CreateSound(self, Sound("music/hl1_song11.mp3"))
 	sound:Play()
-	GAMEMODE.StopSoundDelayed(sound, 5.5)
+	timer.Simple(5.5, function(snd) snd:Stop() end, sound)
 end
 
-function GM.StopSoundDelayed(sound, time)
-	timer.Simple(time, GAMEMODE.StopSoundDelayed2, sound)
-end
-
-function GM.StopSoundDelayed2(sound)
-	sound:Stop()
-end
-
-/*---------------------------------------------------------
-  Menu toggles
----------------------------------------------------------*/
-function GM:ShowHelp(ply)
-	umsg.Start("gms_ToggleSkillsMenu", ply)
-	umsg.End()
-end
-
-function GM:ShowTeam(ply)
-	umsg.Start("gms_ToggleResourcesMenu", ply)
-	umsg.End()
-end
-
-function GM:ShowSpare1(ply)
-	umsg.Start("gms_ToggleCommandsMenu", ply)
-	umsg.End()
-end
-
-function GM:ShowSpare2(ply)
-	ply:ConCommand("gms_cancelprocess")
-end
-
-function PlayerMeta:OpenCombiMenu(str)
-	umsg.Start("gms_OpenCombiMenu", self)
-		umsg.String(str)
-	umsg.End()
-end
-
-function PlayerMeta:CloseCombiMenu()
-	umsg.Start("gms_CloseCombiMenu", self)
-	umsg.End()
-end
-
-/*---------------------------------------------------------
-  Skill functions
----------------------------------------------------------*/
+/* Skill functions */
 function PlayerMeta:SetSkill(skill, int)
 	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self.Skills[skill] = 0 end
@@ -233,9 +211,7 @@ function PlayerMeta:DecSkill(skill, int)
 	umsg.End()
 end
 
-/*---------------------------------------------------------
-  XP functions
----------------------------------------------------------*/
+/* XP functions */
 function PlayerMeta:SetXP(skill, int)
 	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self:SetSkill(skill, 0) end
@@ -282,9 +258,7 @@ function PlayerMeta:DecXP(skill, int)
 	umsg.End()
 end
 
-/*---------------------------------------------------------
-  Resource functions
----------------------------------------------------------*/
+/* Resource functions */
 function PlayerMeta:SetResource(resource, int)
 	resource = string.Capitalize(resource)
 	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
@@ -323,6 +297,16 @@ function PlayerMeta:IncResource(resource, int)
 	umsg.End()
 end
 
+function PlayerMeta:DecResource(resource, int)
+	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
+	self.Resources[resource] = self.Resources[resource] - int
+
+	umsg.Start("gms_SetResource", self)
+		umsg.String(resource)
+		umsg.Short(self:GetResource(resource))
+	umsg.End()
+end
+
 function PlayerMeta:GetAllResources()
 	local num = 0
 
@@ -333,7 +317,7 @@ function PlayerMeta:GetAllResources()
 	return num
 end
 
---Gmods spawn function already autocorrects. Would be a waste to not use it.
+/* Gmods spawn function already autocorrects. Would be a waste to not use it. */
 function PlayerMeta:CreateBuildingSite(pos, angle, model, class, cost)
 	local rep = ents.Create("gms_buildsite")
 	local tbl = rep:GetTable()
@@ -348,7 +332,7 @@ function PlayerMeta:CreateBuildingSite(pos, angle, model, class, cost)
 	return rep
 end
 
---Spawning from a trace needs some correction...
+/* pawning from a trace needs some correction... */
 function PlayerMeta:CreateStructureBuildingSite(pos, angle, model, class, cost, name)
 	local rep = ents.Create("gms_buildsite")
 	local tbl = rep:GetTable()
@@ -380,16 +364,6 @@ end
 
 function PlayerMeta:GetBuildingSite()
 	return self:GetNetworkedEntity("Hasbuildingsite")
-end
-
-function PlayerMeta:DecResource(resource, int)
-	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
-	self.Resources[resource] = self.Resources[resource] - int
-
-	umsg.Start("gms_SetResource", self)
-		umsg.String(resource)
-		umsg.Short(self:GetResource(resource))
-	umsg.End()
 end
 
 function PlayerMeta:DropResource(resource, int)
@@ -433,6 +407,180 @@ function PlayerMeta:DropResource(resource, int)
 	end
 end
 
+/* Food functions */
+function PlayerMeta:SetFood(int)
+	if (int > 1000) then
+		int = 1000
+	end
+
+	self.Hunger = int
+	self:UpdateNeeds()
+end
+
+/* Water functions */
+function PlayerMeta:SetThirst(int)
+	if (int > 1000) then
+		int = 1000
+	end
+
+	self.Thirst = int
+	self:UpdateNeeds()
+end
+
+/* Custom health functions */
+function PlayerMeta:Heal(int)
+	local max = 100
+
+	if (self:HasUnlock("Adept_Survivalist")) then max = 150 end
+	if (self:HasUnlock("Master_Survivalist")) then max = 200 end
+
+	if (self:Health() + int > max) then
+		self:SetHealth(max)
+	else
+		self:SetHealth(self:Health() + int)
+	end
+end
+
+/* Unlock functions */
+function PlayerMeta:AddUnlock(text)
+	self.FeatureUnlocks[text] = 1
+
+	umsg.Start("gms_AddUnlock", self)
+		umsg.String(text)
+	umsg.End()
+
+	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end //
+end
+
+function PlayerMeta:HasUnlock(text)
+	if (self.FeatureUnlocks[text]) then return true end
+	return false
+end
+
+function PlayerMeta:CheckForUnlocks()
+	for k, unlock in pairs(GMS.FeatureUnlocks) do
+		if (!self:HasUnlock(k)) then
+			local NrReqs = 0
+
+			for skill, value in pairs(unlock.Req) do
+				if (self:GetSkill(skill) >= value) then
+					NrReqs = NrReqs + 1
+				end
+			end
+
+			if (NrReqs == table.Count(unlock.Req)) then
+				self:AddUnlock(k)
+			end
+		end
+	end
+end
+
+function PlayerMeta:TraceFromEyes(dist)
+	local trace = {}
+	trace.start = self:GetShootPos()
+	trace.endpos = trace.start + (self:GetAimVector() * dist)
+	trace.filter = self
+
+	return util.TraceLine(trace)
+end
+
+function PlayerMeta:UpdateNeeds()
+	umsg.Start("gms_setneeds", self)
+		umsg.Short(self.Sleepiness)
+		umsg.Short(self.Hunger)
+		umsg.Short(self.Thirst)
+		umsg.Short(self.Oxygen)
+		umsg.Short(Time)
+	umsg.End()
+end
+
+function PlayerMeta:PickupResourceEntity(ent)
+	if (!(SPropProtection.PlayerIsPropOwner(self, ent) or SPropProtection.IsBuddy(self, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
+
+	local int = ent.Amount
+	local room = self.MaxResources - self:GetAllResources()
+
+	if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
+	if (room < int) then int = room end
+	ent.Amount = ent.Amount - int
+	if (ent.Amount <= 0) then ent:Fadeout() else ent:SetResourceDropInfo(ent.Type, ent.Amount) end
+
+	self:IncResource(ent.Type, int)
+	self:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
+end
+
+function PlayerMeta:PickupResourceEntityPack(ent)
+	if (!(SPropProtection.PlayerIsPropOwner(self, ent) or SPropProtection.IsBuddy(self, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
+
+	if (table.Count(ent.Resources) > 0) then
+		for res, int in pairs(ent.Resources) do
+			local room = self.MaxResources - self:GetAllResources()
+
+			if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
+			if (room < int) then int = room end
+			ent.Resources[res] = ent.Resources[res] - int
+
+			ent:SetResPackInfo(res, ent.Resources[res])
+			if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
+
+			self:IncResource(res, int)
+			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
+		end
+	end
+end
+
+/* Saving / loading functions */
+function PlayerMeta:MakeLoadingBar(msg)
+	umsg.Start("gms_MakeLoadingBar", self)
+		umsg.String(msg)
+	umsg.End()
+end
+
+function PlayerMeta:StopLoadingBar()
+	umsg.Start("gms_StopLoadingBar",self)
+	umsg.End()
+end
+
+function PlayerMeta:MakeSavingBar(msg)
+	umsg.Start("gms_MakeSavingBar", self)
+		umsg.String(msg)
+	umsg.End()
+end
+
+function PlayerMeta:StopSavingBar()
+	umsg.Start("gms_StopSavingBar", self)
+	umsg.End()
+end
+
+/* All Smelt Function */
+function PlayerMeta:AllSmelt(ResourceTable)
+	local resourcedata = {}
+	resourcedata.Req = {}
+	resourcedata.Results = {}
+	local AmountReq = 0
+	for k, v in pairs(ResourceTable.Req) do
+		if (self:GetResource(k) > 0) then
+			if (self:GetResource(k) <= ResourceTable.Max) then
+				resourcedata.Req[k] = self:GetResource(k)
+				AmountReq = AmountReq + self:GetResource(k)				
+			else
+				resourcedata.Req[k] = ResourceTable.Max
+				AmountReq = AmountReq + ResourceTable.Max
+				self:SendMessage("You can only do " .. tostring(ResourceTable.Max) .. " " .. k .. " at a time.", 3, Color(200, 0, 0, 255))
+			end
+		else
+			resourcedata.Req[k] = 1
+		end
+	end
+	for k, v in pairs(ResourceTable.Results) do
+		resourcedata.Results[k] = AmountReq
+	end
+	return resourcedata
+end
+
+/*------------------------ Entity Meta ------------------------*/
+
+/* Resource packs and drops */
 function EntityMeta:SetResourceDropInfo(strType, int)
 	timer.Simple(0.5, self.SetResourceDropInfoInstant, self, strType, int)
 end
@@ -459,9 +607,7 @@ function EntityMeta:SetResPackInfo(strType, int)
 	end
 end
 
-/*---------------------------------------------------------
-  Food functions
----------------------------------------------------------*/
+
 function EntityMeta:SetFoodInfo(strType)
 	timer.Simple(0.5, self.SetFoodInfoInstant, self, strType)
 end
@@ -476,128 +622,7 @@ function EntityMeta:SetFoodInfoInstant(strType)
 	end
 end
 
-function PlayerMeta:SetFood(int)
-	if (int > 1000) then
-		int = 1000
-	end
-
-	self.Hunger = int
-	self:UpdateNeeds()
-end
-
-function PlayerMeta:GetFood()
-	return self.Hunger
-end
-
-/*---------------------------------------------------------
-  Water functions
----------------------------------------------------------*/
-function PlayerMeta:SetThirst(int)
-	if (int > 1000) then
-		int = 1000
-	end
-
-	self.Thirst = int
-	self:UpdateNeeds()
-end
-
-function PlayerMeta:GetThirst()
-	return self.Thirst
-end
-
-/*---------------------------------------------------------
-  Oxygen functions
----------------------------------------------------------*/
-function PlayerMeta:SetOxygen(int)
-	if (int > 1000) then
-		int = 1000
-	end
-
-	self.Oxygen = int
-	self:UpdateNeeds()
-end
-
-function PlayerMeta:GetOxygen()
-	return self.Oxygen
-end
-
-/*---------------------------------------------------------
-  Sleep functions
----------------------------------------------------------*/
-function PlayerMeta:SetSleepiness(int)
-	if (int > 1000) then
-		int = 1000
-	end
-
-	self.Sleepiness = int
-	self:UpdateNeeds()
-end
-
-function PlayerMeta:GetSleepiness()
-	return self.Sleepiness
-end
-
-/*---------------------------------------------------------
-  Custom health functions
----------------------------------------------------------*/
-function PlayerMeta:Heal(int)
-	local max = 100
-
-	if (self:HasUnlock("Adept_Survivalist")) then max = 150 end
-	if (self:HasUnlock("Master_Survivalist")) then max = 200 end
-
-	if (self:Health() + int > max) then
-		self:SetHealth(max)
-	else
-		self:SetHealth(self:Health() + int)
-	end
-end
-
-/*---------------------------------------------------------
-  Unlock functions
----------------------------------------------------------*/
-function PlayerMeta:AddUnlock(text)
-	self.FeatureUnlocks[text] = 1
-
-	umsg.Start("gms_AddUnlock", self)
-		umsg.String(text)
-	umsg.End()
-
-	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end //
-end
-
-/*
-L 07/22/2011 - 23:23:58: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:118] Tried to use a NULL entity!
-L 07/22/2011 - 21:59:17: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:1252] Tried to use a NULL entity!
-L 07/22/2011 - 21:59:18: Lua Error: Timer Error: [@gamemodes\gmstranded\gamemode\init.lua:3003] Tried to use a NULL entity!
-*/
-function PlayerMeta:HasUnlock(text)
-	if (self.FeatureUnlocks[text]) then return true end
-	return false
-end
-
-function PlayerMeta:CheckForUnlocks()
-	for k, unlock in pairs(GMS.FeatureUnlocks) do
-		if (!self:HasUnlock(k)) then
-			local NrReqs = 0
-
-			for skill, value in pairs(unlock.Req) do
-				if (self:GetSkill(skill) >= value) then
-					NrReqs = NrReqs + 1
-				end
-			end
-
-			if (NrReqs == table.Count(unlock.Req)) then
-				self:AddUnlock(k)
-			end
-		end
-	end
-end
-
-/*---------------------------------------------------------
-  Model check functions
----------------------------------------------------------*/
-
+/* Model check functions */
 function EntityMeta:IsTreeModel()
 	if (!self or !self:IsValid()) then return false end
 
@@ -678,28 +703,6 @@ function EntityMeta:IsSleepingFurniture()
 	return false
 end
 
-/*---------------------------------------------------------
-  Other utilities
----------------------------------------------------------*/
-function string.Capitalize(str)
-	local str = string.Explode("_", str)
-	for k,v in pairs(str) do
-		str[k] = string.upper(string.sub(v, 1, 1)) .. string.sub(v, 2)
-	end
-
-	str = string.Implode("_", str)
-	return str
-end
-
-function PlayerMeta:TraceFromEyes(dist)
-	local trace = {}
-	trace.start = self:GetShootPos()
-	trace.endpos = trace.start + (self:GetAimVector() * dist)
-	trace.filter = self
-
-	return util.TraceLine(trace)
-end
-
 function EntityMeta:DropToGround()
 	local trace = {}
 	trace.start = self:GetPos()
@@ -712,30 +715,7 @@ function EntityMeta:DropToGround()
 	self:SetPos(tr.HitPos)
 end
 
-function GMS.ClassIsNearby(pos, class, range)
-	local nearby = false
-	for k, v in pairs(ents.FindInSphere(pos, range)) do
-		if (v:GetClass() == class and (pos - Vector(v:LocalToWorld(v:OBBCenter()).x, v:LocalToWorld(v:OBBCenter()).y, pos.z)):Length() <= range) then
-			nearby = true
-		end
-	end
-
-	return nearby
-end
-
-function GMS.IsInWater(pos)
-	local trace = {}
-	trace.start = pos
-	trace.endpos = pos + Vector(0, 0, 1)
-	trace.mask = MASK_WATER | MASK_SOLID
-
-	local tr = util.TraceLine(trace)
-	return tr.Hit
-end
-
-/*---------------------------------------------------------
-  Automatic tree reproduction
----------------------------------------------------------*/
+/* Automatic tree reproduction */
 function GM.ReproduceTrees()
 	local GM = GAMEMODE
 	if (GetConVarNumber("gms_ReproduceTrees") == 1) then
@@ -841,9 +821,58 @@ function GM.ReproduceTrees()
 end
 timer.Simple(60, GM.ReproduceTrees)
 
-/*---------------------------------------------------------
-  Admin terraforming
----------------------------------------------------------*/
+/* Loot-Able npcs */
+GMS.LootableNPCs = {"npc_antlion", "npc_antlionguard", "npc_crow", "npc_seagull", "npc_pigeon"}
+
+function EntityMeta:IsLootableNPC()
+	if table.HasValue(GMS.LootableNPCs, self:GetClass()) then
+		return true
+	end
+	return false
+end
+
+/* Campfire */
+function EntityMeta:MakeCampfire()
+	if (GetConVarNumber("gms_Campfire") == 1) then
+		self:Ignite(360, 0)
+
+		self.CampFireMaxHP = self:Health()
+		self.CampFireLifeTime = CurTime()
+
+		table.insert(GAMEMODE.CampFireProps, self)
+
+		local mdl = self:GetModel()
+
+		for k, v in pairs(ents.FindInSphere(self:GetPos(),100)) do
+			local cls = v:GetClass()
+			if (v != ent and v:IsProp()) then
+				if (v:GetModel() == mdl) then
+					GetConVarNumber("gms_MaxReproducedTrees")
+					if (GetConVarNumber("gms_SpreadFire") == 1) then
+						v:Ignite(360, (v:OBBMins() - v:OBBMaxs()):Length() * 0.50 + 10)
+					else
+						v:Ignite(360, 0)
+					end
+
+					v.CampFireMaxHP = v:Health()
+					v.CampFireLifeTime = CurTime()
+
+					table.insert(GAMEMODE.CampFireProps, v)
+
+					local rp = RecipientFilter()
+					rp:AddAllPlayers()
+					umsg.Start("addCampFire", rp)
+						umsg.Short(v:EntIndex())
+					umsg.End()
+				end
+			end
+		end
+	end
+end
+
+/*------------------------ Console commands ------------------------*/
+
+/* Admin terraforming */
 concommand.Add("gms_admin_maketree", function(ply)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	local tr = ply:TraceFromEyes(10000)
@@ -876,7 +905,7 @@ concommand.Add("gms_admin_makefood", function(ply)
 	SPropProtection.PlayerMakePropOwner(ply, ent)
 end)
 
-concommand.Add("gms_admin_MakeAntlionBarrow", function(ply, cmd, args)
+concommand.Add("gms_admin_makeantlionbarrow", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	if (!args[1]) then ply:SendMessage("Specify max antlions!", 3, Color(200, 0, 0, 255)) return end
 
@@ -908,7 +937,7 @@ concommand.Add("gms_admin_makebush", function(ply)
 	end
 end)
 
-concommand.Add("gms_admin_PopulateArea", function(ply, cmd, args)
+concommand.Add("gms_admin_populatearea", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	if (!args[1] or !args[2] or !args[3]) then ply:SendMessage("You need to specify <type> <amount> <radius>", 3, Color(200, 0, 0, 255)) return end
 
@@ -1046,444 +1075,6 @@ concommand.Add("gms_admin_clearmap", function(ply)
 	for k, v in pairs(player.GetAll()) do v:SendMessage("Cleared map.", 3, Color(255, 255, 255, 255)) end
 end)
 
-/*---------------------------------------------------------
-  Prop fadeout
----------------------------------------------------------*/
-GMS.FadingOutProps = {}
-GMS.FadingInProps = {}
-
-function EntityMeta:Fadeout(speed)
-	local speed = speed or 1
-
-	for k, v in pairs(player.GetAll()) do
-		umsg.Start("gms_CreateFadingProp", v)
-			umsg.String(self:GetModel())
-			umsg.Vector(self:GetPos())
-			umsg.Vector(self:GetAngles():Forward())
-			umsg.Short(math.Round(speed))
-		umsg.End()
-	end
-
-	self:Remove()
-end
-
---Fadein is serverside
-function EntityMeta:Fadein()
-	self.AlphaFade = 0
-	self:SetColor(255, 255, 255, 0)
-	table.insert(GMS.FadingInProps, self)
-end
-
-hook.Add("Think", "gms_FadePropsThink", function()
-	for k, ent in pairs(GMS.FadingInProps) do
-		if (!ent or ent == NULL) then
-			table.remove(GMS.FadingInProps, k)
-		elseif (!ent:IsValid()) then
-			table.remove(GMS.FadingInProps, k)
-		elseif (ent.AlphaFade >= 255) then
-			table.remove(GMS.FadingInProps, k)
-		else
-			ent.AlphaFade = ent.AlphaFade + 5
-			ent:SetColor(255, 255, 255, ent.AlphaFade)
-		end
-	end
-end)
-
-/*---------------------------------------------------------
-  Prop rising/lowering
----------------------------------------------------------*/
-GM.RisingProps = {}
-GM.SinkingProps = {}
-
-function EntityMeta:RiseFromGround(speed, altmax)
-	local speed = speed or 1
-	local max;
-
-	if (!altmax) then
-		min, max = self:WorldSpaceAABB()
-		max = max.z
-	else
-		max = altmax
-	end
-
-	local tbl = {}
-	tbl.Origin = self:GetPos().z
-	tbl.Speed = speed
-	tbl.Entity = self
-
-	self:SetPos(self:GetPos() + Vector(0, 0, -max + 10))
-	table.insert(GAMEMODE.RisingProps, tbl)
-end
-
-function EntityMeta:SinkIntoGround(speed)
-	local speed = speed or 1
-
-	local tbl = {}
-	tbl.Origin = self:GetPos().z
-	tbl.Speed = speed
-	tbl.Entity = self
-	tbl.Height = max
-
-	table.insert(GAMEMODE.SinkingProps, tbl)
-end
-
-hook.Add("Think", "gms_RiseAndSinkPropsHook", function()
-	for k, tbl in pairs(GAMEMODE.RisingProps) do
-		if (tbl.Entity:GetPos().z >= tbl.Origin) then
-			table.remove(GAMEMODE.RisingProps, k)
-		else
-			tbl.Entity:SetPos(tbl.Entity:GetPos() + Vector(0, 0, 1 * tbl.Speed))
-		end
-	end
-
-	for k, tbl in pairs(GAMEMODE.SinkingProps) do
-		if tbl.Entity:GetPos().z <= tbl.Origin - tbl.Height then
-			table.remove(GAMEMODE.SinkingProps, k)
-			tbl.Entity:Remove()
-		else
-			tbl.Entity:SetPos(tbl.Entity:GetPos() + Vector(0, 0, -1 * tbl.Speed))
-		end
-	end
-end)
-
-/*---------------------------------------------------------
-  Spawn/death
----------------------------------------------------------*/
-function GM:PlayerInitialSpawn(ply)
-	--Create HUD
-	umsg.Start("gms_CreateInitialHUD", ply)
-	umsg.End()
-
-	ply:SetTeam(1)
-	SPropProtection.TribePP(ply)
-	-- ply:ConCommand("gms_help\n")		 
-
-	--Serverside player variables
-	ply.Skills = {}
-	ply.Resources = {}
-	ply.Experience = {}
-	ply.FeatureUnlocks = {}	
-	ply.Loaded = true
-
-	--Admin info, needed clientside
-	if (ply:IsAdmin()) then
-		for k, v in pairs(file.Find("GMStranded/Gamesaves/*.txt")) do
-			local name = string.sub(v, 1, string.len(v) - 4)
-
-			if (string.Right(name, 5) != "_info") then
-				umsg.Start("gms_AddLoadGameToList", ply)
-				umsg.String(name)
-				umsg.End()
-			end
-		end
-	end
-
-	--Character loading
-	if (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then
-		ply.Loaded = false
-		local tbl = util.KeyValuesToTable(file.Read("GMStranded/Saves/" .. ply:UniqueID() .. ".txt"))
-
-		if (tbl["skills"]) then
-			for k, v in pairs(tbl["skills"]) do
-				ply:SetSkill(string.Capitalize(k), v)
-			end
-		end
-
-		if (tbl["experience"]) then
-			for k, v in pairs(tbl["experience"]) do
-				ply:SetXP(string.Capitalize(k), v)
-			end
-		end
-
-		if (tbl["unlocks"]) then 
-			for k, v in pairs(tbl["unlocks"]) do
-				ply.FeatureUnlocks[string.Capitalize(k)] = v
-			end
-		end
-		
-		if (tbl["resources"]) then
-			for k, v in pairs(tbl["resources"]) do
-				ply:SetResource(string.Capitalize(k), v)
-			end
-		end
-		
-		if (tbl["weapons"]) then
-			for k, v in pairs(tbl["weapons"]) do
-				ply:Give(v)
-			end
-		end
-		
-		ply:StripAmmo()
-		
-		if (tbl["ammo"]) then
-			for k, v in pairs(tbl["ammo"]) do
-				ply:GiveAmmo(v, k)
-			end
-		end
-
-		for k, v in pairs(GMS.FeatureUnlocks) do
-			if (ply:HasUnlock(k) and v.OnUnlock) then
-				v.OnUnlock(ply)
-			end
-		end
-
-		if (!ply.Skills["Survival"]) then ply.Skills["Survival"] = 0 end
-
-		ply.MaxResources = (ply.Skills["Survival"] * 5) + 25
-
-		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
-		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
-		ply.Loaded = true
-	else
-		ply:SetSkill("Survival", 0)
-		ply:SetXP("Survival", 0)
-		ply.MaxResources = 25
-	end
-
-	ply:SetNWInt("plants", 0)
-	for k, v in pairs(ents.GetAll()) do
-		if (v and v:IsValid() and v:GetNWEntity("plantowner") and v:GetNWEntity("plantowner"):IsValid() and v:GetNWEntity("plantowner") == ply) then
-			ply:SetNWInt("plants", ply:GetNWInt("plants") + 1)
-		end
-	end
-	
-	timer.Simple(5, function()
-		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
-			umsg.Start("gms_SetResourceDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Type, "_", " "))
-				umsg.Short(v.Amount)
-			umsg.End()
-		end
-	end)
-	
-	timer.Simple(7, function()
-		local time = 0
-		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function()
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end)
-				time = time + 0.5
-			end
-			time = time + 1
-		end
-		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function()
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end)
-				time = time + 0.5
-			end
-			time = time + 1
-		end
-	end)
-	
-	timer.Simple(6, function()
-		for _, v in ipairs(ents.FindByClass("gms_food")) do
-			umsg.Start("gms_SetFoodDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Name, "_", " "))
-			umsg.End()
-		end
-	end)
-end
-
-/* Send all campfires */
-
-hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
-	timer.Simple(3, function()
-		for i, v in pairs(GAMEMODE.CampFireProps) do
-			umsg.Start("addCampFire", ply)
-				umsg.Short(v:EntIndex())
-			umsg.End()
-		end
-	end)
-end)
-
-hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
-	timer.Simple(4, function()
-		for i, v in pairs(GAMEMODE.Tribes) do
-			umsg.Start("recvTribes", ply)
-			umsg.Short(v.id)
-			umsg.String(i)
-			umsg.Short(v.red)
-			umsg.Short(v.green)
-			umsg.Short(v.blue)
-			if (v.Password == false) then 
-				umsg.Bool(false)
-			else
-				umsg.Bool(true)
-			end
-			umsg.End()
-		end
-	end)
-end)
-
-function GM:PlayerSpawn(ply)
-	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
-
-	if (ply:HasUnlock("Sprint_Mkii")) then
-		GAMEMODE:SetPlayerSpeed(ply, 400, 100)
-	else
-		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
-	end
-
-	self:PlayerLoadout(ply) --hook.Call( "PlayerLoadout", GAMEMODE, ply )
-	self:PlayerSetModel(ply) --hook.Call( "PlayerSetModel", GAMEMODE, ply )
-
-	ply.Sleepiness = 1000
-	ply.Hunger = 1000
-	ply.Thirst = 1000
-	ply.Oxygen = 1000
-	if (ply:HasUnlock("Adept_Survivalist")) then ply:SetHealth(150) end
-	if (ply:HasUnlock("Master_Survivalist")) then ply:SetHealth(200) end
-	ply:UpdateNeeds()
-end
-
-function GM:PlayerLoadout(ply)
-	ply:Give("gms_hands") --Tools
-
-	if (GetConVarNumber("gms_AllTools") == 1) then
-		ply:Give("gms_stonepickaxe")
-		ply:Give("gms_copperpickaxe")
-		ply:Give("gms_copperknife")
-		ply:Give("gms_ironpickaxe")
-		ply:Give("gms_stonehatchet")
-		ply:Give("gms_copperhatchet")
-		ply:Give("gms_ironhatchet")
-		ply:Give("gms_woodenfishingrod")
-		ply:Give("gms_advancedfishingrod")
-		ply:Give("gms_fryingpan")
-		ply:Give("gms_shovel")
-		ply:Give("gms_strainer")
-		ply:Give("gms_sickle")
-		ply:Give("gms_woodenspoon")
-		ply:Give("weapon_crowbar")
-		ply:Give("weapon_stunstick")
-		ply:Give("gmod_tool")
-		ply:Give("weapon_pistol")
-		ply:Give("gmod_camera")
-		ply:Give("weapon_smg1")
-	end
-
-	--Gmod
-	if (GetConVarNumber("gms_physgun") == 1 or ply:IsAdmin()) then ply:Give("weapon_physgun") end
-	if (ply:IsAdmin() or ply:IsSuperAdmin()) then ply:Give("gmod_tool") ply:Give("pill_pigeon") end
-	if (ply:HasUnlock("Extreme_Survivalist")) then ply:Give("pill_pigeon") end
-	ply:Give("weapon_physcannon")
-	ply:SelectWeapon("weapon_physgun")
-	ply:SelectWeapon("gms_hands")
-end
-	
---Death
-function Death(ply)
-	ply.NextSpawnTime = CurTime() + 400
-	ply:ConCommand("gms_dropall")
-	if (ply.AFK == true) then
-		ply:Freeze(false)
-		ply.AFK = false			
-		umsg.Start("gms_stopafk", ply)
-		umsg.End()
-	end
-end
-hook.Add("PlayerDeath", "Death", Death)
-
-/*---------------------------------------------------------
-  Character saving
----------------------------------------------------------*/
-function GM.AutoSaveAllCharacters()
-	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
-	if (GetConVarNumber("gms_AutoSave") == 1) then
-		for k, v in pairs(player.GetAll()) do
-			v:SendMessage("Autosaving..", 3, Color(255, 255, 255, 255))
-			GAMEMODE.SaveCharacter(v)
-		end
-	end
-
-	timer.Simple(math.Clamp(GetConVarNumber("gms_AutoSaveTime"), 1, 60) * 60, GAMEMODE.AutoSaveAllCharacters)
-end
-timer.Simple(1, GM.AutoSaveAllCharacters)
-
-function GM:PlayerDisconnected(ply)
-	self.SaveCharacter(ply)
-	Msg("Saved character of disconnecting player " .. ply:Nick() .. ".\n")
-end
-
-function GM:ShutDown()
-	for k, v in pairs(player.GetAll()) do
-		self.SaveCharacter(v)
-	end
-end
-
-function GM.SaveCharacter(ply,cmd,args)
-	if (!file.IsDir("GMStranded")) then file.CreateDir("GMStranded") end
-	if (!file.IsDir("GMStranded/Saves")) then file.CreateDir("GMStranded/Saves") end
-	if (!ply.Loaded) then
-		print("Player " .. ply:Name() .. " tried to save before he has loaded!")
-		ply:SendMessage("Character save failed: Not yet loaded!", 3, Color(255, 50, 50, 255))
-		return
-	end
-
-	local tbl = {}
-	tbl["skills"] = {}
-	tbl["experience"] = {}
-	tbl["unlocks"] = {}
-	tbl["date"] = os.date("%A %m/%d/%y")
-	tbl["name"] = ply:Nick()
-	
-	tbl["resources"] = {}
-	tbl["weapons"] = {}
-	tbl["ammo"] = {}
-
-	for k, v in pairs(ply.Skills) do
-		tbl["skills"][k] = v
-	end
-
-	for k, v in pairs(ply.Experience) do
-		tbl["experience"][k] = v
-	end
-
-	for k, v in pairs(ply.FeatureUnlocks) do
-		tbl["unlocks"][k] = v
-	end
-	
-	for k, v in pairs(ply.Resources) do
-		if v > 0  then
-			tbl["resources"][k] = v
-		end
-	end
-	
-	for id, wep in pairs(ply:GetWeapons()) do
-		if (wep:GetClass() != "gms_hands" or wep:GetClass() != "weapon_physgun" or wep:GetClass() != "weapon_physcannon") then
-			table.insert(tbl["weapons"], wep:GetClass())
-		end
-	end
-	
-	local ammo_types = {"ar2", "smg1", "pistol", "buckshot", "357", "grenade", "alyxgun", "xbowbolt", "AlyxGun", "RPG_Round","SMG1_Grenade", "SniperRound",
-		"SniperPenetratedRound", "Grenade", "Thumper", "Gravity", "Battery", "GaussEnergy", "CombineCannon", "AirboatGun", "StriderMinigun", "StriderMinigunDirect",
-		"HelicopterGun", "AR2AltFire", "Grenade", "Hopwire", "CombineHeavyCannon", "ammo_proto1"}
-
-	for id, str in pairs(ammo_types) do
-		local ammo = ply:GetAmmoCount(str)
-		if (ammo > 0) then
-			tbl["ammo"][str] = ammo
-		end
-	end
-
-	file.Write("GMStranded/Saves/" .. ply:UniqueID() .. ".txt", util.TableToKeyValues(tbl))
-	ply:SendMessage("Saved character!", 3, Color(255, 255, 255, 255))
-end
-concommand.Add("gms_savecharacter", GM.SaveCharacter)
-
 concommand.Add("gms_admin_saveallcharacters", function(ply)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 
@@ -1494,9 +1085,7 @@ concommand.Add("gms_admin_saveallcharacters", function(ply)
 	ply:SendMessage("Saved characters on all current players.", 3, Color(255, 255, 255, 255))
 end)
 
-/*---------------------------------------------------------
-  Drop all Command
----------------------------------------------------------*/
+/* Drop all Command */
 concommand.Add("gms_dropall", function(ply)
 	local DeltaTime = 0
 	for k, v in pairs(ply.Resources) do
@@ -1508,9 +1097,7 @@ concommand.Add("gms_dropall", function(ply)
 	ply.NextSpawnTime = CurTime() + DeltaTime + 0.5
 end)
 
-/*---------------------------------------------------------
-  Salvage Props
----------------------------------------------------------*/
+/* Salvage Props */
 concommand.Add("gms_salvage", function(ply)
 	if (ply.InProcess) then return end
 	
@@ -1536,10 +1123,7 @@ concommand.Add("gms_salvage", function(ply)
 	end
 end)
 
-/*---------------------------------------------------------
-  Planting
----------------------------------------------------------*/
-
+/* Planting */
 function GM.PlantMelon(ply, cmd, args)
 	if (ply:GetNWInt("plants") >= GetConVarNumber("gms_PlantLimit")) then 
 		ply:SendMessage("You have hit the plant limit.", 3, Color(200, 0, 0, 255))
@@ -1712,36 +1296,28 @@ function GM.PlantTree(ply, cmd, args)
 end
 concommand.Add("gms_planttree", GM.PlantTree)
 
-/*---------------------------------------------------------
-  Drink command
----------------------------------------------------------*/
+/* Drink command */
 function GM.DrinkFromBottle(ply, cmd, args)
 	if (ply:GetResource("Water_Bottles") < 1) then ply:SendMessage("You need a water bottle.", 3, Color(200, 0, 0, 255)) return end
 	ply:DoProcess("DrinkBottle", 1.5)
 end
-concommand.Add("gms_DrinkBottle", GM.DrinkFromBottle)
+concommand.Add("gms_drinkbottle", GM.DrinkFromBottle)
 
-/*---------------------------------------------------------
-  Eat berry command
----------------------------------------------------------*/
+/* Eat berry command */
 function GM.DrinkFromBottle(ply, cmd, args)
 	if (ply:GetResource("Berries") < 1) then ply:SendMessage("You need some berries.", 3, Color(200, 0, 0, 255)) return end
 	ply:DoProcess("EatBerry", 1.5)
 end
-concommand.Add("gms_EatBerry", GM.DrinkFromBottle)
+concommand.Add("gms_eatberry", GM.DrinkFromBottle)
 
-/*---------------------------------------------------------
-  Take Medicine command
----------------------------------------------------------*/
+/* Take Medicine command */
 function GM.TakeAMedicine(ply, cmd, args)
 	if (ply:GetResource("Medicine") < 1) then ply:SendMessage("You need Medicine.", 3, Color(200, 0, 0, 255)) return end
 	ply:DoProcess("TakeMedicine", 1.5)
 end
-concommand.Add("gms_TakeMedicine", GM.TakeAMedicine)
+concommand.Add("gms_takemedicine", GM.TakeAMedicine)
 
-/*---------------------------------------------------------
-  Drop weapon command
----------------------------------------------------------*/
+/* Drop weapon command */
 function GM.DropWeapon(ply, cmd, args)
 	if (!ply:Alive()) then return end
 	if (ply:GetActiveWeapon():GetClass() == "gms_hands") then ply:SendMessage("You cannot drop your hands!", 3, Color(200, 0, 0, 255))
@@ -1751,11 +1327,9 @@ function GM.DropWeapon(ply, cmd, args)
 		ply:DropWeapon(ply:GetActiveWeapon())
 	end
 end
-concommand.Add("gms_DropWeapon",GM.DropWeapon)
+concommand.Add("gms_dropweapon",GM.DropWeapon)
 
-/*---------------------------------------------------------
-  Drop resource command
----------------------------------------------------------*/
+/* Drop resource command */
 function GM.DropResource(ply, cmd, args)
 	if (args == nil or args[1] == nil) then ply:SendMessage("You need to at least give a resource type!", 3, Color(200, 0, 0, 255)) return end
 
@@ -1779,9 +1353,7 @@ function GM.DropResource(ply, cmd, args)
 end
 concommand.Add("gms_DropResources", GM.DropResource)
 
-/*---------------------------------------------------------
-  Admin Drop resource command
----------------------------------------------------------*/
+/* Admin Drop resource command */
 function GM.ADropResource(ply, cmd, args)
 	if (!ply:IsAdmin()) then ply:SendMessage("You need admin rights for this!", 3, Color(200, 0, 0, 255)) return end
 	if (args == nil or args[1] == nil) then ply:SendMessage("You need to at least give a resource type!", 3, Color(200, 0, 0, 255)) return end
@@ -1798,10 +1370,8 @@ function GM.ADropResource(ply, cmd, args)
 end
 concommand.Add("gms_ADropResources", GM.ADropResource)
 
-/*---------------------------------------------------------
-  Take resource command
----------------------------------------------------------*/
-concommand.Add("gms_TakeResources", function(ply, cmd, args)
+/* Take resource command */
+function GM.TakeResource(ply, cmd, args)
 	if (ply.InProcess) then return end
 
 	if (args == nil or args[1] == nil) then ply:SendMessage("You need to at least give a resource type!", 3, Color(200, 0, 0, 255)) return end
@@ -1860,7 +1430,7 @@ concommand.Add("gms_TakeResources", function(ply, cmd, args)
 				local food = ents.Create("gms_food")
 				food:SetPos(ent:GetPos() + Vector(0, 0, ent:OBBMaxs().z + 16))
 				SPropProtection.PlayerMakePropOwner(ply, food)
-				food.Value = GMS.Combinations["Cooking"][string.Replace(res, "_", "")].FoodValue
+				food.Value = GMS.Combinations["Cooking"][string.Replace(res, "_", " ")].FoodValue
 				food.Name = res
 				food:Spawn()
 				food:SetFoodInfo(res)
@@ -1869,27 +1439,22 @@ concommand.Add("gms_TakeResources", function(ply, cmd, args)
 			end
 		end
 	end
-end)//ply:PickupResourceEntityPack(ent)
+end
+concommand.Add("gms_TakeResources", GM.TakeResource) // ply:PickupResourceEntityPack(ent)
 
-/*---------------------------------------------------------
-  Buildings menu
----------------------------------------------------------*/
-concommand.Add("gms_BuildingsCombi", function(ply)
-	ply:OpenCombiMenu("Buildings")
+/* Buildings menu */
+concommand.Add("gms_structures", function(ply)
+	ply:OpenCombiMenu("Structures")
 end)
 
-/*---------------------------------------------------------
-  Generic combi menu
----------------------------------------------------------*/
-concommand.Add("gms_GenericCombi", function(ply)
-	ply:OpenCombiMenu("Generic")
+/* Generic combi menu */
+concommand.Add("gms_combinations", function(ply)
+	ply:OpenCombiMenu("Combinations")
 end)
 
-/*---------------------------------------------------------
-  Make combination
----------------------------------------------------------*/
-function GM.MakeCombination(ply,cmd,args)
-	if (!args[1] or !args[2]) then ply:SendMessage("Please specify a valid combination.", 3, Color(255, 255, 255, 255)) ply:CloseCombiMenu() return end
+/* Make combination */
+concommand.Add("gms_MakeCombination", function(ply, cmd, args)
+	if (!args[1] or !args[2]) then ply:SendMessage("Please specify a valid combination.", 3, Color(255, 255, 255, 255)) return end
 
 	local group = args[1]
 	local combi = args[2]
@@ -1906,56 +1471,56 @@ function GM.MakeCombination(ply,cmd,args)
 			if (v:IsProp() and v:IsOnFire()) or v:GetModel() == "models/props_c17/furniturestove001a.mdl" then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) ply:CloseCombiMenu() return end
-	elseif (group == "StoneWeapons") then
+		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) return end
+	elseif (group == "gms_stoneworkbench") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_stoneworkbench") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
-	elseif (group == "CopperWeapons") then
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_copperworkbench") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_copperworkbench") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
-	elseif (group == "IronWeapons") then
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_ironworkbench") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_ironworkbench") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
-	elseif (group == "StoneFurnace") then
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_stonefurnace") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_stonefurnace") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
-	elseif (group == "CopperFurnace") then
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_copperfurnace") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_copperfurnace") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
 		
-	elseif (group == "IronFurnace") then
+	elseif (group == "gms_ironfurnace") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:GetClass() == "gms_ironfurnace") then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
 	end		 
 
 	--Check for skills
@@ -1968,7 +1533,7 @@ function GM.MakeCombination(ply,cmd,args)
 			end
 		end
 
-		if (numreq < table.Count(tbl.SkillReq)) then ply:SendMessage("Not enough skill.", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
+		if (numreq < table.Count(tbl.SkillReq)) then ply:SendMessage("Not enough skill.", 3, Color(200, 0, 0, 255)) return end
 	end
 
 	--Check for resources
@@ -1980,10 +1545,8 @@ function GM.MakeCombination(ply,cmd,args)
 		end
 	end
 
-	if (numreq < table.Count(tbl.Req) and group != "Buildings") then ply:SendMessage("Not enough resources.", 3, Color(200, 0, 0, 255)) ply:CloseCombiMenu() return end
+	if (numreq < table.Count(tbl.Req) and group != "Structures") then ply:SendMessage("Not enough resources.", 3, Color(200, 0, 0, 255)) return end
 
-	ply:CloseCombiMenu()
-	
 	--All well, make stuff:
 	if (group == "Cooking") then
 		local data = {}
@@ -1997,7 +1560,7 @@ function GM.MakeCombination(ply,cmd,args)
 		end
 
 		ply:DoProcess("Cook", time, data)
-	elseif (group == "Generic") then
+	elseif (group == "Combinations") then
 		local data = {}
 		data.Name = tbl.Name
 		data.Res = tbl.Results
@@ -2005,7 +1568,7 @@ function GM.MakeCombination(ply,cmd,args)
 		local time = 5
 
 		ply:DoProcess("MakeGeneric", time, data)
-	elseif (group == "Gunmaking" or group == "Utilities") then
+	elseif (group == "gms_gunlab" or group == "gms_gunchunks") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -2028,7 +1591,7 @@ function GM.MakeCombination(ply,cmd,args)
 		else		
 			ply:DoProcess("Processing", time, data)
 		end
-	elseif (group == "Factory") then
+	elseif (group == "gms_factory") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -2049,23 +1612,21 @@ function GM.MakeCombination(ply,cmd,args)
 			data.Class = tbl.SwepClass
 			ply:DoProcess("MakeWeapon", time, data)
 		else		
+			time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.15, 2))
 			ply:DoProcess("Smelt", time, data)
 		end
-	elseif (group == "StoneWeapons" or group == "CopperWeapons" or group == "IronWeapons") then
+	elseif (group == "gms_stoneworkbench" or group == "gms_copperworkbench" or group == "gms_ironworkbench") then
 		local data = {}
 		data.Name = tbl.Name
 		data.Class = tbl.SwepClass
 		data.Cost = table.Copy(tbl.Req)
-		local time = 10
-
-		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then
-			time = 7
-		end
 		
+		local time = 10
+		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then time = 7 end
 		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 4), 4)
 
 		ply:DoProcess("MakeWeapon", time, data)
-	elseif (group == "Buildings") then
+	elseif (group == "Structures") then
 		local data = {}
 		local trs = {}
 		data.Name = tbl.Name
@@ -2077,7 +1638,7 @@ function GM.MakeCombination(ply,cmd,args)
 		if (!trs.HitWorld) then ply:SendMessage("Aim at the ground to construct a structure.", 3, Color(200, 0, 0, 255)) return end
 
 		ply:DoProcess("MakeBuilding", time, data)
-	elseif (group == "StoneFurnace") then
+	elseif (group == "gms_stonefurnace") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -2092,13 +1653,13 @@ function GM.MakeCombination(ply,cmd,args)
 		for k, v in pairs(data.Cost) do
 			timecount = timecount + v
 		end 
-		local time = timecount * 0.5
 		
-		//time = time * (math.max(self.Owner:GetSkill("Smelting") - 15, 0))
+		local time = timecount * 0.5
+		time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.25, 2))
 
 		ply:DoProcess("Smelt", time, data)
 
-	elseif (group == "CopperFurnace") then
+	elseif (group == "gms_copperfurnace") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -2114,10 +1675,11 @@ function GM.MakeCombination(ply,cmd,args)
 			timecount = timecount + v
 		end 
 		local time = timecount * 0.6
+		time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.3, 2))
 
 		ply:DoProcess("Smelt", time, data)	
 
-	elseif (group == "IronFurnace") then
+	elseif (group == "gms_ironfurnace") then
 		local data = {}
 		data.Name = tbl.Name
 		if (tbl.AllSmelt == true) then
@@ -2133,9 +1695,10 @@ function GM.MakeCombination(ply,cmd,args)
 			timecount = timecount + v
 		end 
 		local time = timecount * 0.7
+		time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.35, 2))
 
 		ply:DoProcess("Smelt", time, data)
-	elseif (group == "GrindingStone") then
+	elseif (group == "gms_grindingstone") then
 		local data = {}
 		data.Name = tbl.Name
 		data.Res = tbl.Results
@@ -2148,12 +1711,546 @@ function GM.MakeCombination(ply,cmd,args)
 
 		ply:DoProcess("Crush", time, data)
 	end
-end
-concommand.Add("gms_MakeCombination", GM.MakeCombination)
+end)
 
-/*---------------------------------------------------------
-  STOOLs and Physgun
----------------------------------------------------------*/
+/* Sleep */
+function GM.PlayerSleep(ply, cmd, args)
+	if (ply.Sleeping or !ply:Alive() or ply.AFK == true) then return end
+	if (ply.Sleepiness > 700) then ply:SendMessage("You're not tired enough.", 3, Color(255, 255, 255, 255)) return end
+
+	ply.Sleeping = true
+	umsg.Start("gms_startsleep", ply)
+	umsg.End()
+
+	ply:Freeze(true)
+
+	--Check for shelter
+	local trace = {}
+	trace.start = ply:GetShootPos()
+	trace.endpos = trace.start + (ply:GetUp() * 300)
+	trace.filter = ply
+
+	local tr = util.TraceLine(trace)
+
+	if (!tr.HitWorld and !tr.HitNonWorld) then
+		ply.NeedShelter = true
+	else
+		ply.NeedShelter = false
+	end
+end
+concommand.Add("gms_sleep", GM.PlayerSleep)
+
+function GM.PlayerWake(ply, cmd, args)
+	if (!ply.Sleeping) then return end
+	ply.Sleeping = false
+	umsg.Start("gms_stopsleep", ply)
+	umsg.End()
+
+	ply:Freeze(false)
+
+	--Check for shelter
+	local trace = {}
+	trace.start = ply:GetShootPos()
+	trace.endpos = trace.start + (ply:GetUp() * 300)
+	trace.filter = ply
+
+	local tr = util.TraceLine(trace)
+
+	if (ply.NeedShelter) then
+		ply:SendMessage("You should find some shelter!", 5, Color(200, 0, 0, 255))
+	else
+		ply:SendMessage("Ah, nothing like a good nights sleep!", 5, Color(255, 255, 255, 255))
+	end
+end
+concommand.Add("gms_wakeup", GM.PlayerWake)
+
+/* AFK */
+function GM.AFK(ply, cmd, args)
+	if (ply.Sleeping or !ply:Alive()) then return end
+	if (ply.InProcess) then return end
+	if (ply.AFK == false or ply.AFK == nil) then
+		ply:SetNWString("AFK", 1)
+		ply.AFK = true			
+		umsg.Start("gms_startafk", ply)
+		umsg.End()
+	else
+		ply:SetNWString("AFK", 0)
+		ply.AFK = false			
+		umsg.Start("gms_stopafk", ply)
+		umsg.End()
+	end
+
+	ply:Freeze(ply.AFK)
+end
+concommand.Add("gms_afk", GM.AFK)
+
+/* Player Stuck */
+function GM.PlayerStuck(ply, cmd, args)
+	if (ply.InProcess) then return end
+	if (ply.Spam == true) then ply:SendMessage("No spamming!", 3, Color(200, 0, 0, 255)) return end
+	if (ply.Spam == false or ply.Spam == nil) then ply:SetPos(ply:GetPos() + Vector(0, 0, 64)) end
+
+	ply.Spam = true
+	timer.Simple(0.2, function() ply.Spam = false end, ply)
+end
+concommand.Add("gms_stuck", GM.PlayerStuck)
+
+/* Make Campfire command */
+function GM.MakeCampfire(ply, cmd, args)
+	if (GetConVarNumber("gms_Campfire") == 1) then
+		local tr = ply:TraceFromEyes(150)
+
+		if (!tr.HitNonWorld or !tr.Entity) then ply:SendMessage("Aim at the prop(s) to use for campfire.", 3, Color(255, 255, 255, 255)) return end
+
+		local ent = tr.Entity
+		local cls = tr.Entity:GetClass()
+
+		if (ent:IsOnFire() or cls != "prop_physics" and cls != "prop_physics_multiplayer" and cls != "prop_dynamic") then
+			ply:SendMessage("Aim at the prop(s) to use for campfire.", 3, Color(255, 255, 255, 255))
+			return
+		end
+
+		local mat = tr.MatType
+
+		if (ply:GetResource("Wood") < 5) then ply:SendMessage("You need at least 5 wood to make a fire.", 5, Color(255, 255, 255, 255)) return end
+
+		if (mat != MAT_WOOD) then ply:SendMessage("Prop has to be wood, or if partially wood, aim at the wooden part.", 5, Color(255, 255, 255, 255)) return end
+
+		local data = {}
+		data.Entity = ent
+		
+		if ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1) then		
+			ply:DoProcess("Campfire", 5, data)
+			return
+		end
+	end
+end
+concommand.Add("gms_makefire", GM.MakeCampfire)
+
+/*------------------------ Prop fadeout ------------------------*/
+GMS.FadingOutProps = {}
+GMS.FadingInProps = {}
+
+function EntityMeta:Fadeout(speed)
+	local speed = speed or 1
+
+	for k, v in pairs(player.GetAll()) do
+		umsg.Start("gms_CreateFadingProp", v)
+			umsg.String(self:GetModel())
+			umsg.Vector(self:GetPos())
+			umsg.Vector(self:GetAngles():Forward())
+			umsg.Short(math.Round(speed))
+		umsg.End()
+	end
+
+	self:Remove()
+end
+
+--Fadein is serverside
+function EntityMeta:Fadein()
+	self.AlphaFade = 0
+	self:SetColor(255, 255, 255, 0)
+	table.insert(GMS.FadingInProps, self)
+end
+
+hook.Add("Think", "gms_FadePropsThink", function()
+	for k, ent in pairs(GMS.FadingInProps) do
+		if (!ent or ent == NULL) then
+			table.remove(GMS.FadingInProps, k)
+		elseif (!ent:IsValid()) then
+			table.remove(GMS.FadingInProps, k)
+		elseif (ent.AlphaFade >= 255) then
+			table.remove(GMS.FadingInProps, k)
+		else
+			ent.AlphaFade = ent.AlphaFade + 5
+			ent:SetColor(255, 255, 255, ent.AlphaFade)
+		end
+	end
+end)
+
+/*------------------------ Prop rising / lowering (Used by gms_seed) ------------------------*/
+GM.RisingProps = {}
+GM.SinkingProps = {}
+
+function EntityMeta:RiseFromGround(speed, altmax)
+	local speed = speed or 1
+	local max;
+
+	if (!altmax) then
+		min, max = self:WorldSpaceAABB()
+		max = max.z
+	else
+		max = altmax
+	end
+
+	local tbl = {}
+	tbl.Origin = self:GetPos().z
+	tbl.Speed = speed
+	tbl.Entity = self
+
+	self:SetPos(self:GetPos() + Vector(0, 0, -max + 10))
+	table.insert(GAMEMODE.RisingProps, tbl)
+end
+
+function EntityMeta:SinkIntoGround(speed)
+	local speed = speed or 1
+
+	local tbl = {}
+	tbl.Origin = self:GetPos().z
+	tbl.Speed = speed
+	tbl.Entity = self
+	tbl.Height = max
+
+	table.insert(GAMEMODE.SinkingProps, tbl)
+end
+
+hook.Add("Think", "gms_RiseAndSinkPropsHook", function()
+	for k, tbl in pairs(GAMEMODE.RisingProps) do
+		if (tbl.Entity:GetPos().z >= tbl.Origin) then
+			table.remove(GAMEMODE.RisingProps, k)
+		else
+			tbl.Entity:SetPos(tbl.Entity:GetPos() + Vector(0, 0, 1 * tbl.Speed))
+		end
+	end
+
+	for k, tbl in pairs(GAMEMODE.SinkingProps) do
+		if tbl.Entity:GetPos().z <= tbl.Origin - tbl.Height then
+			table.remove(GAMEMODE.SinkingProps, k)
+			tbl.Entity:Remove()
+		else
+			tbl.Entity:SetPos(tbl.Entity:GetPos() + Vector(0, 0, -1 * tbl.Speed))
+		end
+	end
+end)
+
+/*------------------------ Spawn / death ------------------------*/
+function GM:PlayerInitialSpawn(ply)
+	--Create HUD
+	umsg.Start("gms_CreateInitialHUD", ply)
+	umsg.End()
+
+	ply:SetTeam(1)
+
+	--Serverside player variables
+	ply.Skills = {}
+	ply.Resources = {}
+	ply.Experience = {}
+	ply.FeatureUnlocks = {}	
+	ply.Loaded = true
+
+	--Admin info, needed clientside
+	if (ply:IsAdmin()) then
+		for k, v in pairs(file.Find("GMStranded/Gamesaves/*.txt")) do
+			local name = string.sub(v, 1, string.len(v) - 4)
+
+			if (string.Right(name, 5) != "_info") then
+				umsg.Start("gms_AddLoadGameToList", ply)
+				umsg.String(name)
+				umsg.End()
+			end
+		end
+	end
+
+	--Character loading
+	if (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then
+		ply.Loaded = false
+		local tbl = util.KeyValuesToTable(file.Read("GMStranded/Saves/" .. ply:UniqueID() .. ".txt"))
+
+		if (tbl["skills"]) then
+			for k, v in pairs(tbl["skills"]) do
+				ply:SetSkill(string.Capitalize(k), v)
+			end
+		end
+
+		if (tbl["experience"]) then
+			for k, v in pairs(tbl["experience"]) do
+				ply:SetXP(string.Capitalize(k), v)
+			end
+		end
+
+		if (tbl["unlocks"]) then 
+			for k, v in pairs(tbl["unlocks"]) do
+				ply.FeatureUnlocks[string.Capitalize(k)] = v
+			end
+		end
+		
+		if (tbl["resources"]) then
+			for k, v in pairs(tbl["resources"]) do
+				ply:SetResource(string.Capitalize(k), v)
+			end
+		end
+		
+		if (tbl["weapons"]) then
+			for k, v in pairs(tbl["weapons"]) do
+				ply:Give(v)
+			end
+		end
+		
+		ply:StripAmmo()
+		
+		if (tbl["ammo"]) then
+			for k, v in pairs(tbl["ammo"]) do
+				ply:GiveAmmo(v, k)
+			end
+		end
+
+		for k, v in pairs(GMS.FeatureUnlocks) do
+			if (ply:HasUnlock(k) and v.OnUnlock) then
+				v.OnUnlock(ply)
+			end
+		end
+
+		if (!ply.Skills["Survival"]) then ply.Skills["Survival"] = 0 end
+
+		ply.MaxResources = (ply.Skills["Survival"] * 5) + 25
+
+		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
+		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
+		ply.Loaded = true
+	else
+		ply:SetSkill("Survival", 0)
+		ply:SetXP("Survival", 0)
+		ply.MaxResources = 25
+	end
+
+	ply:SetNWInt("plants", 0)
+	for k, v in pairs(ents.GetAll()) do
+		if (v and v:IsValid() and v:GetNWEntity("plantowner") and v:GetNWEntity("plantowner"):IsValid() and v:GetNWEntity("plantowner") == ply) then
+			ply:SetNWInt("plants", ply:GetNWInt("plants") + 1)
+		end
+	end
+	
+	timer.Simple(5, function()
+		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
+			umsg.Start("gms_SetResourceDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Type, "_", " "))
+				umsg.Short(v.Amount)
+			umsg.End()
+		end
+	end)
+	
+	timer.Simple(7, function()
+		local time = 0
+		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function()
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end)
+				time = time + 0.5
+			end
+			time = time + 1
+		end
+		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function()
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end)
+				time = time + 0.5
+			end
+			time = time + 1
+		end
+	end)
+	
+	timer.Simple(6, function()
+		for _, v in ipairs(ents.FindByClass("gms_food")) do
+			umsg.Start("gms_SetFoodDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Name, "_", " "))
+			umsg.End()
+		end
+	end)
+end
+
+/* Send all campfires */
+hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
+	timer.Simple(3, function()
+		for i, v in pairs(GAMEMODE.CampFireProps) do
+			umsg.Start("addCampFire", ply)
+				umsg.Short(v:EntIndex())
+			umsg.End()
+		end
+	end)
+end)
+
+/* Send all tribes */
+hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
+	timer.Simple(4, function()
+		for i, v in pairs(GAMEMODE.Tribes) do
+			umsg.Start("recvTribes", ply)
+			umsg.Short(v.id)
+			umsg.String(i)
+			umsg.Short(v.red)
+			umsg.Short(v.green)
+			umsg.Short(v.blue)
+			if (v.Password == false) then 
+				umsg.Bool(false)
+			else
+				umsg.Bool(true)
+			end
+			umsg.End()
+		end
+	end)
+end)
+
+function GM:PlayerSpawn(ply)
+	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
+
+	if (ply:HasUnlock("Sprinting_II")) then
+		GAMEMODE:SetPlayerSpeed(ply, 400, 100)
+	else
+		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
+	end
+
+	self:PlayerLoadout(ply) --hook.Call("PlayerLoadout", GAMEMODE, ply)
+	self:PlayerSetModel(ply) --hook.Call("PlayerSetModel", GAMEMODE, ply)
+
+	ply.Sleepiness = 1000
+	ply.Hunger = 1000
+	ply.Thirst = 1000
+	ply.Oxygen = 1000
+	if (ply:HasUnlock("Adept_Survivalist")) then ply:SetHealth(150) end
+	if (ply:HasUnlock("Master_Survivalist")) then ply:SetHealth(200) end
+	ply:UpdateNeeds()
+end
+
+function GM:PlayerLoadout(ply)
+	ply:Give("gms_hands") --Tools
+
+	if (GetConVarNumber("gms_AllTools") == 1) then
+		ply:Give("gms_stonepickaxe")
+		ply:Give("gms_copperpickaxe")
+		ply:Give("gms_copperknife")
+		ply:Give("gms_ironpickaxe")
+		ply:Give("gms_stonehatchet")
+		ply:Give("gms_copperhatchet")
+		ply:Give("gms_ironhatchet")
+		ply:Give("gms_woodenfishingrod")
+		ply:Give("gms_advancedfishingrod")
+		ply:Give("gms_fryingpan")
+		ply:Give("gms_shovel")
+		ply:Give("gms_strainer")
+		ply:Give("gms_sickle")
+		ply:Give("gms_woodenspoon")
+		ply:Give("weapon_crowbar")
+		ply:Give("weapon_stunstick")
+		ply:Give("gmod_tool")
+		ply:Give("weapon_pistol")
+		ply:Give("gmod_camera")
+		ply:Give("weapon_smg1")
+	end
+
+	--Gmod
+	if (GetConVarNumber("gms_physgun") == 1 or ply:IsAdmin()) then ply:Give("weapon_physgun") end
+	if (ply:IsAdmin() or ply:IsSuperAdmin()) then ply:Give("gmod_tool") ply:Give("pill_pigeon") end
+	if (ply:HasUnlock("Extreme_Survivalist")) then ply:Give("pill_pigeon") end
+	ply:Give("weapon_physcannon")
+	ply:SelectWeapon("weapon_physgun")
+	ply:SelectWeapon("gms_hands")
+end
+
+hook.Add("PlayerDeath", "Death", function(ply)
+	ply.NextSpawnTime = CurTime() + 400
+	ply:ConCommand("gms_dropall")
+	if (ply.AFK == true) then
+		ply:Freeze(false)
+		ply.AFK = false			
+		umsg.Start("gms_stopafk", ply)
+		umsg.End()
+	end
+end)
+
+function GM.AutoSaveAllCharacters()
+	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
+	if (GetConVarNumber("gms_AutoSave") == 1) then
+		for k, v in pairs(player.GetAll()) do
+			v:SendMessage("Autosaving..", 3, Color(255, 255, 255, 255))
+			GAMEMODE.SaveCharacter(v)
+		end
+	end
+end
+timer.Create("GMS.AutoSaveAllCharacters", math.Clamp(GetConVarNumber("gms_AutoSaveTime"), 1, 60) * 60, 0, GM.AutoSaveAllCharacters)
+
+function GM:PlayerDisconnected(ply)
+	Msg("Saving character of disconnecting player " .. ply:Nick() .. "...\n")
+	self.SaveCharacter(ply)
+end
+
+function GM:ShutDown()
+	for k, v in pairs(player.GetAll()) do
+		self.SaveCharacter(v)
+	end
+end
+
+function GM.SaveCharacter(ply,cmd,args)
+	if (!file.IsDir("GMStranded")) then file.CreateDir("GMStranded") end
+	if (!file.IsDir("GMStranded/Saves")) then file.CreateDir("GMStranded/Saves") end
+	if (!ply.Loaded) then
+		print("Player " .. ply:Name() .. " tried to save before he has loaded!")
+		ply:SendMessage("Character save failed: Not yet loaded!", 3, Color(255, 50, 50, 255))
+		return
+	end
+
+	local tbl = {}
+	tbl["skills"] = {}
+	tbl["experience"] = {}
+	tbl["unlocks"] = {}
+	tbl["date"] = os.date("%A %m/%d/%y")
+	tbl["name"] = ply:Nick()
+	
+	tbl["resources"] = {}
+	tbl["weapons"] = {}
+	tbl["ammo"] = {}
+
+	for k, v in pairs(ply.Skills) do
+		tbl["skills"][k] = v
+	end
+
+	for k, v in pairs(ply.Experience) do
+		tbl["experience"][k] = v
+	end
+
+	for k, v in pairs(ply.FeatureUnlocks) do
+		tbl["unlocks"][k] = v
+	end
+	
+	for k, v in pairs(ply.Resources) do
+		if v > 0  then
+			tbl["resources"][k] = v
+		end
+	end
+	
+	for id, wep in pairs(ply:GetWeapons()) do
+		if (wep:GetClass() != "gms_hands" or wep:GetClass() != "weapon_physgun" or wep:GetClass() != "weapon_physcannon") then
+			table.insert(tbl["weapons"], wep:GetClass())
+		end
+	end
+	
+	local ammo_types = {"ar2", "smg1", "pistol", "buckshot", "357", "grenade", "alyxgun", "xbowbolt", "AlyxGun", "RPG_Round","SMG1_Grenade", "SniperRound",
+		"SniperPenetratedRound", "Grenade", "Thumper", "Gravity", "Battery", "GaussEnergy", "CombineCannon", "AirboatGun", "StriderMinigun", "StriderMinigunDirect",
+		"HelicopterGun", "AR2AltFire", "Grenade", "Hopwire", "CombineHeavyCannon", "ammo_proto1"}
+
+	for id, str in pairs(ammo_types) do
+		local ammo = ply:GetAmmoCount(str)
+		if (ammo > 0) then
+			tbl["ammo"][str] = ammo
+		end
+	end
+
+	file.Write("GMStranded/Saves/" .. ply:UniqueID() .. ".txt", util.TableToKeyValues(tbl))
+	ply:SendMessage("Saved character!", 3, Color(255, 255, 255, 255))
+end
+concommand.Add("gms_savecharacter", GM.SaveCharacter)
+
+/*------------------------ STOOLs and Physgun ------------------------*/
 function GM:PhysgunPickup(ply, ent)
 	if (ply:IsAdmin()) then return true end
 
@@ -2167,8 +2264,6 @@ end
 function GM:GravGunPunt(ply, ent)
 	return ply:IsAdmin()
 end
-
---GM.ProhibitedStools = {"dynamite", "duplicator", "door"}
 
 function GM:CanTool(ply,tr,mode)
 	local ent = tr.Entity
@@ -2193,9 +2288,7 @@ function GM:CanTool(ply,tr,mode)
 	return true
 end
 
-/*---------------------------------------------------------
-  Prop spawning
----------------------------------------------------------*/
+/*------------------------ Prop spawning ------------------------*/
 function GM:PlayerSpawnedProp(ply, mdl, ent)
 	SPropProtection.PlayerMakePropOwner(ply, ent)
 	if (GetConVarNumber("gms_FreeBuild") == 1) then return end
@@ -2307,9 +2400,6 @@ function GM:PlayerSpawnedSENT(ply, prop)
 	prop:Remove()
 end
 
-/*---------------------------------------------------------
-  SWEP Spawning
----------------------------------------------------------*/
 function CCSpawnSWEP(player, command, arguments) 
 	if (GetConVarNumber("gms_AllowSWEPSpawn") == 0) then player:SendMessage("SWEP spawning is disabled.", 3, Color(200, 0, 0, 255)) return end
 	if (arguments[1] == nil) then return end 
@@ -2327,19 +2417,7 @@ function CCSpawnSWEP(player, command, arguments)
 end 
 concommand.Add("gm_giveswep", CCSpawnSWEP)
  
-/*---------------------------------------------------------
-  Needs
----------------------------------------------------------*/
-function PlayerMeta:UpdateNeeds()
-	umsg.Start("gms_setneeds", self)
-		umsg.Short(self.Sleepiness)
-		umsg.Short(self.Hunger)
-		umsg.Short(self.Thirst)
-		umsg.Short(self.Oxygen)
-		umsg.Short(Time)
-	umsg.End()
-end
-
+/*------------------------ Needs ------------------------*/
 function GM.SubtractNeeds()
 	for k, ply in pairs(player.GetAll()) do
 		if (ply:Alive()) then
@@ -2413,111 +2491,10 @@ function GM.SubtractNeeds()
 			end
 		end
 	end
-
-	timer.Simple(3, GAMEMODE.SubtractNeeds)
 end
-timer.Simple(3, GM.SubtractNeeds)
+timer.Create("GMS.SubtractNeeds", 3, 0, GM.SubtractNeeds)
 
-/*---------------------------------------------------------
-  Sleep
----------------------------------------------------------*/
-function GM.PlayerSleep(ply, cmd, args)
-	if (ply.Sleeping or !ply:Alive() or ply.AFK == true) then return end
-	if (ply.Sleepiness > 700) then ply:SendMessage("You're not tired enough.", 3, Color(255, 255, 255, 255)) return end
-
-	ply.Sleeping = true
-	umsg.Start("gms_startsleep", ply)
-	umsg.End()
-
-	ply:Freeze(true)
-
-	--Check for shelter
-	local trace = {}
-	trace.start = ply:GetShootPos()
-	trace.endpos = trace.start + (ply:GetUp() * 300)
-	trace.filter = ply
-
-	local tr = util.TraceLine(trace)
-
-	if (!tr.HitWorld and !tr.HitNonWorld) then
-		ply.NeedShelter = true
-	else
-		ply.NeedShelter = false
-	end
-end
-concommand.Add("gms_sleep", GM.PlayerSleep)
-
-function GM.PlayerWake(ply, cmd, args)
-	if (!ply.Sleeping) then return end
-	ply.Sleeping = false
-	umsg.Start("gms_stopsleep", ply)
-	umsg.End()
-
-	ply:Freeze(false)
-
-	--Check for shelter
-	local trace = {}
-	trace.start = ply:GetShootPos()
-	trace.endpos = trace.start + (ply:GetUp() * 300)
-	trace.filter = ply
-
-	local tr = util.TraceLine(trace)
-
-	if (ply.NeedShelter) then
-		ply:SendMessage("You should find some shelter!", 5, Color(200, 0, 0, 255))
-	else
-		ply:SendMessage("Ah, nothing like a good nights sleep!", 5, Color(255, 255, 255, 255))
-	end
-end
-concommand.Add("gms_wakeup",GM.PlayerWake)
-
-/*---------------------------------------------------------
- AFK
----------------------------------------------------------*/
-function GM.AFK(ply,cmd,args)
-	if (ply.Sleeping or !ply:Alive()) then return end
-	if (ply.InProcess) then return end
-	if (ply.AFK == false or ply.AFK == nil) then
-		ply:SetNWString("AFK", 1)
-		ply.AFK = true			
-		umsg.Start("gms_startafk", ply)
-		umsg.End()
-	else
-		ply:SetNWString("AFK", 0)
-		ply.AFK = false			
-		umsg.Start("gms_stopafk", ply)
-		umsg.End()
-	end
-
-	ply:Freeze(ply.AFK)
-end
-concommand.Add("gms_afk",GM.AFK)
-
-/*---------------------------------------------------------
-  Player Stuck
----------------------------------------------------------*/
-function GM.PlayerStuck(ply, cmd, args)
-	if (ply.InProcess) then return end
-	if (ply.Spam == true) then ply:SendMessage("No spamming!", 3, Color(200, 0, 0, 255)) return end
-	if (ply.Spam == false or ply.Spam == nil) then ply:SetPos(ply:GetPos() + Vector(0, 0, 64)) end
-
-	ply.Spam = true
-	timer.Simple(0.2, function() ply.Spam = false end, ply)
-end
-concommand.Add("gms_stuck", GM.PlayerStuck)
-
-/*---------------------------------------------------------
-  Loot-Able npcs
----------------------------------------------------------*/
-GMS.LootableNPCs = {"npc_antlion", "npc_antlionguard", "npc_crow", "npc_seagull", "npc_pigeon"}
-
-function EntityMeta:IsLootableNPC()
-	if table.HasValue(GMS.LootableNPCs, self:GetClass()) then
-		return true
-	end
-	return false
-end
-
+/* NPC Looting and hunting */
 function GM:OnNPCKilled(npc, killer, weapon)
 	if (npc:IsLootableNPC()) then
 		if (killer:IsPlayer()) then
@@ -2541,9 +2518,7 @@ function GM:OnNPCKilled(npc, killer, weapon)
 	end
 end
 
-/*---------------------------------------------------------
-  Make Campfire command
----------------------------------------------------------*/
+/* Campfire timer */
 GM.CampFireProps = {}
 function GM.CampFireTimer()
 	if (GetConVarNumber("gms_Campfire") == 1) then
@@ -2564,84 +2539,12 @@ function GM.CampFireTimer()
 				end
 			end
 		end
-		timer.Simple(1, GM.CampFireTimer)
 	end
 end
-timer.Simple(1, GM.CampFireTimer)
+timer.Create("GMS.Campfire", 1, 0, GM.CampFireTimer)
 
-function GM.MakeCampfire(ply, cmd, args)
-	if (GetConVarNumber("gms_Campfire") == 1) then
-		local tr = ply:TraceFromEyes(150)
-
-		if (!tr.HitNonWorld or !tr.Entity) then ply:SendMessage("Aim at the prop(s) to use for campfire.", 3, Color(255, 255, 255, 255)) return end
-
-		local ent = tr.Entity
-		local cls = tr.Entity:GetClass()
-
-		if (ent:IsOnFire() or cls != "prop_physics" and cls != "prop_physics_multiplayer" and cls != "prop_dynamic") then
-			ply:SendMessage("Aim at the prop(s) to use for campfire.", 3, Color(255, 255, 255, 255))
-			return
-		end
-
-		local mat = tr.MatType
-
-		if (ply:GetResource("Wood") < 5) then ply:SendMessage("You need at least 5 wood to make a fire.", 5, Color(255, 255, 255, 255)) return end
-
-		if (mat != MAT_WOOD) then ply:SendMessage("Prop has to be wood, or if partially wood, aim at the wooden part.", 5, Color(255, 255, 255, 255)) return end
-
-		local data = {}
-		data.Entity = ent
-		
-		if ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1) then		
-			ply:DoProcess("Campfire", 5, data)
-			return
-		end
-	end
-end
-concommand.Add("gms_makefire", GM.MakeCampfire)
-
-function EntityMeta:MakeCampfire()
-	if (GetConVarNumber("gms_Campfire") == 1) then
-		self:Ignite(360, 0)
-
-		self.CampFireMaxHP = self:Health()
-		self.CampFireLifeTime = CurTime()
-
-		table.insert(GAMEMODE.CampFireProps, self)
-
-		local mdl = self:GetModel()
-
-		for k, v in pairs(ents.FindInSphere(self:GetPos(),100)) do
-			local cls = v:GetClass()
-			if (v != ent and v:IsProp()) then
-				if (v:GetModel() == mdl) then
-					GetConVarNumber("gms_MaxReproducedTrees")
-					if (GetConVarNumber("gms_SpreadFire") == 1) then
-						v:Ignite(360, (v:OBBMins() - v:OBBMaxs()):Length() * 0.50 + 10)
-					else
-						v:Ignite(360, 0)
-					end
-
-					v.CampFireMaxHP = v:Health()
-					v.CampFireLifeTime = CurTime()
-
-					table.insert(GAMEMODE.CampFireProps, v)
-
-					local rp = RecipientFilter()
-					rp:AddAllPlayers()
-					umsg.Start("addCampFire", rp)
-						umsg.Short(v:EntIndex())
-					umsg.End()
-				end
-			end
-		end
-	end
-end
-
-/*---------------------------------------------------------
-  Use Hook
----------------------------------------------------------*/
-function GM.UseKeyHook(ply, key)
+/* Use Hook */
+hook.Add("KeyPress", "GMS_UseKeyHook", function(ply, key)
 	if (key != IN_USE) then return end
 	if (ply:KeyDown(1)) then return end
 		
@@ -2667,13 +2570,11 @@ function GM.UseKeyHook(ply, key)
 				end
               
 			elseif (ent:IsTreeModel()) then
-				if (!ply:HasUnlock("Sprout_Collect")) then ply:SendMessage("You don't have enough skill.", 3, Color(200, 0, 0, 255)) return end
+				if (!ply:HasUnlock("Sprout_Collecting")) then ply:SendMessage("You don't have enough skill.", 3, Color(200, 0, 0, 255)) return end
 				ply:DoProcess("SproutCollect", 5)
 			elseif (cls == "gms_resourcedrop" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:PickupResourceEntity(ent)
-			elseif (cls == "gms_resourcepack" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
-				ply:ConCommand("gms_openrespackmenu")
-			elseif (cls == "gms_fridge" and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
+			elseif ((cls == "gms_resourcepack" or cls == "gms_fridge") and (ply:GetPos() - tr.HitPos):Length() <= 100 and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				ply:ConCommand("gms_openrespackmenu")
 			elseif (ent:IsOnFire() and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
 				if (GetConVarNumber("gms_CampFire") == 1) then ply:OpenCombiMenu("Cooking") end
@@ -2728,69 +2629,9 @@ function GM.UseKeyHook(ply, key)
 	elseif (GMS.IsInWater(tr.HitPos) and !tr.HitNonWorld) then
 		ply:DoProcess("BottleWater", 3)
 	end
-end
-hook.Add("KeyPress", "GMS_UseKeyHook", GM.UseKeyHook)
+end)
 
-function PlayerMeta:PickupResourceEntity(ent)
-	if (!(SPropProtection.PlayerIsPropOwner(self, ent) or SPropProtection.IsBuddy(self, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
-
-	local int = ent.Amount
-	local room = self.MaxResources - self:GetAllResources()
-
-	if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
-	if (room < int) then int = room end
-	ent.Amount = ent.Amount - int
-	if (ent.Amount <= 0) then ent:Fadeout() else ent:SetResourceDropInfo(ent.Type, ent.Amount) end
-
-	self:IncResource(ent.Type, int)
-	self:SendMessage("Picked up " .. string.Replace(ent.Type, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
-end
-
-function PlayerMeta:PickupResourceEntityPack(ent)
-	if (!(SPropProtection.PlayerIsPropOwner(self, ent) or SPropProtection.IsBuddy(self, ent)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
-
-	if (table.Count(ent.Resources) > 0) then
-		for res, int in pairs(ent.Resources) do
-			local room = self.MaxResources - self:GetAllResources()
-
-			if (room <= 0) then self:SendMessage("You can't carry anymore!", 3, Color(200, 0, 0, 255)) return end
-			if (room < int) then int = room end
-			ent.Resources[res] = ent.Resources[res] - int
-
-			ent:SetResPackInfo(res, ent.Resources[res])
-			if (ent.Resources[res] <= 0) then ent.Resources[res] = nil end
-
-			self:IncResource(res, int)
-			self:SendMessage("Picked up " .. string.Replace(res, "_", " ") .. " (" .. int .. "x)", 4, Color(10, 200, 10, 255))
-		end
-	end
-end
-
-/*---------------------------------------------------------
-  Saving/loading functions
----------------------------------------------------------*/
-function PlayerMeta:MakeLoadingBar(msg)
-	umsg.Start("gms_MakeLoadingBar", self)
-		umsg.String(msg)
-	umsg.End()
-end
-
-function PlayerMeta:StopLoadingBar()
-	umsg.Start("gms_StopLoadingBar",self)
-	umsg.End()
-end
-
-function PlayerMeta:MakeSavingBar(msg)
-	umsg.Start("gms_MakeSavingBar", self)
-		umsg.String(msg)
-	umsg.End()
-end
-
-function PlayerMeta:StopSavingBar()
-	umsg.Start("gms_StopSavingBar", self)
-	umsg.End()
-end
-
+/* Saving / loading functions */
 --Find pre-existing entities
 function GM:FindMapSpecificEntities()
 	self.MapSpecificEntities = ents.GetAll()
@@ -2983,31 +2824,25 @@ function GM:LoadMapEntity(savegame, max, k)
 	end
 end
 
-/*---------------------------------------------------------
-  Sprint Hook
----------------------------------------------------------*/
-function GM.SprintKeyHook(ply,key)
+/* Sprint Hook */
+hook.Add("KeyPress", "GMS_SprintKeyHook", function(ply, key)
 	local GM = GAMEMODE
 	if (key != IN_SPEED) then return end
 
-	if (ply:HasUnlock("Sprint_Mki") and !ply:HasUnlock("Sprint_Mkii")) then
+	if (ply:HasUnlock("Sprinting_I") and !ply:HasUnlock("Sprinting_II")) then
 		GM:SetPlayerSpeed(ply, 250, 400)
 	end
-end
-hook.Add("KeyPress", "GMS_SprintKeyHook", GM.SprintKeyHook)
+end)
 
-function GM.SprintKeyReleaseHook(ply, key)
+hook.Add("KeyReleased", "GMS_SprintKeyReleaseHook", function(ply, key)
 	if (key != IN_SPEED) then return end
 
-	if (ply:HasUnlock("Sprint_Mki") and !ply:HasUnlock("Sprint_Mkii")) then
+	if (ply:HasUnlock("Sprinting_I") and !ply:HasUnlock("Sprinting_II")) then
 		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
 	end
-end
-hook.Add("KeyReleased", "GMS_SprintKeyReleaseHook", GM.SprintKeyReleaseHook)
+end)
 
-/*---------------------------------------------------------
-  Misc functions
----------------------------------------------------------*/
+/* Misc functions */
 hook.Add("Think", "GM_WaterExtinguish", function()
 	for _, v in ipairs(ents.GetAll()) do
 		if (v:WaterLevel() > 0 and v:IsOnFire()) then
@@ -3017,7 +2852,6 @@ hook.Add("Think", "GM_WaterExtinguish", function()
 end)
 
 /* Oxygen */
-
 timer.Create("Oxygen.Timer", 1, 0, function()
 	for _, v in ipairs(player.GetAll()) do
 		if (v:WaterLevel() > 2) then
@@ -3038,9 +2872,8 @@ timer.Create("Oxygen.Timer", 1, 0, function()
 end)
 
 local AlertSounds = {"citizen_beaten1.wav", "citizen_beaten4.wav", "citizen_beaten5.wav", "cough1.wav", "cough2.wav", "cough3.wav", "cough4.wav"}
-/*---------------------------------------------------------
-  Alert Message: Thirst
----------------------------------------------------------*/
+
+/* Alert Message: Thirst */
 timer.Create("AlertTimerT", 5, 0, function(ply)
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
@@ -3051,9 +2884,7 @@ timer.Create("AlertTimerT", 5, 0, function(ply)
 	end
 end)
 
-/*---------------------------------------------------------
-  Alert Message: Hunger
----------------------------------------------------------*/
+/* Alert Message: Hunger */
 timer.Create("AlertTimerH", 5, 0, function()
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
@@ -3064,9 +2895,7 @@ timer.Create("AlertTimerH", 5, 0, function()
 	end
 end)
 
-/*---------------------------------------------------------
-  Alert Message: Sleepiness
----------------------------------------------------------*/
+/* Alert Message: Sleepiness */
 timer.Create("AlertTimerS", 5, 0, function()
 	if (GetConVarNumber("gms_Alerts") == 1) then
 		for k, ply in pairs(player.GetAll()) do 
@@ -3077,15 +2906,12 @@ timer.Create("AlertTimerS", 5, 0, function()
 	end
 end)
 
-/*---------------------------------------------------------
-   Tribe system
----------------------------------------------------------*/
-
+/* Tribe system */
 function CreateTribe(ply, name, red, green, blue, password)
 	local Password = false
 	if (password and password != "") then Password = password end
 
-	name = string.Trim(name) -- No space bars! =\
+	name = string.Trim(name) -- No space bars!
 	if (name == "") then ply:SendMessage("You should enter tribe name!", 5, Color(255, 50, 50, 255)) return end
 	if (GAMEMODE.Tribes[name] != nil) then ply:SendMessage("Tribe with this name already exists!", 5, Color(255, 50, 50, 255)) return end
 	
@@ -3112,84 +2938,16 @@ function CreateTribe(ply, name, red, green, blue, password)
 		end
 	umsg.End()
 	
-	team.SetUp(GAMEMODE.NumTribes, tostring(name), Color(red, green, blue, 255))
+	team.SetUp(GAMEMODE.NumTribes, name, Color(red, green, blue, 255))
 	ply:SetTeam(GAMEMODE.NumTribes)
 	SPropProtection.TribePP(ply)
-	ply:SendMessage("Successfully created", 5, Color(255, 255, 255, 255))
+	ply:SendMessage("Successfully created " .. name, 5, Color(255, 255, 255, 255))
 end
 
-include("chatcommands.lua")
 function GM:PlayerSay(ply, text, public)
-	if (string.find(text, "/createtribe") == 1) then
-		local stuff = string.Explode("\"", text)
-		if (!stuff[2] or stuff[2] == "") then
-			args = string.Explode(" ", text)
-			if (!args[5]) then ply:ChatPrint("Syntax is: /createtribe \"tribename\" red green blue [password(optional)]") return "" end
-		else
-			args1 = string.Explode(" ", stuff[1])
-			args2 = string.Explode(" ", stuff[3])
-			if (!args2[3]) then ply:ChatPrint("Syntax is: /createtribe \"tribename\" red green blue [password(optional)]") return "" end
-		end
-		if (stuff[2] and stuff[2] != "") then
-			name = stuff[2]
-			for i=2, 4 do
-				if (!args2[i] or !tonumber(args2[i])) then ply:ChatPrint("Syntax is: /createtribe \"tribename\" red green blue [password(optional)]") return "" end
-			end
-		else
-			name = args[2]
-			for i=3, 5 do
-				if (!args[i] or !tonumber(args[i])) then ply:ChatPrint("Syntax is: /createtribe \"tribename\" red green blue [password(optional)]") return "" end
-			end
-		end
-		if (stuff[2] and stuff[2] != "") then
-			red = math.Clamp(tonumber(args2[2]), 0, 255)
-			green = math.Clamp(tonumber(args2[3]), 0, 255)
-			blue = math.Clamp(tonumber(args2[4]), 0, 255)
-		else
-			red = math.Clamp(tonumber(args[3]), 0, 255)
-			green = math.Clamp(tonumber(args[4]), 0, 255)
-			blue = math.Clamp(tonumber(args[5]), 0, 255)
-		end
-		local Password = false
-		if (stuff[2] and stuff[2] != "") then
-			if (args2[5] and args2[5] != "") then Password = args2[5] end
-		else
-			if (args[6] and args[6] != "") then Password = args[6] end
-		end
-		
-		CreateTribe(ply, name, red, green, blue, Password)
-		return ""
-	elseif (string.find(text, "/join") == 1) then
-		local join = string.Explode("\"", text)
-		if (join[2] and join[2] != "") then
-			args = string.Explode(" ", join[3])
-			jname = join[2]
-			pw = args[2]
-		else
-			args = string.Explode(" ", text)
-			jname = args[2]
-			pw = args[3]
-		end
-		if (!jname) then ply:ChatPrint("Syntax is: /jointribe \"tribename\" [password(if needed)]") return "" end
-		for i, v in pairs(GAMEMODE.Tribes) do
-			if (string.lower(i) == string.lower(jname)) then
-				if (v.Password and v.Password != pw) then ply:SendMessage("Incorrcet tribal password", 3, Color(255, 50, 50, 255)) return "" end
-				ply:SetTeam(v.id)
-				SPropProtection.TribePP(ply)
-				ply:SendMessage("Successfully joined " .. i, 5, Color(255, 255, 255, 255))
-				return ""
-			end
-		end
-		return ""
-	elseif (string.find(text, "/leavetribe") == 1) then
-		ply:SetTeam(1)
-		SPropProtection.TribePP(ply)
-		ply:SendMessage("Successfully left the tribe", 5, Color(255, 255, 255, 255))
-		return ""
-	end
-	
 	local args = string.Explode(" ", text)
 	if (args == nil) then args = {} end
+
 	if (public) then
 		return GMS.RunChatCmd(ply, unpack(args)) or text
 	else
@@ -3204,7 +2962,7 @@ function GM:PlayerSay(ply, text, public)
 	end
 end
 
-function CreateTribeCmd(ply, cmd, args, argv)
+function GM.CreateTribeCmd(ply, cmd, args, argv)
 	if (!args[4] or args[4] == "") then ply:ChatPrint("Syntax is: gms_createtribe \"tribename\" red green blue [password(optional)]") return end
 	if (args[5] and args[5] != "") then
 		CreateTribe(ply, args[1], args[2], args[3], args[4], args[5])
@@ -3212,9 +2970,9 @@ function CreateTribeCmd(ply, cmd, args, argv)
 		CreateTribe(ply, args[1], args[2], args[3], args[4], "")
 	end
 end
-concommand.Add("gms_createtribe", CreateTribeCmd)
+concommand.Add("gms_createtribe", GM.CreateTribeCmd)
 
-concommand.Add("gms_join", function (ply, cmd, args)
+function GM.JoinTribeCmd(ply, cmd, args)
 	local pw = ""
 	if (!args[1] or args[1] == "") then ply:ChatPrint("Syntax is: gms_join \"tribename\" [password(if needed)]") return end
 	if (args[2] and args[2] != "") then pw = args[2] end
@@ -3226,17 +2984,17 @@ concommand.Add("gms_join", function (ply, cmd, args)
 			ply:SendMessage("Successfully joined " .. i, 5, Color(255, 255, 255, 255))
 		end
 	end
-end)
+end
+concommand.Add("gms_join", GM.JoinTribeCmd)
 
-concommand.Add("gms_leave", function(ply, cmd, args)
+function GM.LeaveTribeCmd(ply, cmd, args)
 	ply:SetTeam(1)
 	SPropProtection.TribePP(ply)
 	ply:SendMessage("Successfully left the tribe", 5, Color(255, 255, 255, 255))
-end)
+end
+concommand.Add("gms_leave", GM.LeaveTribeCmd)
 
-/*---------------------------------------------------------
-   Resource Box Touch
----------------------------------------------------------*/
+/* Resource Box Touch */
 function big_gms_combineresource(ent_a, ent_b)
 	local ent_a_owner = ent_a:GetNetworkedString("Owner")
 	local ent_b_owner = ent_b:GetNetworkedString("Owner")
@@ -3253,7 +3011,6 @@ function big_gms_combineresource(ent_a, ent_b)
 end
 
 /* Resource box touches Resource pack */
-
 function big_gms_combineresourcepack(respack, ent_b)
 	local ent_a_owner = respack:GetNetworkedString("Owner")
 	local ent_b_owner = ent_b:GetNetworkedString("Owner")
@@ -3273,8 +3030,7 @@ function big_gms_combineresourcepack(respack, ent_b)
 	end 	
 end
 
-/* Fridge touches Food */
-
+/* Food touches Fridge */
 function big_gms_combinefood(fridge, food)
 	local ent_a_owner = fridge:GetNetworkedString("Owner")
 	local ent_b_owner = food:GetNetworkedString("Owner")
@@ -3295,9 +3051,7 @@ function big_gms_combinefood(fridge, food)
 	end 	
 end
 
-/*---------------------------------------------------------
-   Resource Box Buildsite Touch
----------------------------------------------------------*/
+/* Resource Box Buildsite Touch */
 function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 	local ent_resourcedrop_owner = ent_resourcedrop:GetNetworkedString("Owner")
 	local ent_buildsite_owner = ent_buildsite:GetNetworkedString("Owner")
@@ -3343,6 +3097,7 @@ function gms_addbuildsiteresource(ent_resourcedrop, ent_buildsite)
 	end
 end
 
+/* Resource Pack Buildsite Touch */
 function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 	local ent_resourcedrop_owner = ent_resourcepack:GetNetworkedString("Owner")
 	local ent_buildsite_owner = ent_buildsite:GetNetworkedString("Owner")
@@ -3392,50 +3147,10 @@ function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 	end
 end	
 
-/*---------------------------------------------------------
-   Resource Box versus Player Damage
----------------------------------------------------------*/
-function playershouldtakedamage(victim, attacker)
-	if (victim:IsPlayer() and (attacker:GetClass() == "gms_resourcedrop" or attacker:IsPlayerHolding() or attacker:GetClass() == "gms_resourcepack" or attacker:GetClass() == "gms_fridge")) then
+/* Resource Box versus Player Damage */
+hook.Add("PlayerShouldTakeDamage", "playershouldtakedamage", function(victim, attacker)
+	if (victim:IsPlayer() and (attacker:GetClass() == "gms_resourcedrop" or attacker:IsPlayerHolding() or attacker:GetClass() == "gms_resourcepack" or attacker:GetClass() == "gms_fridge" or attacker:GetClass() == "gms_food")) then
 		return false
 	end
 	return true
-end
-hook.Add("PlayerShouldTakeDamage", "playershouldtakedamage", playershouldtakedamage)
-
-/*---------------------------------------------------------
-   All Smelt Function
----------------------------------------------------------*/
-function PlayerMeta:AllSmelt(ResourceTable)
-	local resourcedata = {}
-	resourcedata.Req = {}
-	resourcedata.Results = {}
-	local AmountReq = 0
-	for k, v in pairs(ResourceTable.Req) do
-		if (self:GetResource(k) > 0) then
-			if (self:GetResource(k) <= ResourceTable.Max) then
-				resourcedata.Req[k] = self:GetResource(k)
-				AmountReq = AmountReq + self:GetResource(k)				
-			else
-				resourcedata.Req[k] = ResourceTable.Max
-				AmountReq = AmountReq + ResourceTable.Max
-				self:SendMessage("You can only do " .. tostring(ResourceTable.Max) .. " " .. k .. " at a time.", 3, Color(200, 0, 0, 255))
-			end
-		else
-			resourcedata.Req[k] = 1
-		end
-	end
-	for k, v in pairs(ResourceTable.Results) do
-		resourcedata.Results[k] = AmountReq
-	end
-	return resourcedata
-end
-
-/*---------------------------------------------------------
-   Admin Message
----------------------------------------------------------*/
-function adminMsg(loc, text)
-	for k, v in pairs(player.GetAll()) do
-		if (v:IsAdmin()) then v:PrintMessage(loc, text) end
-	end	
-end
+end)

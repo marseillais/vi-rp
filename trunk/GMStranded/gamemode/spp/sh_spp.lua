@@ -1,24 +1,24 @@
 
-AddCSLuaFile("sh_SPropProtection.lua")
-AddCSLuaFile("cl_Init.lua")
-AddCSLuaFile("sh_CPPI.lua")
+AddCSLuaFile("sh_spp.lua")
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("sh_cppi.lua")
 
 SPropProtection = {}
-SPropProtection.Version = 1.5
+SPropProtection.Version = 2
 
 CPPI = {}
 CPPI_NOTIMPLEMENTED = 26
 CPPI_DEFER = 16
 
-include("sh_CPPI.lua")
+include("sh_cppi.lua")
 
 if(SERVER) then
-	include("sv_Init.lua")
+	include("sv_init.lua")
 else
-	include("cl_Init.lua")
+	include("cl_init.lua")
 end
 
 Msg("==========================================================\n")
 Msg("Simple Prop Protection Version " .. SPropProtection.Version .. " by Spacetech has loaded\n")
-Msg("Little edits by Robotboy655\n")
+Msg("Edit by Robotboy655\n")
 Msg("==========================================================\n")

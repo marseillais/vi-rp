@@ -79,10 +79,9 @@ if (SERVER) then
 	end
 end
 
-local function CPPIInitGM()
+hook.Add("Initialize", "CPPIInitGM", function()
 	function GAMEMODE:CPPIAssignOwnership(ply, ent)
 	end
 	function GAMEMODE:CPPIFriendsChanged(ply, ent)
 	end
-end
-hook.Add("Initialize", "CPPIInitGM", CPPIInitGM)
+end)

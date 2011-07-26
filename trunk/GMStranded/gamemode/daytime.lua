@@ -13,10 +13,12 @@ Time = DayTime + 1
 IsNight = false
 
 if (CLIENT) then
-	RunConsoleCommand('pp_sunbeams', '1')
-	RunConsoleCommand('pp_sunbeams_darken', '0.8')
-	RunConsoleCommand('pp_sunbeams_multiply', '1')
-	RunConsoleCommand('pp_sunbeams_sunsize', '0.3')
+	timer.Simple(5, function()
+		RunConsoleCommand('pp_sunbeams', '1')
+		RunConsoleCommand('pp_sunbeams_darken', '0.75')
+		RunConsoleCommand('pp_sunbeams_multiply', '1')
+		RunConsoleCommand('pp_sunbeams_sunsize', '0.25')
+	end)
 
 	timer.Create("DayTime.TimerClient", 1, 0, function()
 		Time = Time + 1
@@ -82,6 +84,7 @@ elseif (SERVER) then
 				
 					local aah = ents.Create('npc_zombie')
 					aah:SetPos(tr.HitPos + Vector(0, 0, 64))
+					aah:SetNWString("Owner", "World")
 					aah:Spawn()
 				end
 				
