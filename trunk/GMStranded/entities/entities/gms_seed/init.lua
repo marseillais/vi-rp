@@ -16,7 +16,7 @@ function ENT:Initialize()
  	self.Entity:SetColor(0, 255, 0, 255)
 end
 
-function ENT:Setup(strType,time,ply)
+function ENT:Setup(strType, time, ply)
 	self.Entity.ResType = strType
 	self.Entity.Player = ply
 	if (strType != "tree") then ply:SetNWInt("plants", ply:GetNWInt("plants") + 1) end
