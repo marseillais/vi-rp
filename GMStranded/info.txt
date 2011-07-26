@@ -1,9 +1,9 @@
 "Gamemode"
 {
 	"name"		"Custom Stranded"
-	"version"	"2.3"
+	"version"	"2.5"
 
-	"author_name"	"Shitty authors"
+	"author_name"	"Robotboy655 and others"
 	"author_email"	""
 	"author_url"	""
 	

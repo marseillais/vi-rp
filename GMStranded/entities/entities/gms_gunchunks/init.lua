@@ -16,7 +16,7 @@ end
 
 function ENT:Use(ply)
 	if (!(SPropProtection.PlayerIsPropOwner(ply, self.Entity) or SPropProtection.IsBuddy(ply, self.Entity)) and !(tonumber(SPropProtection["Config"]["use"]) != 1)) then return end
-    ply:OpenCombiMenu("Utilities")
+    ply:OpenCombiMenu("gms_gunchunks")
 end
 
 function ENT:AcceptInput(input, ply)
