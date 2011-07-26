@@ -1973,7 +1973,7 @@ function GM:PlayerInitialSpawn(ply)
 		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
 		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
 		
-		self:CheckForUnlocks()
+		ply:CheckForUnlocks()
 	else
 		ply:SetSkill("Survival", 0)
 		ply:SetXP("Survival", 0)
