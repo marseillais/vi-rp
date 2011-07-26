@@ -169,6 +169,8 @@ function PlayerMeta:SetSkill(skill, int)
 		umsg.String(skill)
 		umsg.Short(self:GetSkill(skill))
 	umsg.End()
+	
+	self:CheckForUnlocks()
 end
 
 function PlayerMeta:GetSkill(skill)
@@ -1464,64 +1466,21 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 
 	local tbl = GMS.Combinations[group][combi]
 
-	if (group == "Cooking") then --Check for nearby forge/fire etc:
+	for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+		if (v:GetClass() == group) then nearby = true end
+	end
+	
+	if (group == "Cooking") then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
 			if (v:IsProp() and v:IsOnFire()) or v:GetClass() == "gms_stove" then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) return end
-	elseif (group == "gms_stoneworkbench") then
-		local nearby = false
+		if (!nearby) then ply:SendMessage("You need to be close to a fire or stove!", 3, Color(200, 0 ,0, 255)) return end
+	end
 
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_stoneworkbench") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_copperworkbench") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_copperworkbench") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_ironworkbench") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_ironworkbench") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_stonefurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_stonefurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_copperfurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_copperfurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
-		
-	elseif (group == "gms_ironfurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_ironfurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
-	end		 
+	if (!nearby) then ply:SendMessage("You need to be close to a " .. ("#" .. group) .. "!", 3, Color(200, 0, 0, 255)) return end
 
 	--Check for skills
 	local numreq = 0
@@ -1970,10 +1929,14 @@ function GM:PlayerInitialSpawn(ply)
 
 		if (tbl["unlocks"]) then 
 			for k, v in pairs(tbl["unlocks"]) do
+				if (k == "Sprint_Mki") then k = "Sprinting_I" end
+				if (k == "Sprint_Mkii") then k = "Sprinting_II" end
+				if (k == "Sprout_Collect") then k = "Sprout_Collecting" end
+
 				ply.FeatureUnlocks[string.Capitalize(k)] = v
 			end
 		end
-		
+
 		if (tbl["resources"]) then
 			for k, v in pairs(tbl["resources"]) do
 				ply:SetResource(string.Capitalize(k), v)
@@ -2004,9 +1967,12 @@ function GM:PlayerInitialSpawn(ply)
 
 		ply.MaxResources = (ply.Skills["Survival"] * 5) + 25
 
+		ply.Loaded = true
+		
 		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
 		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
-		ply.Loaded = true
+		
+		self:CheckForUnlocks()
 	else
 		ply:SetSkill("Survival", 0)
 		ply:SetXP("Survival", 0)

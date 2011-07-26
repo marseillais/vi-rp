@@ -15,7 +15,7 @@ end
 
 function ENT:Use(ply)
 	if (!(SPropProtection.PlayerIsPropOwner(ply, self.Entity) or SPropProtection.IsBuddy(ply, self.Entity))) then return end
-    ply:OpenCombiMenu("StoneWeapons")
+    ply:OpenCombiMenu("gms_stoneworkbench")
 end
 
 function ENT:AcceptInput(input, ply)
