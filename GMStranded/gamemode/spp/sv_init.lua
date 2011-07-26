@@ -38,6 +38,7 @@ function SPropProtection.AdminReload(ply)
 		end
 	end
 end
+concommand.Add("SPropProtection_ReloadAdminSettings", SPropProtection.AdminReload)
 
 function SPropProtection.LoadBuddies(ply)
 	local PData = ply:GetPData("SPPBuddies", "")
@@ -215,17 +216,17 @@ function SPropProtection.TribePP(ply) -- Set or unset player props for tribe
 	end
 end
 
-function SPropProtection.PlayerInitialSpawn(ply)
+hook.Add("PlayerInitialSpawn", "SPropProtection.PlayerInitialSpawn", function(ply)
 	ply:SetNWString("SPPSteamID", string.gsub(ply:SteamID(), ":", "_"))
 	SPropProtection[ply:SteamID()] = {}
 	SPropProtection.LoadBuddies(ply)
 	SPropProtection.AdminReload(ply)
+	SPropProtection.TribePP(ply)
 	local TimerName = "SPropProtection.DRemove: " .. ply:SteamID()
 	if (timer.IsTimer(TimerName)) then timer.Remove(TimerName) end
-end
-hook.Add("PlayerInitialSpawn", "SPropProtection.PlayerInitialSpawn", SPropProtection.PlayerInitialSpawn)
+end)
 
-function SPropProtection.Disconnect(ply)
+hook.Add("PlayerDisconnected", "SPropProtection.Disconnect", function(ply)
 	if(tonumber(SPropProtection["Config"]["dpd"]) == 1) then
 		if (ply:IsAdmin() and tonumber(SPropProtection["Config"]["dae"]) == 0) then return end
 		if (ply:Team() != 1 and GAMEMODE.FindTribeByID(ply:Team()).Password != false) then
@@ -234,8 +235,7 @@ function SPropProtection.Disconnect(ply)
 		end
 		SPropProtection.CheckForEmptyTribes()
 	end
-end
-hook.Add("PlayerDisconnected", "SPropProtection.Disconnect", SPropProtection.Disconnect)
+end)
 
 function SPropProtection.PhysGravGunPickup(ply, ent)
 	if (!ent) then return end
@@ -247,7 +247,7 @@ hook.Add("GravGunPunt", "SPropProtection.GravGunPunt", SPropProtection.PhysGravG
 hook.Add("GravGunPickupAllowed", "SPropProtection.GravGunPickupAllowed", SPropProtection.PhysGravGunPickup)
 hook.Add("PhysgunPickup", "SPropProtection.PhysgunPickup", SPropProtection.PhysGravGunPickup)
 
-function SPropProtection.CanTool(ply, tr, toolgun)
+hook.Add("CanTool", "SPropProtection.CanTool", function(ply, tr, toolgun)
 	if (tr.HitWorld) then return end
 	ent = tr.Entity
 	if (!ent:IsValid() or ent:IsPlayer()) then return false end
@@ -265,10 +265,9 @@ function SPropProtection.CanTool(ply, tr, toolgun)
 			end
 		end
 	end
-end
-hook.Add("CanTool", "SPropProtection.CanTool", SPropProtection.CanTool)
+end)
 
-function SPropProtection.EntityTakeDamage(ent, inflictor, attacker, amount)
+hook.Add("EntityTakeDamage", "SPropProtection.EntityTakeDamage", function(ent, inflictor, attacker, amount)
 	if (!ent:IsValid()) then return end
 	if (string.find(ent:GetClass(), "npc_")) then return end
 	if (tonumber(SPropProtection["Config"]["edmg"]) == 0) then return end
@@ -277,40 +276,34 @@ function SPropProtection.EntityTakeDamage(ent, inflictor, attacker, amount)
 		local Total = ent:Health() + amount
 		if (ent:GetMaxHealth() > Total) then  ent:SetMaxHealth(Total) else ent:SetHealth(Total) end
 	end
-end
-hook.Add("EntityTakeDamage", "SPropProtection.EntityTakeDamage", SPropProtection.EntityTakeDamage)
+end)
 
-function SPropProtection.PlayerUse(ply, ent)
+hook.Add("PlayerUse", "SPropProtection.PlayerUse", function(ply, ent)
 	if(ent:IsValid() and tonumber(SPropProtection["Config"]["use"]) == 1) then
 		if (!SPropProtection.PlayerCanTouch(ply, ent) and ent:GetNetworkedString("Owner") != "World") then return false end
 	end
-end
-hook.Add("PlayerUse", "SPropProtection.PlayerUse", SPropProtection.PlayerUse)
+end)
 
-function SPropProtection.OnPhysgunReload(weapon, ply)
+hook.Add("OnPhysgunReload", "SPropProtection.OnPhysgunReload", function(weapon, ply)
 	if (tonumber(SPropProtection["Config"]["pgr"]) == 0) then return end
 	local tr = util.TraceLine(util.GetPlayerTrace(ply))
 	if (!tr.HitNonWorld or !tr.Entity:IsValid() or tr.Entity:IsPlayer()) then return end
 	if (!SPropProtection.PlayerCanTouch(ply, tr.Entity)) then return false end
-end
-hook.Add("OnPhysgunReload", "SPropProtection.OnPhysgunReload", SPropProtection.OnPhysgunReload)
+end)
 
-function SPropProtection.EntityRemoved(ent)
+hook.Add("EntityRemoved", "SPropProtection.EntityRemoved", function(ent)
 	SPropProtection["Props"][ent:EntIndex()] = nil
-end
-hook.Add("EntityRemoved", "SPropProtection.EntityRemoved", SPropProtection.EntityRemoved)
+end)
 
-function SPropProtection.PlayerSpawnedSENT(ply, ent)
+hook.Add("PlayerSpawnedSENT", "SPropProtection.PlayerSpawnedSENT", function(ply, ent)
 	SPropProtection.PlayerMakePropOwner(ply, ent)
-end
-hook.Add("PlayerSpawnedSENT", "SPropProtection.PlayerSpawnedSENT", SPropProtection.PlayerSpawnedSENT)
+end)
 
-function SPropProtection.PlayerSpawnedVehicle(ply, ent)
+hook.Add("PlayerSpawnedVehicle", "SPropProtection.PlayerSpawnedVehicle", function(ply, ent)
 	SPropProtection.PlayerMakePropOwner(ply, ent)
-end
-hook.Add("PlayerSpawnedVehicle", "SPropProtection.PlayerSpawnedVehicle", SPropProtection.PlayerSpawnedVehicle)
+end)
 
-function SPropProtection.CleanupDisconnectedProps(ply, cmd, args)
+concommand.Add("SPropProtection_CleanupDisconnectedProps", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then return end
 	for k1, v1 in pairs(SPropProtection["Props"]) do
 		local FoundUID = false
@@ -325,10 +318,9 @@ function SPropProtection.CleanupDisconnectedProps(ply, cmd, args)
 		end
 	end
 	SPropProtection.NofityAll("Disconnected players props have been cleaned up")
-end
-concommand.Add("SPropProtection_CleanupDisconnectedProps", SPropProtection.CleanupDisconnectedProps)
+end)
 
-function SPropProtection.CleanupProps(ply, cmd, args)
+concommand.Add("SPropProtection_CleanupProps", function (ply, cmd, args)
 	if (!args[1] or args[1] == "") then
 		for k, v in pairs(SPropProtection["Props"]) do
 			if (v[1] == ply:SteamID()) then
@@ -356,10 +348,9 @@ function SPropProtection.CleanupProps(ply, cmd, args)
 		end
 	end
 	ply:SetNWInt("plants", 0)
-end
-concommand.Add("SPropProtection_CleanupProps", SPropProtection.CleanupProps)
+end)
 
-function SPropProtection.ApplyBuddySettings(ply, cmd, args)
+concommand.Add("SPropProtection_ApplyBuddySettings", function(ply, cmd, args)
 	local Players = player.GetAll()
 	if (table.Count(Players) > 1) then
 		local ChangedFriends = false
@@ -403,10 +394,9 @@ function SPropProtection.ApplyBuddySettings(ply, cmd, args)
 	end
 	
 	SPropProtection.Nofity(ply, "Your buddies have been updated")
-end
-concommand.Add("SPropProtection_ApplyBuddySettings", SPropProtection.ApplyBuddySettings)
+end)
 
-function SPropProtection.ClearBuddies(ply, cmd, args)
+concommand.Add("SPropProtection_ClearBuddies", function(ply, cmd, args)
 	local PData = ply:GetPData("SPPBuddies", "")
 	if (PData != "") then
 		for k, v in pairs(string.Explode(";", PData)) do
@@ -424,10 +414,9 @@ function SPropProtection.ClearBuddies(ply, cmd, args)
 	SPropProtection[ply:SteamID()] = {}
 	
 	SPropProtection.Nofity(ply, "Your buddies have been cleared")
-end
-concommand.Add("SPropProtection_ClearBuddies", SPropProtection.ClearBuddies)
+end)
 
-function SPropProtection.ApplySettings(ply, cmd, args)
+concommand.Add("SPropProtection_ApplyAdminSettings", function(ply, cmd, args)
 	if (!ply:IsAdmin()) then return end
 	
 	local toggle = tonumber(ply:GetInfo("SPropProtection_toggle") or 1)
@@ -447,10 +436,9 @@ function SPropProtection.ApplySettings(ply, cmd, args)
 	timer.Simple(2, SPropProtection.AdminReload)
 	
 	SPropProtection.Nofity(ply, "Admin settings have been updated")
-end
-concommand.Add("SPropProtection_ApplyAdminSettings", SPropProtection.ApplySettings)
+end)
 
-function SPropProtection.WorldOwner()
+timer.Simple(10, function()
 	local WorldEnts = 0
 	for k, v in pairs(ents.FindByClass("*")) do
 		if (!v:IsPlayer() and !v:GetNetworkedString("Owner", false)) then
@@ -461,5 +449,4 @@ function SPropProtection.WorldOwner()
 	Msg("=================================================\n")
 	Msg("Simple Prop Protection: " .. tostring(WorldEnts) .. " props belong to world\n")
 	Msg("=================================================\n")
-end
-timer.Simple(10, SPropProtection.WorldOwner)
+end)

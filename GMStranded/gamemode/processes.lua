@@ -1,19 +1,16 @@
 
---Locals
 local PlayerMeta = FindMetaTable("Player")
 local EntityMeta = FindMetaTable("Entity")
 
-/*---------------------------------------------------------
-  Process system
----------------------------------------------------------*/
+/* Process system */
 GMS.Processes = {}
 
---Registry
+/* Registry */
 function GMS.RegisterProcess(name, tbl)
 	GMS.Processes[name] = tbl
 end
 
---Handle think hooks
+/* Handle think hooks */
 GM.ProcessThinkHookTable = {}
 function GM.ProcessThink()
 	local GM = GAMEMODE
@@ -52,13 +49,13 @@ function GM.RemoveProcessThink(tbl)
 	end
 end
 
---Actual processing
+/* Actual processing */
 function PlayerMeta:DoProcess(name, time, data)
 	if (self.InProcess) then self:SendMessage("You can't do this much at once.", 3, Color(200, 0, 0, 255)) return end
 	if (self.AFK) then self:SendMessage("You can't do this while afk.", 3, Color(200, 0, 0, 255)) return end
 	if (self.Sleeping) then self:SendMessage("You can't do this while sleeping.", 3, Color(200, 0, 0, 255)) return end
 
-	--Need seperate instance
+	/* Need seperate instance */
 	self.ProcessTable = table.Merge(table.Copy(GMS.Processes.BaseProcess), table.Copy(GMS.Processes[name]))
 	self.ProcessTable.Owner = self
 	self.ProcessTable.Time = time
@@ -99,9 +96,7 @@ function GM.StopProcess(pl)
 	pl.ProcessTable = nil
 end
 
-/*---------------------------------------------------------
-  Base process
----------------------------------------------------------*/
+/* Base process */
 local PROCESS = {}
 
 function PROCESS:BaseThink()
@@ -123,9 +118,7 @@ PROCESS.Freeze = true
 
 GMS.Processes.BaseProcess = PROCESS
 
-/*---------------------------------------------------------
-  Fruit eating process
----------------------------------------------------------*/
+/* Fruit eating process */
 local PROCESS = {}
 
 PROCESS.SideGain = {}
@@ -173,7 +166,7 @@ function PROCESS:OnStop()
 			numto = numto + 2 
 			numstart = numstart + 1
 		end
-		local num = math.random(numstart,numto)		
+		local num = math.random(numstart, numto)		
 		if (num ~= 0) then
 			self.Owner:IncResource(self.SideGain, num)
 			self.Owner:SendMessage(string.gsub(self.SideGain, "_", " ") .. " (" .. num .. "x)", 3, Color(10, 200, 10, 255))
@@ -262,6 +255,7 @@ GMS.RegisterProcess("Foraging", PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
+	self.Owner:MakeProcessBar("Looting", self.Time, self.Cancel)
 end
 
 function PROCESS:OnStop()
@@ -613,7 +607,7 @@ GMS.RegisterProcess("Mining", PROCESS)
 local PROCESS = {}
 
 function PROCESS:OnStart()
-	if (self.Owner:HasUnlock("Sprout_Collect")) then
+	if (self.Owner:HasUnlock("Sprout_Collecting")) then
 		self.Owner:MakeProcessBar("Loosening sprout", self.Time, self.Cancel)
 	else
 		self.IsStopped = true
@@ -1060,9 +1054,7 @@ end
 
 GMS.RegisterProcess("MakeBuilding", PROCESS)
 
-/*---------------------------------------------------------
-  Smelt
----------------------------------------------------------*/
+/* Smelt */
 local PROCESS = {}
 
 function PROCESS:OnStart()
@@ -1078,15 +1070,14 @@ function PROCESS:OnStop()
 		self.Owner:SendMessage("Made " .. string.gsub(k, "_", " ") .. " (" .. v .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:IncResource(k, v)
 		
-		self.Owner:IncXP("Smelting", v)
+		print('Trying to inc smelt EXP...')
+		self.Owner:IncXP("Smelting", math.Clamp(math.Round((v * 10) / self.Owner:GetSkill("Smelting")), 1, 1000))
 	end
 end
 
 GMS.RegisterProcess("Smelt", PROCESS)
 
-/*---------------------------------------------------------
-  Crush
----------------------------------------------------------*/
+/* Crush */
 local PROCESS = {}
 
 function PROCESS:OnStart()
@@ -1106,9 +1097,7 @@ end
 
 GMS.RegisterProcess("Crush", PROCESS)
 
-/*---------------------------------------------------------
-  Processing
----------------------------------------------------------*/
+/* Processing */
 local PROCESS = {}
 
 function PROCESS:OnStart()

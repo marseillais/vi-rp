@@ -1,12 +1,10 @@
-/*---------------------------------------------------------
-  Gmod Stranded
----------------------------------------------------------*/
+/* Gmod Stranded */
 GMS = {}
 
-GM.Name = "Custom Stranded 2.4"
+GM.Name = "Custom Stranded 2.5"
 GM.Author = "Robotboy655 and many others :)"
 GM.Email = ""
-GM.Website = "http://gmsbugs.tk/"
+GM.Website = "http://serverscape.net/"
 
 team.SetUp(1, "The Stranded", Color(200, 200, 0, 255))
 team.SetUp(2, "Survivalists", Color(255, 255, 255, 255))
@@ -15,7 +13,49 @@ team.SetUp(4, "The Gummies", Color(255, 23, 0, 255))
 team.SetUp(5, "The Dynamics", Color(0, 72, 255, 255))
 team.SetUp(6, "Scavengers", Color(8, 255, 0, 255))
 
-include("SPropProtection/sh_SPropProtection.lua")
+/* Utility functions */
+function string.Capitalize(str)
+	local str = string.Explode("_", str)
+	for k,v in pairs(str) do
+		str[k] = string.upper(string.sub(v, 1, 1)) .. string.sub(v, 2)
+	end
+
+	str = string.Implode("_", str)
+	return str
+end
+
+function player.FindByName(str)
+	if (str == nil or str == "") then return false end
+    for id, ply in pairs(player.GetAll()) do
+        if (string.find(string.lower(ply:Name()), string.lower(str)) != nil) then
+            return ply
+        end
+    end
+    return false
+end
+
+function GMS.ClassIsNearby(pos, class, range)
+	local nearby = false
+	for k, v in pairs(ents.FindInSphere(pos, range)) do
+		if (v:GetClass() == class and (pos - Vector(v:LocalToWorld(v:OBBCenter()).x, v:LocalToWorld(v:OBBCenter()).y, pos.z)):Length() <= range) then
+			nearby = true
+		end
+	end
+
+	return nearby
+end
+
+function GMS.IsInWater(pos)
+	local trace = {}
+	trace.start = pos
+	trace.endpos = pos + Vector(0, 0, 1)
+	trace.mask = MASK_WATER | MASK_SOLID
+
+	local tr = util.TraceLine(trace)
+	return tr.Hit
+end
+
+include("spp/sh_spp.lua")
 include("daytime.lua")
 
 --Tables

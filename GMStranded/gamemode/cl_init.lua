@@ -31,8 +31,17 @@ CampFires = {}
 -- Locals
 local PlayerMeta = FindMetaTable("Player")
 
-/* The chat hints */
+/* Language */
+language.Add('gms_stonefurnace', "Stone Furnace")
+language.Add('gms_stoneworkbench', "Stone Workbench")
+language.Add('gms_copperfurnace', "Copper Furnace")
+language.Add('gms_copperworkbench', "Copper Workbench")
+language.Add('gms_ironfurnace', "Iron Furnace")
+language.Add('gms_ironworkbench', "Iron Workbench")
+language.Add('gms_factory', "Factory")
+language.Add('gms_gunlab', "Gun Lab")
 
+/* The chat hints */
 HintsRus = {
 	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
 	"А знаете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
@@ -55,7 +64,7 @@ timer.Create("Client.HINTS", 300, 0, function()
 	end
 end)
 
-/* FIND TRIBE BY ID */
+/* Find tribe by ID */
 function GM.FindTribeByID(Tid)
 	for id, tabl in pairs(Tribes) do
 		if (tabl.id == Tid) then
@@ -251,40 +260,27 @@ usermessage.Hook("gms_SetMaxResources", function(um)
 	GAMEMODE.ResourcesHud:RefreshResources()
 end)
 
-usermessage.Hook("gms_ToggleSkillsMenu", function(um)
+usermessage.Hook("gms_toggleskillsmenu", function(um)
 	GAMEMODE.SkillsHud:ToggleExtend()
 end)
 
-usermessage.Hook("gms_ToggleResourcesMenu", function(um)
+usermessage.Hook("gms_toggleresourcesmenu", function(um)
 	GAMEMODE.ResourcesHud:ToggleExtend()
 end)
 
-usermessage.Hook("gms_ToggleCommandsMenu", function(um)
+usermessage.Hook("gms_togglecommandsmenu", function(um)
 	GAMEMODE.CommandsHud:ToggleExtend()
 end)
 
+usermessage.Hook("gms_cancelprocess", function(um)
+	RunConsoleCommand("gms_cancelprocess")
+end)
+
 usermessage.Hook("gms_OpenCombiMenu", function(um)
-	local GM = GAMEMODE
-	if !GM.CombiMenu then GM.CombiMenu = vgui.Create("GMS_CombinationWindow") end
-	GM.CombiMenu:SetTable(um:ReadString())
-	GM.CombiMenu:SetVisible(true)
+	if (GAMEMODE.CombiMenu) then GAMEMODE.CombiMenu:Remove() end
+	GAMEMODE.CombiMenu = vgui.Create("GMS_CombinationWindow")
+	GAMEMODE.CombiMenu:SetTable(um:ReadString())
 end)
-
-usermessage.Hook("gms_CloseCombiMenu", function(um)
-	local GM = GAMEMODE
-	if !GM.CombiMenu then GM.CombiMenu = vgui.Create("GMS_CombinationWindow") end
-	GM.CombiMenu:SetVisible(false)
-end)
-
-function string.Capitalize(str)
-	local str = string.Explode("_", str)
-	for k, v in pairs(str) do
-		str[k] = string.upper(string.sub(v, 1, 1)) .. string.sub(v, 2)
-	end
-
-	str = string.Implode("_", str)
-	return str
-end
 
 function TraceFromEyes(dist)
 	local trace = {}
@@ -556,24 +552,21 @@ usermessage.Hook("gms_setneeds", GM.SetNeeds)
 /*---------------------------------------------------------
   Help Menu
 ---------------------------------------------------------*/
-function GM.OpenHelpMenu()
+concommand.Add("gms_help", function()
 	local GM = GAMEMODE
 
 	GM.HelpMenu = vgui.Create("DFrame")
 	GM.HelpMenu:MakePopup()
 	GM.HelpMenu:SetMouseInputEnabled(true)
-	GM.HelpMenu:SetPos(50, 50)
 	GM.HelpMenu:SetSize(ScrW() - 100, ScrH() - 100)
-
-	GM.HelpMenu:SetTitle("Welcome to GMStranded 2.3")
+	GM.HelpMenu:Center()
+	GM.HelpMenu:SetTitle("Welcome to Custom GMStranded 2.5")
 
 	GM.HelpMenu.HTML = vgui.Create("HTML", GM.HelpMenu)
-	GM.HelpMenu.HTML:SetSize(GM.HelpMenu:GetWide() - 50, GM.HelpMenu:GetTall() - 50)
-	GM.HelpMenu.HTML:SetPos(25, 25)
+	GM.HelpMenu.HTML:SetSize(GM.HelpMenu:GetWide() - 10, GM.HelpMenu:GetTall() - 30)
+	GM.HelpMenu.HTML:SetPos(5, 25)
 	GM.HelpMenu.HTML:SetHTML(file.Read("../gamemodes/GMStranded/content/help/helpnew.htm"))
-end
-
-concommand.Add("gms_help", GM.OpenHelpMenu)
+end)
 
 /*---------------------------------------------------------
   Sleep

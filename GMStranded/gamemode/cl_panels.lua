@@ -1,56 +1,4 @@
 
-Active = false
-
-/*---------------------------------------------------------
-  Spawnpanel
----------------------------------------------------------*/
-function GM:OnSpawnMenuOpen()
-	if (LocalPlayer():GetNWString("AFK") != 1) then
-		if (GAMEMODE.MENU == nil or not GAMEMODE.MENU:IsValid()) then
-			GAMEMODE.MENU = vgui.Create("GMS_menu")
-		else
-			GAMEMODE.MENU:SetVisible(true)
-		end
-		gui.EnableScreenClicker(true)
-		RestoreCursorPosition()
-	end
-end
-
-function GM:OnSpawnMenuClose()
-	if (GAMEMODE.MENU and GAMEMODE.MENU:IsValid() and GAMEMODE.MENU:IsVisible()) then GAMEMODE.MENU:SetVisible(false) end
-	RememberCursorPosition()
-	gui.EnableScreenClicker(false)
-end
-
-local PANEL = {}
-
-function PANEL:Init()
-	self:SetTitle("Stranded Menu")
-	self:ShowCloseButton(false)
-	
-	self.ContentPanel = vgui.Create("DPropertySheet", self)
-	self.ContentPanel:AddSheet("Construction", vgui.Create("stranded_PropSpawn", self.ContentPanel), "gui/silkicons/brick_add", false, false)
-	self.ContentPanel:AddSheet("ToolMenu", vgui.Create("stranded_ToolMenu", self.ContentPanel), "gui/silkicons/wrench", true, true)
-	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_PlantSpawn", self.ContentPanel), "gui/silkicons/box", false, false)
-	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_Commands", self.ContentPanel), "gui/silkicons/application", true, true)
-	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_SPPMenu", self.ContentPanel), "gui/silkicons/shield", true, true)
-end
-
-function PANEL:Close()
-	menuup = false
- 	self:Remove()
-end
-
-function PANEL:PerformLayout()
-	self:SetSize(ScrW() / 2 - 10, ScrH() - 10)
-	self:SetPos(ScrW() / 2 + 5, 5)
-	self.ContentPanel:StretchToParent(5, 21, 5, 5)
-	
-	DFrame.PerformLayout(self)
-end
-
-vgui.Register("GMS_menu", PANEL, "DFrame")
-
 /*---------------------------------------------------------
   Unlock window
 ---------------------------------------------------------*/
@@ -94,8 +42,7 @@ function PANEL:SetUnlock(text)
 	self.DescWindow:SetText(unlock.Description)
 end
 
-vgui.Register("GMS_UnlockWindow", PANEL, "DFrame") // The hax.
-
+vgui.Register("GMS_UnlockWindow", PANEL, "DFrame")
 
 /*---------------------------------------------------------
   Tribe Menu
@@ -161,24 +108,23 @@ function PANEL:Init()
 	
 	for id, tabl in pairs(Tribes) do
 		local name = tabl.name
-		local hazpass = tabl.pass
 		id = id - 1
-        local button = vgui.Create("DButton", self)
-        button:SetSize(ScrW() / 4 - 10, 20)
-        button:SetPos(5, 28 + id * 25)
+        local button = vgui.Create("gms_CommandPanel", self)
+        button:SetSize(ScrW() / 4, 16)
+        button:SetPos(0, 26 + id * 21)
+		button:SetCommand("", name, Color(tabl.r, tabl.g, tabl.b))
         button.DoClick = function()
-			if (hazpass) then
+			if (tabl.pass) then
 				Derma_StringRequest("Please enter password", "Please enter password for the tribe.", "", function(text) RunConsoleCommand("gms_join", name, text) end)
 			else
 				RunConsoleCommand("gms_join", name)
 			end
 			self:Close()
 		end
-        button:SetText(name)
 		tid = id
     end
 	
-	self:SetSize(ScrW() / 4, tid * 25 + 53)
+	self:SetSize(ScrW() / 4, tid * 21 + 48)
 	self:Center()
 end
 vgui.Register("GMS_TribesList", PANEL, "DFrame")
@@ -593,10 +539,10 @@ PANEL.Commands["Wake up"] = {cmd = "gms_wakeup", clr = Color(0, 128, 255, 176)}
 PANEL.Commands["Make campfire"] = {cmd = "gms_makefire", clr = Color(255, 0, 0, 176)}
 PANEL.Commands["Drop all resources"] = {cmd = "gms_dropall", clr = Color(255, 0, 0, 176)}
 
-PANEL.Commands["Combinations"] = {cmd = "gms_GenericCombi", clr = Color(255, 255, 0, 176)}
-PANEL.Commands["Structures"] = {cmd = "gms_BuildingsCombi", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Combinations"] = {cmd = "gms_combinations", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Structures"] = {cmd = "gms_structures", clr = Color(255, 255, 0, 176)}
 PANEL.Commands["Salvage prop"] = {cmd = "gms_salvage", clr = Color(255, 255, 0, 176)}
-PANEL.Commands["Drop weapon"] = {cmd = "gms_DropWeapon", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Drop weapon"] = {cmd = "gms_dropweapon", clr = Color(255, 255, 0, 176)}
 
 PANEL.Commands["Help"] = {cmd = "gms_help", clr = Color(255, 64, 255, 176)}
 
@@ -707,12 +653,16 @@ function PANEL:Paint()
 	surface.SetDrawColor(self.Clr.r, self.Clr.g, self.Clr.b, self.Clr.a) -- Resource bar background
 	surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
 
+	local colr = Color(255, 255, 255, 255)
+	if (self.Clr.r >= 200 and self.Clr.g >= 200 and self.Clr.b >= 200) then colr = Color(0, 0, 0, 255) end
+
+	draw.SimpleText(self.Text, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, colr, 1, 1)
+
 	if (self.Hovered) then
 		surface.SetDrawColor(255, 255, 255, 64)
 		surface.DrawRect(5, 0, self:GetWide() - 10, self:GetTall())
 	end
-	
-	draw.SimpleText(self.Text, "DefaultBold", self:GetWide() / 2, self:GetTall() / 2 - 1, Color(255, 255, 255, 255), 1, 1)
+
 	return true
 end
 
@@ -734,134 +684,134 @@ vgui.Register("gms_CommandPanel", PANEL, "DButton")
 local PANEL = {}
 
 function PANEL:Init()
-         self.Children = {}
-         self.Extended = false
-         self.Active = nil
+	self.Children = {}
+	self.Extended = false
+	self.Active = nil
 end
 
 function PANEL:SetInitSize(w,h)
-         self.InitW = w
-         self.InitH = h
-         
-         self:SetSize(w,h)
+	self.InitW = w
+	self.InitH = h
+
+	self:SetSize(w, h)
 end
 
 function PANEL:AddItem(text,value)
-         local item = vgui.Create("GMS_DropDown_Item",self)
-         item:SetPos(0,self.InitH)
-         item:SetSize(self:GetWide(),self.InitH)
-         item:SetInfo(text,value)
-         
-         if !self.Extended then item:SetVisible(false) end
-         table.insert(self.Children,item)
+	local item = vgui.Create("GMS_DropDown_Item", self)
+	item:SetPos(0, self.InitH)
+	item:SetSize(self:GetWide(), self.InitH)
+	item:SetInfo(text, value)
+
+	if (!self.Extended) then item:SetVisible(false) end
+	table.insert(self.Children, item)
 end
 
 function PANEL:RemoveItem(text)
-         self.Active = nil
+	self.Active = nil
 
-         for k,item in pairs(self.Children) do
-             if item.Text == text then
-                item:Remove()
-                item = nil
-                table.remove(self.Children,k)
-             end
-         end
-         
-         if self.Extended then
-            self:Retract()
-         else
-            self:Extend()
-            self:Retract()
-         end
+	for k, item in pairs(self.Children) do
+		if (item.Text == text) then
+			item:Remove()
+			item = nil
+			table.remove(self.Children, k)
+		end
+	end
+
+	if (self.Extended) then
+		self:Retract()
+	else
+		self:Extend()
+		self:Retract()
+	end
 end
 
 function PANEL:Clear()
-         for k,v in pairs(self.Children) do
-             v:Remove()
-         end
+	for k, v in pairs(self.Children) do
+		v:Remove()
+	end
 
-         self.Children = {}
-         self.Active = nil
-         self:Retract()
+	self.Children = {}
+	self.Active = nil
+	self:Retract()
 end
 
 function PANEL:SetActive(item)
-         if self.Active then
-            self.Active.Active = false
-         end
-         
-         if item then item.Active = true end
-         self.Active = item
+	if (self.Active) then
+		self.Active.Active = false
+	end
+
+	if (item) then item.Active = true end
+	self.Active = item
 end
 
 function PANEL:Extend()
-         self.Extended = true
-         local line = self.InitH
+	self.Extended = true
+	local line = self.InitH
 
-         for k,item in pairs(self.Children) do
-             item:SetPos(0,line)
-             item:SetVisible(true)
-             
-             line = line + self.InitH
-         end
-         
-         self:SetSize(self.InitW,self.InitH + (#self.Children * self.InitH))
-         self:SetZPos(310)
+	for k, item in pairs(self.Children) do
+		item:SetPos(0, line)
+		item:SetVisible(true)
+
+		line = line + self.InitH
+	end
+
+	self:SetSize(self.InitW, self.InitH + (#self.Children * self.InitH))
+	self:SetZPos(310)
 end
 
 function PANEL:Retract()
-         self.Extended = false
-         
-         for k,item in pairs(self.Children) do
-             item:SetPos(0,0)
-             item:SetVisible(false)
-         end
-         
-         self:SetZPos(300)
-         self:SetSize(self.InitW,self.InitH)
+	self.Extended = false
+
+	for k, item in pairs(self.Children) do
+		item:SetPos(0, 0)
+		item:SetVisible(false)
+	end
+
+	self:SetZPos(300)
+	self:SetSize(self.InitW, self.InitH)
 end
 
 function PANEL:Paint()
-         local col = StrandedColorTheme
-         local bordcol = StrandedBorderTheme
+	local col = StrandedColorTheme
+	local bordcol = StrandedBorderTheme
 
-         surface.SetDrawColor(0,0,0,255)
-         surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-         
-         surface.SetDrawColor(0,0,0,180)
-         surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-         
-         if self.Active then
-            draw.SimpleText(self.Active.Text,"Default",5,5,Color(255,255,255,255))
-         else
-            draw.SimpleText("< select >","Default",5,5,Color(255,255,255,255))
-         end
+	surface.SetDrawColor(0, 0, 0, 255)
+	surface.DrawRect(0 ,0, self:GetWide(), self:GetTall())
 
-         return true
+	surface.SetDrawColor(0, 0, 0, 180)
+	surface.DrawOutlinedRect(0, 0, self:GetWide(), self:GetTall())
+
+	if (self.Active) then
+		draw.SimpleText(self.Active.Text, "Default", 5, 5, Color(255, 255, 255, 255))
+	else
+		draw.SimpleText("< select >", "Default", 5, 5, Color(255, 255, 255, 255))
+	end
+
+	return true
 end
 
 function PANEL:GetValue()
-         if self.Active then
-            return self.Active.Value or nil
-         end
-         
-         return false
+	if (self.Active) then
+		return self.Active.Value or nil
+	end
+
+	return false
 end
 
 function PANEL:GetText()
-         if self.Active then
-            return self.Active.Text or ""
-         end
-         
-         return ""
+	if (self.Active) then
+		return self.Active.Text or ""
+	end
+
+	return ""
 end
 
 function PANEL:OnMousePressed(mc)
-         if mc != 107 then return end
-         if !self.Extended then self:Extend() end
+	if (mc != 107) then return end
+	if (!self.Extended) then self:Extend() end
 end
 
-vgui.Register("GMS_DropDown",PANEL,"Panel")
+vgui.Register("GMS_DropDown", PANEL, "Panel")
 
 /*---------------------------------------------------------
   GMS dropdown item
@@ -869,40 +819,39 @@ vgui.Register("GMS_DropDown",PANEL,"Panel")
 local PANEL = {}
 
 function PANEL:Init()
-         self.Text = ""
-         self.Value = nil
-         self.Color = Color(11,11,11,255)
+	self.Text = ""
+	self.Value = nil
+	self.Color = Color(11, 11, 11, 255)
 end
 
-function PANEL:SetInfo(text,value)
-         self.Text = text
-         self.Value = value
+function PANEL:SetInfo(text, value)
+	self.Text = text
+	self.Value = value
 end
 
 function PANEL:Paint()
-         surface.SetDrawColor(self.Color.r,self.Color.g,self.Color.b,255)
-         surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+	surface.SetDrawColor(self.Color.r, self.Color.g, self.Color.b, 255)
+	surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 
-         draw.SimpleText(self.Text,"Default",5,5,Color(255,255,255,255))
-         return true
+	draw.SimpleText(self.Text, "Default", 5, 5, Color(255, 255, 255, 255))
+	return true
 end
 
 function PANEL:OnMousePressed(mc)
-         if mc != 107 then return end
-         self:GetParent():SetActive(self)
-         self:GetParent():Retract()
+	if (mc != 107) then return end
+	self:GetParent():SetActive(self)
+	self:GetParent():Retract()
 end
 
 function PANEL:OnCursorEntered()
-         self.Color = Color(55,55,55,255)
+	self.Color = Color(55, 55, 55, 255)
 end
 
 function PANEL:OnCursorExited()
-         self.Color = Color(11,11,11,255)
+	self.Color = Color(11, 11, 11, 255)
 end
 
-
-vgui.Register("GMS_DropDown_Item",PANEL,"Panel")
+vgui.Register("GMS_DropDown_Item", PANEL, "Panel")
 
 /*---------------------------------------------------------
   Admin menu
@@ -931,45 +880,45 @@ function PANEL:Init()
 	local tab = 0
 
 	//Populate area command stuff
-	local button = vgui.Create("gms_CommandButton",self)
+	local button = vgui.Create("gms_CommandButton", self)
 	button:SetSize(self:GetWide() / 5, size)
 	button:SetPos(10, line)
 	button:SetText("Populate Area")
 
 	local tab = tab + button:GetWide() + space + 10
 
-	self.PopulateType = vgui.Create("DMultiChoice",self)
-	self.PopulateType:SetSize(button:GetWide(),button:GetTall())
-	self.PopulateType:SetPos(tab,line)
-	self.PopulateType:AddChoice("Trees","forest")
-	self.PopulateType:AddChoice("Rocks","rocks")
-	self.PopulateType:AddChoice("Random_Plant","plant")
+	self.PopulateType = vgui.Create("DMultiChoice", self)
+	self.PopulateType:SetSize(button:GetWide(), button:GetTall())
+	self.PopulateType:SetPos(tab, line)
+	self.PopulateType:AddChoice("Trees", "forest")
+	self.PopulateType:AddChoice("Rocks", "rocks")
+	self.PopulateType:AddChoice("Random_Plant", "plant")
 
-	local label = vgui.Create("DLabel",self)
+	local label = vgui.Create("DLabel", self)
 	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Type")
 
 	local tab = tab + self.PopulateType:GetWide() + space
 
-	self.PopulateAmount = vgui.Create("DTextEntry",self)
-	self.PopulateAmount:SetSize(button:GetWide(),button:GetTall())
-	self.PopulateAmount:SetPos(tab,line)
+	self.PopulateAmount = vgui.Create("DTextEntry", self)
+	self.PopulateAmount:SetSize(button:GetWide(), button:GetTall())
+	self.PopulateAmount:SetPos(tab, line)
 
-	local label = vgui.Create("DLabel",self)
+	local label = vgui.Create("DLabel", self)
 	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Amount")
 
 	local tab = tab + self.PopulateType:GetWide() + space
 
-	self.PopulateRadius = vgui.Create("DTextEntry",self)
-	self.PopulateRadius:SetSize(button:GetWide(),button:GetTall())
-	self.PopulateRadius:SetPos(tab,line)
+	self.PopulateRadius = vgui.Create("DTextEntry", self)
+	self.PopulateRadius:SetSize(button:GetWide(), button:GetTall())
+	self.PopulateRadius:SetPos(tab, line)
 
-	local label = vgui.Create("DLabel",self)
+	local label = vgui.Create("DLabel", self)
 	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Max radius")
 
 	function button:DoClick()
@@ -981,35 +930,35 @@ function PANEL:Init()
 	//Set ConVar stuff
 	line = line + button:GetTall() + 30
 	local tab = 0
-	local button = vgui.Create("gms_CommandButton",self)
+	local button = vgui.Create("gms_CommandButton", self)
 	button:SetSize(self:GetWide() / 5, size)
 	button:SetPos(10, line)
 	button:SetText("Set Convar")
 
 	local tab = tab + button:GetWide() + space + 10
 
-	self.ConVarList = vgui.Create("DMultiChoice",self)
-	self.ConVarList:SetSize(button:GetWide() * 2 + space,button:GetTall())
-	self.ConVarList:SetPos(tab,line)
+	self.ConVarList = vgui.Create("DMultiChoice", self)
+	self.ConVarList:SetSize(button:GetWide() * 2 + space, button:GetTall())
+	self.ConVarList:SetPos(tab, line)
 
-	for k,v in pairs(GMS.ConVarList) do
-	self.ConVarList:AddChoice(v,v)
+	for k, v in pairs(GMS.ConVarList) do
+	self.ConVarList:AddChoice(v, v)
 	end
 
-	local label = vgui.Create("DLabel",self)
+	local label = vgui.Create("DLabel", self)
 	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Convar")
 
 	local tab = tab + self.ConVarList:GetWide() + space
 
-	self.ConVarValue = vgui.Create("DTextEntry",self)
-	self.ConVarValue:SetSize(button:GetWide(),button:GetTall())
-	self.ConVarValue:SetPos(tab,line)
+	self.ConVarValue = vgui.Create("DTextEntry", self)
+	self.ConVarValue:SetSize(button:GetWide(), button:GetTall())
+	self.ConVarValue:SetPos(tab, line)
 
-	local label = vgui.Create("DLabel",self)
-	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	local label = vgui.Create("DLabel", self)
+	label:SetPos(tab, line - 20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Value")
 
 	function button:DoClick()
@@ -1017,23 +966,24 @@ function PANEL:Init()
 		local ConVar = p.ConVarList.TextEntry:GetValue() or ""
 		RunConsoleCommand(ConVar, string.Trim(p.ConVarValue:GetValue()))
 	end
+
 	//Save game stuff
 	line = line + button:GetTall() + 30
 	local tab = space
-	local button = vgui.Create("gms_CommandButton",self)
+	local button = vgui.Create("gms_CommandButton", self)
 	button:SetSize(self:GetWide() / 5, size)
 	button:SetPos(tab, line)
 	button:SetText("Save Game")
 
 	local tab = tab + button:GetWide() + space
 
-	self.SaveGameEntry = vgui.Create("TextEntry",self)
-	self.SaveGameEntry:SetSize(button:GetWide(),button:GetTall())
-	self.SaveGameEntry:SetPos(tab,line)
+	self.SaveGameEntry = vgui.Create("TextEntry", self)
+	self.SaveGameEntry:SetSize(button:GetWide(), button:GetTall())
+	self.SaveGameEntry:SetPos(tab, line)
 
-	local label = vgui.Create("Label",self)
-	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	local label = vgui.Create("Label", self)
+	label:SetPos(tab, line - 20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Save name")
 
 	function button:DoClick()
@@ -1044,27 +994,27 @@ function PANEL:Init()
 	//Load game stuff
 	line = line + button:GetTall() + 30
 	local tab = space
-	local button = vgui.Create("gms_CommandButton",self)
+	local button = vgui.Create("gms_CommandButton", self)
 	button:SetSize(self:GetWide() / 5, size)
 	button:SetPos(tab, line)
 	button:SetText("Load Game")
 
 	local tab = tab + button:GetWide() + space
 
-	local Dbutton = vgui.Create("gms_CommandButton",self)
+	local Dbutton = vgui.Create("gms_CommandButton", self)
 	Dbutton:SetSize(self:GetWide() / 5, size)
 	Dbutton:SetPos(tab, line)
 	Dbutton:SetText("Delete")
 
 	local tab = tab + button:GetWide() + space
 
-	self.LoadGameEntry = vgui.Create("GMS_DropDown",self)
-	self.LoadGameEntry:SetInitSize(button:GetWide(),button:GetTall())
-	self.LoadGameEntry:SetPos(tab,line)
+	self.LoadGameEntry = vgui.Create("GMS_DropDown", self)
+	self.LoadGameEntry:SetInitSize(button:GetWide(), button:GetTall())
+	self.LoadGameEntry:SetPos(tab, line)
 
-	local label = vgui.Create("Label",self)
-	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	local label = vgui.Create("Label", self)
+	label:SetPos(tab, line - 20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Load name")
 
 	function button:DoClick()
@@ -1081,42 +1031,41 @@ function PANEL:Init()
 	//Spawn antlion barrow stuff
 	line = line + button:GetTall() + 30
 	local tab = space
-	local button = vgui.Create("gms_CommandButton",self)
+	local button = vgui.Create("gms_CommandButton", self)
 	button:SetSize(self:GetWide() / 5, size)
 	button:SetPos(tab, line)
 	button:SetText("Make antlion barrow")
 
 	local tab = tab + button:GetWide() + space
 
-	self.MaxAntlions = vgui.Create("DTextEntry",self)
-	self.MaxAntlions:SetSize(button:GetWide(),button:GetTall())
-	self.MaxAntlions:SetPos(tab,line)
+	self.MaxAntlions = vgui.Create("DTextEntry", self)
+	self.MaxAntlions:SetSize(button:GetWide(), button:GetTall())
+	self.MaxAntlions:SetPos(tab, line)
 
-	local label = vgui.Create("DLabel",self)
+	local label = vgui.Create("DLabel", self)
 	label:SetPos(tab,line - 20)
-	label:SetSize(button:GetWide(),20)
+	label:SetSize(button:GetWide(), 20)
 	label:SetText("Max antlions")
 
 	function button:DoClick()
 		RunConsoleCommand("gms_admin_MakeAntlionBarrow", string.Trim(self:GetParent().MaxAntlions:GetValue()))
 	end
 
-
 	//Static command buttons
 	line = line + button:GetTall() + 10
 
 	for cmd,txt in pairs(self.CmdButtons) do
-		local button = vgui.Create("gms_CommandButton",self)
+		local button = vgui.Create("gms_CommandButton", self)
 		button:SetSize(self:GetWide() / 5, size)
 		button:SetPos(10, line)
-		button:SetConCommand(cmd.."\n")
+		button:SetConCommand(cmd .. "\n")
 		button:SetText(txt)
 
 		line = line + button:GetTall() + 10
 	end
 end
 
-vgui.Register("GMS_AdminMenu",PANEL,"DFrame")
+vgui.Register("GMS_AdminMenu", PANEL, "DFrame")
 
 /*---------------------------------------------------------
   Loading bar
@@ -1124,49 +1073,48 @@ vgui.Register("GMS_AdminMenu",PANEL,"DFrame")
 local PANEL = {}
 
 function PANEL:Init()
-         self:SetSize(ScrW() / 2.7,ScrH() / 10)
-         self:SetPos(ScrW() / 2 - (self:GetWide() / 2),ScrH() / 2 - (self:GetTall() / 2))
-         
-         self.Dots = "."
-         self.Message = ""
+	self:SetSize(ScrW() / 2.7, ScrH() / 10)
+	self:SetPos(ScrW() / 2 - (self:GetWide() / 2), ScrH() / 2 - (self:GetTall() / 2))
+
+	self.Dots = "."
+	self.Message = ""
 end
 
 function PANEL:Paint()
-         //Background
-         draw.RoundedBox(8,0,0,self:GetWide(),self:GetTall(),Color(100,100,100,150))
+	draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(100, 100, 100, 150)) //Background
 
-         //Text
-         draw.SimpleText("Loading"..self.Dots, "ScoreboardHead",self:GetWide() / 2, self:GetTall() / 2,Color(255,255,255,255),1,1)
-         draw.SimpleText(self.Text, "ScoreboardText",self:GetWide() / 2, self:GetTall() / 1.2,Color(255,255,255,255),1,1)
-         return true
+	//Text
+	draw.SimpleText("Loading" .. self.Dots, "ScoreboardHead", self:GetWide() / 2, self:GetTall() / 2, Color(255, 255, 255, 255), 1, 1)
+	draw.SimpleText(self.Text, "ScoreboardText", self:GetWide() / 2, self:GetTall() / 1.2, Color(255, 255, 255, 255), 1, 1)
+	return true
 end
 
 function PANEL:Show(msg)
-         self.IsStopped = false
-         
-         self.Text = msg
-         timer.Simple(0.5,self.UpdateDots,self)
-         self:SetVisible(true)
+	self.IsStopped = false
+
+	self.Text = msg
+	timer.Simple(0.5, self.UpdateDots, self)
+	self:SetVisible(true)
 end
 
 function PANEL:Hide()
-         self.IsStopped = true
-         self:SetVisible(false)
+	self.IsStopped = true
+	self:SetVisible(false)
 end
 
 function PANEL:UpdateDots()
-         if self.IsStopped then return end
+	if (self.IsStopped) then return end
 
-         if self.Dots == "...." then
-            self.Dots = "."
-         else
-            self.Dots = self.Dots.."."
-         end
+	if self.Dots == "...." then
+		self.Dots = "."
+	else
+		self.Dots = self.Dots .. "."
+	end
 
-         timer.Simple(0.5,self.UpdateDots,self)
+	timer.Simple(0.5, self.UpdateDots, self)
 end
 
-vgui.Register("gms_LoadingBar",PANEL,"Panel")
+vgui.Register("gms_LoadingBar", PANEL, "Panel")
 
 /*---------------------------------------------------------
  Saving bar
@@ -1174,49 +1122,49 @@ vgui.Register("gms_LoadingBar",PANEL,"Panel")
 local PANEL = {}
 
 function PANEL:Init()
-         self:SetSize(ScrW() / 2.7,ScrH() / 10)
-         self:SetPos(ScrW() / 2 - (self:GetWide() / 2),ScrH() / 2 - (self:GetTall() / 2))
-         
-         self.Dots = "."
-         self.Message = ""
+	self:SetSize(ScrW() / 2.7, ScrH() / 10)
+	self:SetPos(ScrW() / 2 - (self:GetWide() / 2), ScrH() / 2 - (self:GetTall() / 2))
+
+	self.Dots = "."
+	self.Message = ""
 end
 
 function PANEL:Paint()
-         //Background
-         draw.RoundedBox(8,0,0,self:GetWide(),self:GetTall(),Color(100,100,100,150))
+	//Background
+	draw.RoundedBox(8,0,0,self:GetWide(),self:GetTall(),Color(100,100,100,150))
 
-         //Text
-         draw.SimpleText("Saving"..self.Dots, "ScoreboardHead",self:GetWide() / 2, self:GetTall() / 2,Color(255,255,255,255),1,1)
-         draw.SimpleText(self.Text, "ScoreboardText",self:GetWide() / 2, self:GetTall() / 1.2,Color(255,255,255,255),1,1)
-         return true
+	//Text
+	draw.SimpleText("Saving" .. self.Dots, "ScoreboardHead", self:GetWide() / 2, self:GetTall() / 2, Color(255, 255, 255, 255), 1, 1)
+	draw.SimpleText(self.Text, "ScoreboardText", self:GetWide() / 2, self:GetTall() / 1.2, Color(255, 255, 255, 255), 1, 1)
+	return true
 end
 
 function PANEL:Show(msg)
-         self.IsStopped = false
-         
-         self.Text = msg
-         timer.Simple(0.5,self.UpdateDots,self)
-         self:SetVisible(true)
+	self.IsStopped = false
+
+	self.Text = msg
+	timer.Simple(0.5, self.UpdateDots, self)
+	self:SetVisible(true)
 end
 
 function PANEL:Hide()
-         self.IsStopped = true
-         self:SetVisible(false)
+	self.IsStopped = true
+	self:SetVisible(false)
 end
 
 function PANEL:UpdateDots()
-         if self.IsStopped then return end
+	if (self.IsStopped) then return end
 
-         if self.Dots == "...." then
-            self.Dots = "."
-         else
-            self.Dots = self.Dots.."."
-         end
+	if (self.Dots == "....") then
+		self.Dots = "."
+	else
+		self.Dots = self.Dots .. "."
+	end
 
-         timer.Simple(0.5,self.UpdateDots,self)
+	timer.Simple(0.5, self.UpdateDots, self)
 end
 
-vgui.Register("gms_SavingBar",PANEL,"Panel")
+vgui.Register("gms_SavingBar", PANEL, "Panel")
 
 /*---------------------------------------------------------
   Command button
@@ -1227,7 +1175,7 @@ function PANEL:Init()
 end
 
 function PANEL:DoClick()
-    LocalPlayer():ConCommand(self.Command.."\n")
+    LocalPlayer():ConCommand(self.Command .. "\n")
     surface.PlaySound(Sound("ui/buttonclickrelease.wav"))
 end
 
@@ -1238,21 +1186,8 @@ end
 function PANEL:OnCursorEntered()
     surface.PlaySound(Sound("ui/buttonrollover.wav"))
 end
-vgui.Register("gms_CommandButton",PANEL,"DButton")
-/*---------------------------------------------------------
-  Info Panel
----------------------------------------------------------*/
-local PANEL = {}
+vgui.Register("gms_CommandButton", PANEL, "DButton")
 
-function PANEL:Paint()
-    local bordcol = StrandedBorderTheme
-    surface.SetDrawColor(50,50,25,255)
-    surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-    surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,bordcol.a)
-    surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-    return true
-end
-vgui.Register("GMS_InfoPanel",PANEL,"Panel")
 /*---------------------------------------------------------
   Combination Window
 ---------------------------------------------------------*/
@@ -1263,79 +1198,112 @@ function PANEL:Init()
     self:SetMouseInputEnabled(true)
 	self:SetDeleteOnClose(false)
 	self:MakePopup()
-    self:SetPos(100,50)
     self:SetSize(ScrW() - 200, ScrH() - 100)
+    self:Center()
+
     local space = self:GetTall() / 30
-    --Add bordered subwindows
-    self.CombiList = vgui.Create("DPanel",self)
-		self.CombiList:SetPos(self:GetWide() / 30,self:GetTall() / 20)
-		local x,y = self.CombiList:GetPos()
-		self.CombiList:SetSize(self:GetWide() - (self:GetWide() / 30) * 2, self:GetTall() / 1.5 - space - y)
-    self.Info = vgui.Create("DPanel",self)
-        self.Info:SetPos(self:GetWide() / 30, self:GetTall() / 1.5)
-        local x2,y2 = self.Info:GetPos()
-        self.Info:SetSize(self:GetWide() - (x2 * 2), self:GetTall() / 3 - space - y)
-        self.Info:SetZPos(290)
-    self.Info.NameLabel = vgui.Create("DLabel",self.Info)
-        self.Info.NameLabel:SetPos(10,5)
-        self.Info.NameLabel:SetSize(self.Info:GetWide(),20)
-        self.Info.NameLabel:SetFont("ScoreboardSub")
-    self.Info.DescLabel = vgui.Create("DLabel",self.Info)
-        self.Info.DescLabel:SetName("GMS_TempLblName")
-        self.Info.DescLabel:LoadControlsFromString([["GMS_TempLblName"{"GMS_TempLblName"{"wrap" "1"}}]])
-        self.Info.DescLabel:SetPos(10,20)
-        self.Info.DescLabel:SetSize(self.Info:GetWide(),self.Info:GetTall() - 20)
-        self.Info.NameLabel:SetText("Select a recipe")
-        self.Info.DescLabel:SetText("")
-    local button = vgui.Create("gms_CommandButton",self)
-        button:SetPos(self:GetWide() / 30,y2 + self.Info:GetTall() + 5)
-        button:SetSize(self:GetWide() / 6, self:GetTall() / 17 - 10)
-        button:SetText("Make")
-    function button:DoClick()
-        local p = self:GetParent()
-        local combi = p.CombiGroupName or ""
-        local active = p.ActiveCombi or ""
-        LocalPlayer():ConCommand("gms_MakeCombination "..combi.." "..active.."\n")
-    end
-        --Make limits
-    self.IconSize = 80
-    self.Spacing = 10
-    self.MaxLines = math.Round(self.CombiList:GetTall() / (self.IconSize + self.Spacing))
-    self.MaxPerLine = math.Round(self.CombiList:GetWide() / (self.IconSize + self.Spacing))
+
+	self.CombiList = vgui.Create("DPanelList", self)
+	self.CombiList:SetPos(5, 25)
+	self.CombiList:SetSize(self:GetWide() - 10, self:GetTall() * 0.6)
+	self.CombiList:SetSpacing(5)
+	self.CombiList:SetPadding(5)
+	self.CombiList:EnableHorizontal(true)
+	self.CombiList:EnableVerticalScrollbar(true)
+
+	self.Info = vgui.Create("DPanel", self)
+	self.Info:SetPos(5, self:GetTall() * 0.60 + 30)
+	self.Info:SetSize(self:GetWide() - 10, self:GetTall() * 0.3)
+
+	self.Info.NameLabel = vgui.Create("DLabel", self.Info)
+	self.Info.NameLabel:SetPos(5, 5)
+	self.Info.NameLabel:SetSize(self.Info:GetWide(), 20)
+	self.Info.NameLabel:SetFont("ScoreboardSub")
+	self.Info.NameLabel:SetText("Select a recipe")
+
+    self.Info.DescLabel = vgui.Create("DLabel", self.Info)
+	self.Info.DescLabel:SetName("GMS_TempLblName")
+	//self.Info.DescLabel:LoadControlsFromString([["GMS_TempLblName"{"GMS_TempLblName"{"wrap" "1"}}]])
+	self.Info.DescLabel:SetPos(5, 25)
+	self.Info.DescLabel:SetSize(self.Info:GetWide(), self.Info:GetTall() - 30)
+	self.Info.DescLabel:SetText("")
+
+	self.button = vgui.Create("gms_CommandButton", self)
+	local h = 35 + self.CombiList:GetTall() + self.Info:GetTall()
+	self.button:SetPos(5, h)
+	self.button:SetSize(self:GetWide() - 10, self:GetTall() - h - 5)
+	self.button:SetText("Make")
+	self.button:SetDisabled(true)
+	function self.button:DoClick()
+		local p = self:GetParent()
+		local combi = p.CombiGroupName or ""
+		local active = p.ActiveCombi or ""
+		p:Close()
+		LocalPlayer():ConCommand("gms_MakeCombination " .. combi .. " " .. active .. "\n")
+	end
+
+    self.IconSize = 86
     self.CombiPanels = {}
 end
 
 function PANEL:SetTable(str)
-    self:SetTitle(str)
+    self:SetTitle("#" .. str)
     self.CombiGroupName = str		 
     self.CombiGroup = GMS.Combinations[str]
     self:Clear()
-    local line = self.Spacing
-    local tab = self.Spacing
-    local num = 0
-	for name,tbl in pairs(self.CombiGroup) do
-		local icon = vgui.Create("GMS_CombiIcon",self.CombiList)
-        icon:SetPos(tab,line)
-        icon:SetSize(self.IconSize,self.IconSize)
-        icon:SetInfo(name,tbl)
-        icon:SetZPos(400)
-        table.insert(self.CombiPanels,icon)
-        tab = tab + self.Spacing + icon:GetWide()
-        num = num + 1
-		if num >= self.MaxPerLine then
-			tab = self.Spacing
-            line = line + self.Spacing + self.IconSize
-			num = 0
-        end
+	for name, tbl in pairs(self.CombiGroup) do
+		local icon = vgui.Create("GMS_CombiIcon", self.CombiList)
+        icon:SetSize(self.IconSize, self.IconSize)
+        icon:SetInfo(name, tbl)
+		self.CombiList:AddItem(icon)
+        table.insert(self.CombiPanels, icon)
 	end
     self:ClearActive()
 end
 
-function PANEL:SetActive(combi,tbl)
+function PANEL:SetActive(combi, tbl)
     self.ActiveCombi = combi
     self.ActiveTable = tbl
     self.Info.NameLabel:SetText(tbl.Name)
-    self.Info.DescLabel:SetText(tbl.Description)
+
+	local desc = tbl.Description
+
+	if (tbl.Req or tbl.SkillReq) then
+		desc = desc .. "\n\nYou need:"
+	end
+	
+	if (tbl.Req and table.Count(tbl.Req) > 0) then
+		for res, num in pairs(tbl.Req) do
+			if (tbl.AllSmelt) then
+				desc = desc .. "\n" .. string.Replace(res, "_", " ") .. " (" .. tbl.Max .. " max)"
+			else
+				desc = desc .. "\n" .. string.Replace(res, "_", " ") .. ": " .. num
+			end
+		end
+	end
+
+	if (tbl.SkillReq and table.Count(tbl.SkillReq) > 0) then
+		for skill, num in pairs(tbl.SkillReq) do
+			desc = desc .. "\n" .. string.Replace(skill, "_", " ") .. " level " .. num
+		end
+	end
+	
+	/*if (tbl.Results and type(tbl.Results) == "table" and table.Count(tbl.Results) > 0) then
+		desc = desc .. "\n\nYou get:"
+		for res, num in pairs(tbl.Results) do
+			if (tbl.AllSmelt) then
+				desc = desc .. "\n" .. string.Replace(res, "_", " ") .. " (" .. tbl.Max .. " max)"
+			else
+				desc = desc .. "\n" .. string.Replace(res, "_", " ") .. ": " .. num
+			end
+		end
+	end*/
+	
+	if (tbl.FoodValue) then
+		desc = desc .. "\n\nFood initial quality: " .. math.floor(tbl.FoodValue / 10) .. "%"
+	end
+
+    self.Info.DescLabel:SetText(desc)
 end
 
 function PANEL:ClearActive()
@@ -1346,107 +1314,83 @@ function PANEL:ClearActive()
 end
 
 function PANEL:Clear()
-    for k,v in pairs(self.CombiPanels) do
+    for k, v in pairs(self.CombiPanels) do
         v:Remove()
     end
 	self.CombiPanels = {}
 end
-vgui.Register("GMS_CombinationWindow",PANEL,"DFrame")
-/*---------------------------------------------------------
-  Empty Combi Icon
----------------------------------------------------------*/
-local PANEL = {}
-
-function PANEL:Paint()
-    local bordcol = StrandedBorderTheme
-    surface.SetDrawColor(0,0,0,255)
-    surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-	surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,bordcol.a)
-    surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
-    return true
-end
-
-function PANEL:OnMousePressed(mc)
-    if mc != 107 then return end
-    surface.PlaySound(Sound("ui/buttonclickrelease.wav"))
-    self:GetParent():GetParent():ClearActive()
-end
-vgui.Register("GMS_EmptyCombiIcon",PANEL,"DPanel")
+vgui.Register("GMS_CombinationWindow", PANEL, "DFrame")
 
 /*---------------------------------------------------------
   Combi Icon
 ---------------------------------------------------------*/
 local PANEL = {}
-PANEL.TexID = surface.GetTextureID( "gui/gmod_logo" )
+PANEL.TexID = surface.GetTextureID("gui/gmod_logo")
 
 function PANEL:Paint()
     local bordcol = StrandedBorderTheme
-    surface.SetDrawColor(200,200,200,255)
-    surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+    surface.SetDrawColor(200, 200, 200, 255)
+    surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
     surface.SetTexture(self.TexID)
-    surface.DrawTexturedRect(0,5,self:GetWide(),self:GetTall())
-    surface.SetDrawColor(bordcol.r,bordcol.g,bordcol.b,bordcol.a)
-    surface.DrawOutlinedRect(0,0,self:GetWide(),self:GetTall())
+    surface.DrawTexturedRect(0, 5, self:GetWide(), self:GetTall())
+    surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, bordcol.a)
+    surface.DrawOutlinedRect(0, 0, self:GetWide(), self:GetTall())
+
     local hasskill = true
-    if self.CombiTable.SkillReq then
-        for k,v in pairs(self.CombiTable.SkillReq) do
-            if GetSkill(k) < v then
+    if (self.CombiTable.SkillReq) then
+        for k, v in pairs(self.CombiTable.SkillReq) do
+            if (GetSkill(k) < v) then
                 hasskill = false
             end
         end
     end
+
     local hasres = true
-    if self.CombiTable.Req then
-        for k,v in pairs(self.CombiTable.Req) do
-            if GetResource(k) < v then
+    if (self.CombiTable.Req) then
+        for k, v in pairs(self.CombiTable.Req) do
+            if (GetResource(k) < v) then
                 hasres = false
             end
         end
     end
-	if !hasskill then
-        surface.SetDrawColor(200,200,0,150)
-        surface.DrawRect(0,0,self:GetWide(),self:GetTall())
-    elseif !hasres then
-        surface.SetDrawColor(200,0,0,100)
-        surface.DrawRect(0,0,self:GetWide(),self:GetTall())
+
+	if (!hasskill) then
+        surface.SetDrawColor(200, 200, 0, 150)
+        surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
+    elseif (!hasres) then
+        surface.SetDrawColor(200, 0, 0, 100)
+        surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
     end
-    local x = self:GetWide()/2
-    local y = self:GetTall()/2 
-    draw.SimpleTextOutlined(self.CombiTable.Name,"DefaultSmall",x,y,Color(255,255,255,255),1,1,0.5,Color(100,100,100,140))		 
+
+    local x = self:GetWide() / 2
+    local y = self:GetTall() / 2 
+    draw.SimpleTextOutlined(self.CombiTable.Name, "DefaultSmall", x, y, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))		 
 	return true
 end
 
-function PANEL:SetInfo(name,tbl)
-    if tbl.Texture then 
-		self.TexID = surface.GetTextureID( tbl.Texture ) 
+function PANEL:SetInfo(name, tbl)
+    if (tbl.Texture) then 
+		self.TexID = surface.GetTextureID(tbl.Texture) 
 	end
+
     self.Combi = name
     self.CombiTable = tbl
 end
 
 function PANEL:OnMousePressed(mc)
-         if mc != 107 then return end
-         surface.PlaySound(Sound("ui/buttonclickrelease.wav"))
-         self:GetParent():GetParent():SetActive(self.Combi,self.CombiTable)
+	if (mc != 107) then return end
+	surface.PlaySound(Sound("ui/buttonclickrelease.wav"))
+	self:GetParent():GetParent():GetParent():SetActive(self.Combi, self.CombiTable)
+	self:GetParent():GetParent():GetParent().button:SetDisabled(false)
 end
 
 function PANEL:OnCursorEntered()
-         for k,icon in pairs(self:GetParent():GetParent().CombiPanels) do
-             icon:SetZPos(400)
-         end
-         
-         self:SetZPos(410)
-         self.BeingHovered = true
-         surface.PlaySound(Sound("ui/buttonrollover.wav"))
-end
-
-function PANEL:OnCursorExited()
-	self.BeingHovered = false
+	surface.PlaySound(Sound("ui/buttonrollover.wav"))
 end
 
 vgui.Register("GMS_CombiIcon", PANEL, "DPanel")
 
-/* RESOURCE PACK GUI */
+/* Resource Pack GUI */
 
 local PANEL = {}
 
