@@ -1467,10 +1467,6 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 
 	local tbl = GMS.Combinations[group][combi]
 
-	for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-		if (v:GetClass() == group) then nearby = true end
-	end
-	
 	if (group == "Cooking") then
 		local nearby = false
 
@@ -1478,7 +1474,55 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 			if (v:IsProp() and v:IsOnFire()) or v:GetClass() == "gms_stove" then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a fire or stove!", 3, Color(200, 0 ,0, 255)) return end
+		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) return end
+	elseif (group == "gms_stoneworkbench") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_stoneworkbench") then nearby = true end
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_copperworkbench") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_copperworkbench") then nearby = true end
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_ironworkbench") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_ironworkbench") then nearby = true end
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_stonefurnace") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_stonefurnace") then nearby = true end
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_copperfurnace") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_copperfurnace") then nearby = true end
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
+	elseif (group == "gms_ironfurnace") then
+		local nearby = false
+
+		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
+			if (v:GetClass() == "gms_ironfurnace") then nearby = true
+		end
+
+		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
 	end
 
 	if (!nearby) then ply:SendMessage("You need to be close to a " .. ("#" .. group) .. "!", 3, Color(200, 0, 0, 255)) return end
