@@ -1471,7 +1471,7 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:IsProp() and v:IsOnFire()) or v:GetClass() == "gms_stove" then nearby = true end
+			if ((v:IsProp() and v:IsOnFire()) or v:GetClass() == "gms_stove") then nearby = true end
 		end
 
 		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) return end
@@ -1519,13 +1519,11 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_ironfurnace") then nearby = true
+			if (v:GetClass() == "gms_ironfurnace") then nearby = true end
 		end
 
 		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
 	end
-
-	if (!nearby) then ply:SendMessage("You need to be close to a " .. ("#" .. group) .. "!", 3, Color(200, 0, 0, 255)) return end
 
 	--Check for skills
 	local numreq = 0
@@ -1662,7 +1660,6 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.25, 2))
 
 		ply:DoProcess("Smelt", time, data)
-
 	elseif (group == "gms_copperfurnace") then
 		local data = {}
 		data.Name = tbl.Name
@@ -1681,8 +1678,7 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		local time = timecount * 0.6
 		time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.3, 2))
 
-		ply:DoProcess("Smelt", time, data)	
-
+		ply:DoProcess("Smelt", time, data)
 	elseif (group == "gms_ironfurnace") then
 		local data = {}
 		data.Name = tbl.Name
