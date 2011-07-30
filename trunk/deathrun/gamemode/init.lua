@@ -23,6 +23,10 @@ function GM:CanStartRound()
 	return false
 end
 
+function GM:PlayerSpray(ply)
+	return true
+end
+
 function GM:OnPreRoundStart(num)
 	game.CleanUpMap()
 
