@@ -178,15 +178,14 @@ function PlayerMeta:GetSkill(skill)
 	return self.Skills[skill] or 0	
 end
 
-function PlayerMeta:IncSkill(skill, int, admin)
-	admin = admin or false
+function PlayerMeta:IncSkill(skill, int)
 	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self:SetSkill(skill, 0) end
 	if (!self.Experience[skill]) then self:SetXP(skill, 0) end
 
 	if (skill != "Survival") then
 		int = math.Clamp(int, 0, 200)
-		for id = 1, int do self:IncXP("Survival", 20, admin) end
+		for id = 1, int do self:IncXP("Survival", 20) end
 		self:SendMessage(string.Replace(skill, "_", " ") .. " +" .. int, 3, Color(10, 200, 10, 255))
 	else
 		self.MaxResources = self.MaxResources + 5
@@ -232,8 +231,7 @@ function PlayerMeta:GetXP(skill)
 	return self.Experience[skill] or 0
 end
 
-function PlayerMeta:IncXP(skill, int, admin)
-	admin = admin or false
+function PlayerMeta:IncXP(skill, int)
 	skill = string.Capitalize(skill)
 	if (!self.Skills[skill]) then self.Skills[skill] = 0 end
 	if (!self.Experience[skill]) then self.Experience[skill] = 0 end
@@ -241,7 +239,7 @@ function PlayerMeta:IncXP(skill, int, admin)
 	if (self.Experience[skill] + int >= 100) then
 		self.Experience[skill] = 0
 		self:IncSkill(skill, 1)
-		if (!admin) then self:AddProfits(10, false, true) end
+		self:AddProfits(10, false, true)
 	else
 		self.Experience[skill] = self.Experience[skill] + int
 	end
