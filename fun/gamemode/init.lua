@@ -17,7 +17,7 @@ function GM:CanStartRound()
 end
 
 function GM:PlayerSpray(ply)
-	return true
+	return ply:Team() == TEAM_CT or ply:Team() == TEAM_T
 end
 
 function GM:OnPreRoundStart(num)
@@ -30,7 +30,7 @@ function GM:OnPreRoundStart(num)
 	/* Fixes */
 
 	local OldRun = team.GetPlayers(TEAM_CT)
-	local OldDeath = team.GetPlayers(TEAM_KILLER)
+	local OldDeath = team.GetPlayers(TEAM_T)
 	local NrActivePlayers = #OldRun + #OldDeath
 
 	UTIL_StripAllPlayers()
