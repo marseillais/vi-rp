@@ -240,7 +240,7 @@ function PlayerMeta:IncXP(skill, int)
 		self.Experience[skill] = 0
 		self:IncSkill(skill, 1)
 		if (skill == "Survival" and self.Skills[skill] > 14) then
-			self:AddProfits(250, false, true)
+			self:AddProfits(500, false, true)
 		end
 	else
 		self.Experience[skill] = self.Experience[skill] + int
@@ -2060,7 +2060,7 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end
 	
-	timer.Simple(5, function()
+	timer.Simple(5, function(ply)
 		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
 			umsg.Start("gms_SetResourceDropInfo", ply)
 				umsg.String(v:EntIndex())
@@ -2068,9 +2068,9 @@ function GM:PlayerInitialSpawn(ply)
 				umsg.Short(v.Amount)
 			umsg.End()
 		end
-	end)
+	end, ply)
 	
-	timer.Simple(7, function()
+	timer.Simple(7, function(ply)
 		local time = 0
 		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
 			for res, num in pairs(v.Resources) do
@@ -2098,16 +2098,16 @@ function GM:PlayerInitialSpawn(ply)
 			end
 			time = time + 1
 		end
-	end)
+	end, ply)
 	
-	timer.Simple(6, function()
+	timer.Simple(6, function(ply)
 		for _, v in ipairs(ents.FindByClass("gms_food")) do
 			umsg.Start("gms_SetFoodDropInfo", ply)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(v.Name, "_", " "))
 			umsg.End()
 		end
-	end)
+	end, ply)
 end
 
 /* Send all campfires */

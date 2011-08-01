@@ -42,16 +42,18 @@ function ENT:Setup(model, resclass)
 end
 
 function ENT:Finish()
-    local ent = ents.Create(self.ResultClass)	 
-	if (self.NormalProp == true) then ent.NormalProp = true end
-    ent:SetPos(self.Entity:GetPos())
-    ent:SetAngles(self.Entity:GetAngles())
-    ent:SetModel(self.Entity:GetModel())
-	ent.Player = self.Entity.Player
-	ent:SetNetworkedString('Name', self.Entity.Name)
-    ent:Spawn()
-    SPropProtection.PlayerMakePropOwner(ent.Player, ent)
-    ent:Fadein()
+	if (self.ResultClass) then
+		local ent = ents.Create(self.ResultClass)	 
+		if (self.NormalProp == true) then ent.NormalProp = true end
+		ent:SetPos(self.Entity:GetPos())
+		ent:SetAngles(self.Entity:GetAngles())
+		ent:SetModel(self.Entity:GetModel())
+		ent.Player = self.Entity.Player
+		ent:SetNetworkedString('Name', self.Entity.Name)
+		ent:Spawn()
+		SPropProtection.PlayerMakePropOwner(ent.Player, ent)
+		ent:Fadein()
+	end
  
     if (self.Entity.Player) then
 		self.Entity.Player.HasBuildingSite = false
