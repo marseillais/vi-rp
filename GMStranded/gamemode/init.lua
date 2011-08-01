@@ -239,7 +239,7 @@ function PlayerMeta:IncXP(skill, int)
 	if (self.Experience[skill] + int >= 100) then
 		self.Experience[skill] = 0
 		self:IncSkill(skill, 1)
-		if (skill == "Survival") then
+		if (skill == "Survival" and self.Skills[skill] > 14) then
 			self:AddProfits(250, false, true)
 		end
 	else
