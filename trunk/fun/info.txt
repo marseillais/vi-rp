@@ -1,6 +1,6 @@
 "Gamemode"
 {
-	"name"		"Deathrun"
+	"name"		"Fun gamemode"
 	"version"	"1"
 
 	"author_name"	"Robotboy655"
@@ -13,13 +13,11 @@
 
 	"fretta_maps"
 	{
-		"1"	"^deathrun_"
-		"2"	"^dr_"
+		"1"	"^fun_"
 	}
 	"mappattern"
 	{
-		"1"	"^deathrun_"
-		"2"	"^dr_"
+		"1"	"^fun_"
 	}
 
 	"selectable"	"1"
