@@ -239,7 +239,7 @@ function PlayerMeta:IncXP(skill, int)
 	if (self.Experience[skill] + int >= 100) then
 		self.Experience[skill] = 0
 		self:IncSkill(skill, 1)
-		self:AddProfits(10, false, true)
+		self:AddProfits(100, false, true)
 	else
 		self.Experience[skill] = self.Experience[skill] + int
 	end
@@ -2121,9 +2121,9 @@ end)
 
 /* Send all tribes */
 hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
-	timer.Simple(4, function()
+	timer.Simple(4, function(p)
 		for i, v in pairs(GAMEMODE.Tribes) do
-			umsg.Start("recvTribes", ply)
+			umsg.Start("recvTribes", p)
 			umsg.Short(v.id)
 			umsg.String(i)
 			umsg.Short(v.red)
@@ -2136,7 +2136,7 @@ hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
 			end
 			umsg.End()
 		end
-	end)
+	end, ply)
 end)
 
 function GM:PlayerSpawn(ply)
