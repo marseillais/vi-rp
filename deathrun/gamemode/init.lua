@@ -24,7 +24,7 @@ function GM:CanStartRound()
 end
 
 function GM:PlayerSpray(ply)
-	return true
+	return ply:Team() == TEAM_RUN or ply:Team() == TEAM_KILLER
 end
 
 function GM:OnPreRoundStart(num)
