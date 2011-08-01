@@ -71,6 +71,11 @@ function SWEP:SecondaryAttack()
 	CROW.Burrow(self.Owner)
 end
 
+function SWEP:PrimaryAttack()
+	if (CLIENT) then return false end
+	CROW.Idle(self.Owner)
+end
+
 function SWEP:Think()
 	if (CLIENT) then return end
 	
@@ -78,10 +83,6 @@ function SWEP:Think()
 		self.Owner:ConCommand("+duck\n")
 	end
 	
-	CROW.AttackThink(self.Owner)
+	//CROW.AttackThink(self.Owner)
 	CROW.BurrowThink(self.Owner)
-	
-	if (self.Owner:Health() < 60) then
-		self.Owner:SetMoveType(2)
-	end
 end

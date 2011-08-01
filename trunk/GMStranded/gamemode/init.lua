@@ -170,8 +170,6 @@ function PlayerMeta:SetSkill(skill, int)
 		umsg.String(skill)
 		umsg.Short(self:GetSkill(skill))
 	umsg.End()
-	
-	self:CheckForUnlocks()
 end
 
 function PlayerMeta:GetSkill(skill)
@@ -432,16 +430,7 @@ end
 
 /* Custom health functions */
 function PlayerMeta:Heal(int)
-	local max = 100
-
-	if (self:HasUnlock("Adept_Survivalist")) then max = 150 end
-	if (self:HasUnlock("Master_Survivalist")) then max = 200 end
-
-	if (self:Health() + int > max) then
-		self:SetHealth(max)
-	else
-		self:SetHealth(self:Health() + int)
-	end
+	self:SetHealth(math.min(self:Health() + int, self:GetMaxHealth()))
 end
 
 /* Unlock functions */
@@ -452,7 +441,7 @@ function PlayerMeta:AddUnlock(text)
 		umsg.String(text)
 	umsg.End()
 
-	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end //
+	if (GMS.FeatureUnlocks[text].OnUnlock) then GMS.FeatureUnlocks[text].OnUnlock(self) end
 end
 
 function PlayerMeta:HasUnlock(text)
@@ -493,6 +482,7 @@ function PlayerMeta:UpdateNeeds()
 		umsg.Short(self.Hunger)
 		umsg.Short(self.Thirst)
 		umsg.Short(self.Oxygen)
+		umsg.Short(self.Power)
 		umsg.Short(Time)
 	umsg.End()
 end
@@ -694,6 +684,12 @@ function EntityMeta:IsProp()
 	end
 
 	return false
+end
+
+function EntityMeta:GetVolume()
+	local min, max = self:OBBMins(), self:OBBMaxs()
+	local vol = math.abs(max.x - min.x) * math.abs(max.y - min.y) * math.abs(max.z - min.z)
+	return vol / (16 ^ 3)
 end
 
 function EntityMeta:IsSleepingFurniture()
@@ -1112,17 +1108,49 @@ concommand.Add("gms_salvage", function(ply)
 	end 
 
 	if ((ent:GetClass() != "gms_buildsite" and ent.NormalProp == true) and ((SPropProtection.PlayerIsPropOwner(ply, ent) or SPropProtection.IsBuddy(ply, ent)) or tonumber(SPropProtection["Config"]["use"]) != 1)) then
-		local min, max = ent:WorldSpaceAABB()
-		local min, max = ent:OBBMins(), ent:OBBMaxs() -- Do volume in cubic "feet"
-		local vol = math.abs(max.x - min.x) * math.abs(max.y - min.y) * math.abs(max.z - min.z)
-		vol = vol / (16 ^ 3)
+		local vol = ent:GetVolume()
+
 		local res = GMS.MaterialResources[tr.MatType]
 		local cost = math.Round(0.6 * math.ceil(vol * GetConVarNumber("gms_CostsScale")))
 		ply:IncResource(res, cost)
-		ply:SendMessage("Gained " .. string.Replace(res, "_", " ") .. " (" .. cost .. "x) from salvaging.", 3, Color( 255, 255, 255, 255 ))
+		ply:SendMessage("Gained " .. string.Replace(res, "_", " ") .. " (" .. cost .. "x) from salvaging.", 3, Color(255, 255, 255, 255))
 		ent:Fadeout()
 	else
 		ply:SendMessage("Cannot salvage this kind of prop.", 5, Color(255, 255, 255, 255))
+	end
+end)
+
+/* Stealing */
+concommand.Add("gms_steal", function(ply, cmd, args)
+	local tr = ply:TraceFromEyes(100)
+	local ent = tr.Entity
+
+	if (ent != NULL and tr.HitNonWorld) then
+		if (IsNight) then
+			local cls = ent:GetClass()
+			if (ent:GetNetworkedString("Owner", "N/A") != "World" and !ent:IsProp() and cls != "gms_buildsite" and cls != "gms_seed" and !SPropProtection.PlayerIsPropOwner(ply, ent)) then //Add: cant steal own props
+				local time = math.max(ent:GetVolume(), 1)
+				
+				if (cls == "gms_resourcedrop") then
+					time = ent.Amount * 0.5
+				elseif (cls == "gms_resourcepack" or cls == "gms_fridge") then
+					time = 0
+					for r, n in pairs(ent.Resources) do
+						time = time + (n * 0.1)
+					end
+				end
+
+				local data = {}
+				data.Ent = ent
+				ply:DoProcess("Steal", time, data)
+			else
+				ply:SendMessage("You can't steal this.", 3, Color(200, 0, 0, 255))
+			end
+		else
+			ply:SendMessage("You can steal only at night.", 3, Color(200, 0, 0, 255))
+		end
+	else
+		ply:SendMessage("Aim at the prop to steal.", 3, Color(200, 0, 0, 255))
 	end
 end)
 
@@ -1323,14 +1351,15 @@ concommand.Add("gms_takemedicine", GM.TakeAMedicine)
 /* Drop weapon command */
 function GM.DropWeapon(ply, cmd, args)
 	if (!ply:Alive()) then return end
-	if (ply:GetActiveWeapon():GetClass() == "gms_hands") then ply:SendMessage("You cannot drop your hands!", 3, Color(200, 0, 0, 255))
-	elseif (ply:GetActiveWeapon():GetClass() == "gmod_camera" or ply:GetActiveWeapon():GetClass() == "weapon_physgun" or ply:GetActiveWeapon():GetClass() == "pill_pigeon" or ply:GetActiveWeapon():GetClass() == "weapon_physcannon") then
+	//if (ply:GetActiveWeapon():GetClass() == "gms_hands") then ply:SendMessage("You cannot drop your hands!", 3, Color(200, 0, 0, 255))
+	//elseif (ply:GetActiveWeapon():GetClass() == "gmod_camera" or ply:GetActiveWeapon():GetClass() == "weapon_physgun" or ply:GetActiveWeapon():GetClass() == "pill_pigeon" or ply:GetActiveWeapon():GetClass() == "weapon_physcannon") then
+	if (table.HasValue(GMS.NonDropWeapons, ply:GetActiveWeapon():GetClass())) then
 		ply:SendMessage("You cannot drop this!", 3, Color(200, 0, 0, 255))
 	else
 		ply:DropWeapon(ply:GetActiveWeapon())
 	end
 end
-concommand.Add("gms_dropweapon",GM.DropWeapon)
+concommand.Add("gms_dropweapon", GM.DropWeapon)
 
 /* Drop resource command */
 function GM.DropResource(ply, cmd, args)
@@ -1467,62 +1496,22 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 
 	local tbl = GMS.Combinations[group][combi]
 
-	if (group == "Cooking") then
+	if (group == "Cooking" and tbl.Entity) then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if ((v:IsProp() and v:IsOnFire()) or v:GetClass() == "gms_stove") then nearby = true end
+			if ((v:IsProp() and v:IsOnFire()) or v:GetClass() == tbl.Entity) then nearby = true end
 		end
 
 		if (!nearby) then ply:SendMessage("You need to be close to a fire!", 3, Color(200, 0 ,0, 255)) return end
-	elseif (group == "gms_stoneworkbench") then
+	elseif (tbl.Entity) then
 		local nearby = false
 
 		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_stoneworkbench") then nearby = true end
+			if (v:GetClass() == tbl.Entity) then nearby = true end
 		end
 
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_copperworkbench") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_copperworkbench") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_ironworkbench") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_ironworkbench") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a workbench!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_stonefurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_stonefurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_copperfurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_copperfurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
-	elseif (group == "gms_ironfurnace") then
-		local nearby = false
-
-		for k, v in pairs(ents.FindInSphere(ply:GetPos(), 100)) do
-			if (v:GetClass() == "gms_ironfurnace") then nearby = true end
-		end
-
-		if (!nearby) then ply:SendMessage("You need to be close to a furnace!", 3, Color(200, 0, 0, 255)) return end
+		if (!nearby) then ply:SendMessage("You need to be close to a " .. tbl.Entity .. "!", 3, Color(200, 0, 0, 255)) return end
 	end
 
 	--Check for skills
@@ -1624,7 +1613,7 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		data.Cost = table.Copy(tbl.Req)
 		
 		local time = 10
-		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then time = 7 end
+		if (ply:GetActiveWeapon():GetClass() == "gms_copperhammer") then time = 7 end
 		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 4), 4)
 
 		ply:DoProcess("MakeWeapon", time, data)
@@ -1936,7 +1925,7 @@ function GM:PlayerInitialSpawn(ply)
 	ply.Resources = {}
 	ply.Experience = {}
 	ply.FeatureUnlocks = {}	
-	ply.Loaded = true
+	ply.Loaded = false
 
 	--Admin info, needed clientside
 	if (ply:IsAdmin()) then
@@ -1952,8 +1941,57 @@ function GM:PlayerInitialSpawn(ply)
 	end
 
 	--Character loading
-	if (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then
-		ply.Loaded = false
+	if (file.Exists("GMStranded/saves_glon/" .. ply:UniqueID() .. ".txt")) then
+		local tbl = glon.decode(file.Read("GMStranded/saves_glon/" .. ply:UniqueID() .. ".txt"))
+
+		if (tbl["skills"]) then
+			for k, v in pairs(tbl["skills"]) do
+				ply:SetSkill(k, v)
+			end
+		end
+
+		if (tbl["experience"]) then
+			for k, v in pairs(tbl["experience"]) do
+				ply:SetXP(k, v)
+			end
+		end
+
+		if (tbl["unlocks"]) then 
+			for k, v in pairs(tbl["unlocks"]) do
+				if (k == "Sprint_Mki") then k = "Sprinting_I" end
+				if (k == "Sprint_Mkii") then k = "Sprinting_II" end
+				if (k == "Sprinting_Ii") then k = "Sprinting_II" end
+				if (k == "Sprout_Collect") then k = "Sprout_Collecting" end
+				ply.FeatureUnlocks[k] = v
+			end
+		end
+
+		if (tbl["resources"]) then
+			for k, v in pairs(tbl["resources"]) do
+				ply:SetResource(k, v)
+			end
+		end
+		
+		if (tbl["weapons"]) then
+			for k, v in pairs(tbl["weapons"]) do
+				ply:Give(v)
+			end
+		end
+		
+		ply:StripAmmo()
+		
+		if (tbl["ammo"]) then
+			for k, v in pairs(tbl["ammo"]) do
+				ply:GiveAmmo(v, k)
+			end
+		end
+
+		if (!ply.Skills["Survival"]) then ply.Skills["Survival"] = 0 end
+		ply.MaxResources = (ply.Skills["Survival"] * 5) + 25
+		ply.Loaded = true
+		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
+		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
+	elseif (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then
 		local tbl = util.KeyValuesToTable(file.Read("GMStranded/Saves/" .. ply:UniqueID() .. ".txt"))
 
 		if (tbl["skills"]) then
@@ -1970,11 +2008,12 @@ function GM:PlayerInitialSpawn(ply)
 
 		if (tbl["unlocks"]) then 
 			for k, v in pairs(tbl["unlocks"]) do
+				k = string.Capitalize(k)
 				if (k == "Sprint_Mki") then k = "Sprinting_I" end
 				if (k == "Sprint_Mkii") then k = "Sprinting_II" end
+				if (k == "Sprinting_Ii") then k = "Sprinting_II" end
 				if (k == "Sprout_Collect") then k = "Sprout_Collecting" end
-
-				ply.FeatureUnlocks[string.Capitalize(k)] = v
+				ply.FeatureUnlocks[k] = v
 			end
 		end
 
@@ -1998,24 +2037,17 @@ function GM:PlayerInitialSpawn(ply)
 			end
 		end
 
-		for k, v in pairs(GMS.FeatureUnlocks) do
-			if (ply:HasUnlock(k) and v.OnUnlock) then
-				v.OnUnlock(ply)
-			end
-		end
-
 		if (!ply.Skills["Survival"]) then ply.Skills["Survival"] = 0 end
-
 		ply.MaxResources = (ply.Skills["Survival"] * 5) + 25
-
 		ply.Loaded = true
-		
 		ply:SendMessage("Loaded character successfully.", 3, Color(255, 255, 255, 255))
 		ply:SendMessage("Last visited on " .. tbl.date .. ", enjoy your stay.", 10, Color(255, 255, 255, 255))
+		GAMEMODE.SaveCharacter(ply)
 	else
 		ply:SetSkill("Survival", 0)
 		ply:SetXP("Survival", 0)
 		ply.MaxResources = 25
+		ply.Loaded = true
 	end
 
 	ply:SetNWInt("plants", 0)
@@ -2109,21 +2141,23 @@ end)
 function GM:PlayerSpawn(ply)
 	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))
 
-	if (ply:HasUnlock("Sprinting_II")) then
-		GAMEMODE:SetPlayerSpeed(ply, 400, 100)
-	else
-		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
+	GAMEMODE:SetPlayerSpeed(ply, 250, 250)
+	ply:SetMaxHealth(100)
+	
+	for k, v in pairs(GMS.FeatureUnlocks) do
+		if (ply:HasUnlock(k) and v.OnUnlock) then
+			v.OnUnlock(ply)
+		end
 	end
 
-	self:PlayerLoadout(ply) --hook.Call("PlayerLoadout", GAMEMODE, ply)
-	self:PlayerSetModel(ply) --hook.Call("PlayerSetModel", GAMEMODE, ply)
+	self:PlayerLoadout(ply)
+	self:PlayerSetModel(ply)
 
 	ply.Sleepiness = 1000
 	ply.Hunger = 1000
 	ply.Thirst = 1000
 	ply.Oxygen = 1000
-	if (ply:HasUnlock("Adept_Survivalist")) then ply:SetHealth(150) end
-	if (ply:HasUnlock("Master_Survivalist")) then ply:SetHealth(200) end
+	ply.Power = 50
 	ply:UpdateNeeds()
 end
 
@@ -2131,43 +2165,36 @@ function GM:PlayerLoadout(ply)
 	ply:Give("gms_hands") --Tools
 
 	if (GetConVarNumber("gms_AllTools") == 1) then
-		ply:Give("gms_stonepickaxe")
-		ply:Give("gms_copperpickaxe")
-		ply:Give("gms_copperknife")
-		ply:Give("gms_ironpickaxe")
-		ply:Give("gms_stonehatchet")
-		ply:Give("gms_copperhatchet")
-		ply:Give("gms_ironhatchet")
-		ply:Give("gms_woodenfishingrod")
-		ply:Give("gms_advancedfishingrod")
-		ply:Give("gms_fryingpan")
-		ply:Give("gms_shovel")
-		ply:Give("gms_strainer")
-		ply:Give("gms_sickle")
-		ply:Give("gms_woodenspoon")
-		ply:Give("weapon_crowbar")
-		ply:Give("weapon_stunstick")
-		ply:Give("gmod_tool")
-		ply:Give("weapon_pistol")
-		ply:Give("gmod_camera")
-		ply:Give("weapon_smg1")
+		for id, wep in pairs(GMS.AllWeapons) do
+			ply:Give(wep)
+		end
 	end
 
-	--Gmod
 	if (GetConVarNumber("gms_physgun") == 1 or ply:IsAdmin()) then ply:Give("weapon_physgun") end
 	if (ply:IsAdmin() or ply:IsSuperAdmin()) then ply:Give("gmod_tool") ply:Give("pill_pigeon") end
-	if (ply:HasUnlock("Extreme_Survivalist")) then ply:Give("pill_pigeon") end
 	ply:Give("weapon_physcannon")
 	ply:SelectWeapon("weapon_physgun")
 	ply:SelectWeapon("gms_hands")
 end
 
+function GM:PlayerCanPickupWeapon(ply, wep)
+	if (ply:HasWeapon(wep:GetClass())) then return false end
+	return true
+end
+
 hook.Add("PlayerDeath", "Death", function(ply)
-	ply.NextSpawnTime = CurTime() + 400
 	ply:ConCommand("gms_dropall")
+
+	for _, v in pairs(ply:GetWeapons()) do
+		if (!table.HasValue(GMS.NonDropWeapons, v:GetClass())) then
+			ply:DropWeapon(v)
+			SPropProtection.PlayerMakePropOwner(ply, v)
+		end
+	end
+	
 	if (ply.AFK == true) then
 		ply:Freeze(false)
-		ply.AFK = false			
+		ply.AFK = false
 		umsg.Start("gms_stopafk", ply)
 		umsg.End()
 	end
@@ -2197,7 +2224,7 @@ end
 
 function GM.SaveCharacter(ply,cmd,args)
 	if (!file.IsDir("GMStranded")) then file.CreateDir("GMStranded") end
-	if (!file.IsDir("GMStranded/Saves")) then file.CreateDir("GMStranded/Saves") end
+	if (!file.IsDir("GMStranded/saves_glon")) then file.CreateDir("GMStranded/saves_glon") end
 	if (!ply.Loaded) then
 		print("Player " .. ply:Name() .. " tried to save before he has loaded!")
 		ply:SendMessage("Character save failed: Not yet loaded!", 3, Color(255, 50, 50, 255))
@@ -2250,12 +2277,16 @@ function GM.SaveCharacter(ply,cmd,args)
 		end
 	end
 
-	file.Write("GMStranded/Saves/" .. ply:UniqueID() .. ".txt", util.TableToKeyValues(tbl))
+	file.Write("GMStranded/saves_glon/" .. ply:UniqueID() .. ".txt", glon.encode(tbl))
+	if (file.Exists("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")) then // Since we are using GLON, we don't need the old save games... Or do we? Maybe in case of something it is good to have a backup, but i am confident in own code ;)
+		file.Delete("GMStranded/Saves/" .. ply:UniqueID() .. ".txt")
+	end
 	ply:SendMessage("Saved character!", 3, Color(255, 255, 255, 255))
 end
 concommand.Add("gms_savecharacter", GM.SaveCharacter)
 
 /*------------------------ STOOLs and Physgun ------------------------*/
+
 function GM:PhysgunPickup(ply, ent)
 	if (ply:IsAdmin()) then return true end
 
@@ -2270,7 +2301,7 @@ function GM:GravGunPunt(ply, ent)
 	return ply:IsAdmin()
 end
 
-function GM:CanTool(ply,tr,mode)
+function GM:CanTool(ply, tr ,mode)
 	local ent = tr.Entity
 
 	if (mode == "remover") then
@@ -2321,13 +2352,9 @@ function GM:PlayerSpawnedPropDelay(ply, mdl, ent)
 
 	--Trace
 	ent.EntOwner = ply
-	local min, max = ent:WorldSpaceAABB()
-	--local mass = ent:GetPhysicsObject():GetMass()
 
 	-- Do volume in cubic "feet"
-	local min, max = ent:OBBMins(), ent:OBBMaxs()
-	local vol = math.abs(max.x - min.x) * math.abs(max.y - min.y) * math.abs(max.z - min.z)
-	vol = vol / (16 ^ 3)
+	local vol = ent:GetVolume()
 
 	local x = 0
 	local trace = nil
@@ -2469,9 +2496,9 @@ function GM.SubtractNeeds()
 
 			--Kay you're worn out
 			if (ply.AFK != true) then
-				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 1 end // 2
-				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 3 end // 6
-				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 2 end // 3
+				if (ply.Sleepiness > 0) then ply.Sleepiness = ply.Sleepiness - 2 end // 2
+				if (ply.Thirst > 0) then ply.Thirst = ply.Thirst - 6 end // 6
+				if (ply.Hunger > 0) then ply.Hunger = ply.Hunger - 3 end // 3
 			end
 
 			ply:UpdateNeeds()
@@ -2829,24 +2856,6 @@ function GM:LoadMapEntity(savegame, max, k)
 	end
 end
 
-/* Sprint Hook */
-hook.Add("KeyPress", "GMS_SprintKeyHook", function(ply, key)
-	local GM = GAMEMODE
-	if (key != IN_SPEED) then return end
-
-	if (ply:HasUnlock("Sprinting_I") and !ply:HasUnlock("Sprinting_II")) then
-		GM:SetPlayerSpeed(ply, 250, 400)
-	end
-end)
-
-hook.Add("KeyReleased", "GMS_SprintKeyReleaseHook", function(ply, key)
-	if (key != IN_SPEED) then return end
-
-	if (ply:HasUnlock("Sprinting_I") and !ply:HasUnlock("Sprinting_II")) then
-		GAMEMODE:SetPlayerSpeed(ply, 250, 250)
-	end
-end)
-
 /* Misc functions */
 hook.Add("Think", "GM_WaterExtinguish", function()
 	for _, v in ipairs(ents.GetAll()) do
@@ -2875,6 +2884,34 @@ timer.Create("Oxygen.Timer", 1, 0, function()
 		end 
 	end
 end)
+
+/* Power */
+timer.Create("Power.Timer", 1, 0, function()
+	for _, v in ipairs(player.GetAll()) do
+		if (v:FlashlightIsOn()) then
+			if (v.Power > 0) then
+				v.Power = math.max(v.Power - 5, 0)
+				if (v.Power < 5) then
+					v:Flashlight(false)
+				end
+				v:UpdateNeeds()
+			end
+		else
+			local maxPow = 50
+			if (v.Resources['Batteries']) then
+				maxPow = math.min(maxPow + v.Resources['Batteries'] * 50, 500)
+			end
+			if (v.Power < maxPow) then
+				v.Power = math.min(v.Power + 10, maxPow)
+				v:UpdateNeeds()
+			end
+		end 
+	end
+end)
+
+function GM:PlayerSwitchFlashlight(ply, SwitchOn)
+	return (ply.Power > 25 or !SwitchOn) and (ply.Resources['Flashlight'] != nil and ply.Resources['Flashlight'] > 0)
+end
 
 local AlertSounds = {"citizen_beaten1.wav", "citizen_beaten4.wav", "citizen_beaten5.wav", "cough1.wav", "cough2.wav", "cough3.wav", "cough4.wav"}
 

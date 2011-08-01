@@ -25,6 +25,7 @@ Sleepiness = 1000
 Hunger = 1000
 Thirst = 1000
 Oxygen = 1000
+Power = 50
 
 CampFires = {}
 
@@ -43,20 +44,30 @@ language.Add('gms_gunlab', "Gun Lab")
 
 /* The chat hints */
 HintsRus = {
-	"Держите свои ресурсы в ресурс паке, чтобы их не украли ночью.",
-	"А знаете ли вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
-	"Храните вашу еду в холодильнике, чтобы она не портилась.",
-	"Чтобы племя могло использовать вещи друг друга, это племя должно иметь пароль."
+	"Держите Ваши ресурсы в ресурс паке, чтобы их не украли ночью.",
+	"А знаете ли Вы, что ресурсы в меню ресурсов (F2) нажимаемы мышью?",
+	"Храните Вашу еду в холодильнике, чтобы она не портилась.",
+	"Чтобы племя могло использовать вещи друг друга, это племя должно иметь пароль.",
+	"Чтобы использовать фонарь, Вам нужно его сделать.",
+	"Чем больше у Вас батареек, тем больше у Вас энергии для фонаря.", 
+	"Шанс поймать что-то без наживки (Baits) в 4 раза ниже, чем с наживкой.",
+	"Чтобы добыть железо (Iron) или медь (Copper) вам нужна каменная/медная/железная кирка.",
+	"Чтобы пригласить игрока в племя, напишите !invite <имя игрока>"
 }
 
 HintsEng = {
 	"Store your resources in resource pack, so they wont get stolen at night.",
 	"Did you know that resources in Resources menu (F2) are clickable?",
 	"Keep your food in fridge, so it does not spoil.",
-	"In order to share items within a tribe, the tribe must have a password."
+	"In order to share items within a tribe, the tribe must have a password.",
+	"In order to use flashlight, you need to craft it.",
+	"The more batteries you have, the more flashlight power you have.",
+	"Chance to catch something without Baits is 4 times lower, then with Baits.",
+	"In order to get Iron or Copper you need stone/copper/iron pickaxe.",
+	"In order to invite a player into a tribe, type !invite <player name>"
 }
 
-timer.Create("Client.HINTS", 300, 0, function()
+timer.Create("Client.HINTS", 360, 0, function()
 	if (math.random(0, 100) > 50) then
 		chat.AddText(Color(50, 255, 50), "[HINT] ", Color(255, 255, 255), HintsRus[math.random(1, #HintsRus)])
 	else
@@ -106,6 +117,15 @@ concommand.Add("gms_openrespackmenu", function(ply, cmd, args)
 		end
         panelList:AddItem(reso)
     end
+end)
+
+/* Tribe invitation */
+usermessage.Hook("gms_invite", function(data)
+	local tn = data:ReadString()
+	local p = data:ReadString()
+	Derma_Query("You are being invited to " .. tn .. ".\nChoose action below.", "Invitation",
+		"Join", function() RunConsoleCommand("gms_join", tn, p) end,
+		"Decline", function() RunConsoleCommand("say", "I don't want to join " .. tn) end)
 end)
 
 /* Receive the campfires */
@@ -267,10 +287,12 @@ end)
 
 usermessage.Hook("gms_toggleresourcesmenu", function(um)
 	GAMEMODE.ResourcesHud:ToggleExtend()
+	if (GAMEMODE.ResourcesHud.Extended) then GAMEMODE.CommandsHud:SetExtended(false) end
 end)
 
 usermessage.Hook("gms_togglecommandsmenu", function(um)
 	GAMEMODE.CommandsHud:ToggleExtend()
+	if (GAMEMODE.CommandsHud.Extended) then GAMEMODE.ResourcesHud:SetExtended(false) end
 end)
 
 usermessage.Hook("gms_cancelprocess", function(um)
@@ -546,6 +568,7 @@ function GM.SetNeeds(um)
 	Hunger = um:ReadShort()
 	Thirst = um:ReadShort()
 	Oxygen = um:ReadShort()
+	Power = um:ReadShort()
 	Time = um:ReadShort()
 end
 usermessage.Hook("gms_setneeds", GM.SetNeeds)

@@ -1,7 +1,7 @@
 /* Gmod Stranded */
 GMS = {}
 
-GM.Name = "Custom Stranded 2.5"
+GM.Name = "Custom Stranded 2.6"
 GM.Author = "Robotboy655 and many others :)"
 GM.Email = ""
 GM.Website = "http://serverscape.net/"
@@ -583,7 +583,38 @@ GMS.ProhibitedStools = {
 	"inflator",
 	"statue",
 	"trails",
-	"camera",
+	//"camera",
 	"paint",
 	"rtcamera"
+}
+
+GMS.AllWeapons = {
+	"gms_stonepickaxe",
+	"gms_stonehatchet",
+	"gms_copperpickaxe",
+	"gms_copperhammer",
+	"gms_copperhatchet",
+	"gms_ironpickaxe",
+	"gms_ironhatchet",
+	"gms_woodenfishingrod",
+	"gms_advancedfishingrod",
+	"gms_fryingpan",
+	"gms_shovel",
+	"gms_strainer",
+	"gms_sickle",
+	"gms_woodenspoon",
+	"gmod_tool",
+	"weapon_crowbar",
+	"weapon_stunstick",
+	"weapon_pistol",
+	"weapon_smg1"
+}
+
+GMS.NonDropWeapons = {
+	"gms_hands",
+	"gmod_tool",
+	"gmod_camera",
+	"weapon_physgun",
+	"weapon_physcannon",
+	"pill_pigeon"
 }

@@ -13,6 +13,10 @@ UNLOCK.Description = "You can now hold down shift to sprint."
 UNLOCK.Req = {}
 UNLOCK.Req["Survival"] = 3
 
+function UNLOCK.OnUnlock(ply)
+	if (!ply:HasUnlock("Sprinting_II")) then GAMEMODE:SetPlayerSpeed(ply, 250, 400) end
+end
+
 GMS.RegisterUnlock(UNLOCK)
 
 /* Sprinting II */
@@ -40,8 +44,10 @@ UNLOCK.Req = {}
 UNLOCK.Req["Survival"] = 15
 
 function UNLOCK.OnUnlock(ply)
-	ply:Heal(25)
+	if (ply:GetMaxHealth() < 150) then ply:SetMaxHealth(150) end
+	ply:Heal(50)
 end
+
 GMS.RegisterUnlock(UNLOCK)
 
 /* Master Survivalist*/
@@ -54,8 +60,10 @@ UNLOCK.Req = {}
 UNLOCK.Req["Survival"] = 30
 
 function UNLOCK.OnUnlock(ply)
-	ply:Heal(25)
+	ply:SetMaxHealth(200)
+	ply:Heal(50)
 end
+
 GMS.RegisterUnlock(UNLOCK)
 
 /* Extreme Survivalist */

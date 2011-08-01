@@ -118,6 +118,24 @@ PROCESS.Freeze = true
 
 GMS.Processes.BaseProcess = PROCESS
 
+/* Stealing */
+local PROCESS = {}
+
+function PROCESS:OnStart()
+	self.Owner:MakeProcessBar("Stealing", self.Time, self.Cancel)
+end
+
+function PROCESS:OnStop()
+	if (!self.Data.Ent) then return end
+
+	SPropProtection.PlayerMakePropOwner(self.Owner, self.Data.Ent)
+	self.Owner:IncXP("Stealing", math.Clamp(math.Round(self.Time * 5 / self.Owner:GetSkill("Stealing")), 1, 1000))
+
+	self.Owner:SendMessage("Successfully stolen.", 3, Color(50, 200, 50, 255))
+end
+
+GMS.RegisterProcess("Steal", PROCESS)
+
 /* Fruit eating process */
 local PROCESS = {}
 
@@ -226,24 +244,25 @@ PROCESS.Results[3] = "Orange Seeds"
 PROCESS.Results[4] = "Grain Seeds"
 PROCESS.Results[5] = "Herbs"
 PROCESS.Results[6] = "Berries"
+PROCESS.Results[7] = "Baits"
 
 function PROCESS:OnStart()
 	self.Owner:MakeProcessBar("Foraging", self.Time, self.Cancel)
 end
 
 function PROCESS:OnStop()
-	local num = math.random(1,100)
+	local num = math.random(1, 100)
 
 	if (num > 50 - self.Owner:GetSkill("Harvesting")) then
 		local res = self.Results[math.random(1, #self.Results)]
 
-		local amount = math.random(1,3)
-		self.Owner:IncResource(string.gsub(res," ","_"),amount)
-		self.Owner:IncXP("Harvesting",math.Clamp(math.Round(50 / self.Owner:GetSkill("Harvesting")),1 , 1000))
-		self.Owner:SendMessage(res.." ("..amount.."x)", 3, Color(10,200,10,255))
+		local amount = math.random(1, 3)
+		self.Owner:IncResource(string.gsub(res, " ", "_"), amount)
+		self.Owner:IncXP("Harvesting", math.Clamp(math.Round(50 / self.Owner:GetSkill("Harvesting")), 1, 1000))
+		self.Owner:SendMessage(res .. " (" .. amount .. "x)", 3, Color(10, 200, 10, 255))
 		self.Owner:EmitSound(Sound("items/ammo_pickup.wav"))
 	else
-		self.Owner:SendMessage("Found nothing of interest", 3, Color(255,255,255,255))
+		self.Owner:SendMessage("Found nothing of interest", 3, Color(255, 255, 255, 255))
 	end
 end
 
@@ -803,8 +822,16 @@ end
 
 function PROCESS:OnStop()
 	local num = math.random(1, 100)
+	
+	if (!self.Owner.Resources['Baits'] or self.Owner.Resources['Baits'] < 1) then
+		self.Data.Chance = self.Data.Chance * 0.25
+	end
 
 	if (num < self.Data.Chance + self.Owner:GetSkill("Fishing")) then
+		if (self.Owner.Resources['Baits'] and self.Owner.Resources['Baits'] > 0) then
+			self.Owner:DecResource("Baits", 1)
+		end
+	
 		if (num < (self.Data.Chance + self.Owner:GetSkill("Fishing")) / 1.5) then
 			self.Owner:IncResource("Bass", 1)
 			self.Owner:SendMessage("Bass (1x)", 3, Color(10, 200, 10, 255))
@@ -837,7 +864,15 @@ end
 function PROCESS:OnStop()
 	local num = math.random(1, 100)
 
+	if (!self.Owner.Resources['Baits'] or self.Owner.Resources['Baits'] < 1) then
+		self.Data.Chance = self.Data.Chance * 0.25
+	end
+	
 	if (num < self.Data.Chance + self.Owner:GetSkill("Fishing")) then
+		if (self.Owner.Resources['Baits'] and self.Owner.Resources['Baits'] > 0) then
+			self.Owner:DecResource("Baits", 1)
+		end
+	
 		if (num < (self.Data.Chance + self.Owner:GetSkill("Fishing")) / 2) then
 			self.Owner:IncResource("Bass", 1)
 			self.Owner:SendMessage("Bass (1x)", 3, Color(10, 200, 10, 255))

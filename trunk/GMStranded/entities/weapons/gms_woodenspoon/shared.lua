@@ -24,8 +24,8 @@ SWEP.Instructions = "Eat Some Melonz."
 SWEP.Spawnable = false
 SWEP.AdminSpawnable = false
 
-SWEP.ViewModel = "models/Weapons/V_hands.mdl"
-SWEP.WorldModel = "models/Weapons/w_bullet.mdl"
+SWEP.ViewModel = Model("models/Weapons/V_hands.mdl")
+SWEP.WorldModel = Model("models/weapons/w_crowbar.mdl")
 
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -38,6 +38,7 @@ SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Initialize()
+	self:SetWeaponHoldType("knife")
 end
 
 function SWEP:Reload()

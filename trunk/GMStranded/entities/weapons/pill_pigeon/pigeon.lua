@@ -26,8 +26,6 @@ function CROW.Enable(player)
 	player:ConCommand("-duck\n")
 	CROW.BangHowdy(player)
 	player.CROW = {}
-	player.CROW.attacking = false
-	player.CROW.attackingTimer = 0
 	player.CROW.burrowed = nil
 	player.CROW.burrowedTimer = 0
 	player.CROW.idleTimer = 0
@@ -58,8 +56,10 @@ function CROW.Disable(player)
 	player:SetMoveType(MOVETYPE_WALK)
 	player.CROW = nil
 	
-	if (player:HasUnlock("Sprint_Mkii")) then
+	if (player:HasUnlock("Sprinting_II")) then
 		GAMEMODE:SetPlayerSpeed(player, 400, 100)
+	elseif (player:HasUnlock("Sprinting_I")) then
+		GAMEMODE:SetPlayerSpeed(player, 250, 400)
 	else
 		GAMEMODE:SetPlayerSpeed(player, 250, 250)
 	end
@@ -79,41 +79,6 @@ if (CLIENT) then
 		CROW.Disable(LocalPlayer())
 	end
 	usermessage.Hook("CROW.disable", CROW.DisableMessage)
-end
-
-function CROW.AttackDamage(player, tr)
-	if (tr.Entity:IsNPC() or tr.Entity:IsPlayer()) then
-		player:EmitSound(CROW.sounds.attackHit)
-	end
-end
-
-function CROW.AttackThink(player)
-	if (!player.CROW.attacking) then return end
-	if (!player:OnGround()) then
-		local t = {}
-		t.start = player:GetPos()
-		t.endpos = t.start + player:GetForward() * 10
-		t.filter = player
-		local tr = util.TraceEntity(t, player.CROW.ghost)
-		if (tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid()) then
-			player.CROW.attacking = false
-			CROW.AttackDamage(player, tr)
-		else
-			t.endpos = t.start + Vector(0, 0, -20)
-			tr = util.TraceEntity(t, player.CROW.ghost)
-			if (tr.Hit and tr.HitNonWorld and tr.Entity and tr.Entity:IsValid()) then
-				player.CROW.attacking = false
-				CROW.AttackDamage(player, tr)
-			end
-		end
-	else
-		player.CROW.attacking = false
-	end
-	if (player.CROW.LastEatenTimer >= CurTime()) then
-		player.CROW.attackingTimer = CurTime() + 2
-	else
-		player.CROW.attackingTimer = CurTime() + 8
-	end
 end
 
 function CROW.BangHowdy(player)

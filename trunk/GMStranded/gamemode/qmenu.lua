@@ -162,33 +162,6 @@ end
 
 vgui.Register("stranded_toolmenu", PANEL, "DPanel")
 
-/* DPlantMenu */
-local PANEL = {}
-
-PANEL.Plantables = {}
-PANEL.Plantables["gms_plantmelon"] = "Plant Melon"
-PANEL.Plantables["gms_plantbanana"] = "Plant Banana"
-PANEL.Plantables["gms_plantorange"] = "Plant Orange"
-PANEL.Plantables["gms_planttree"] = "Plant Tree"
-PANEL.Plantables["gms_plantgrain"] = "Plant Grain"
-PANEL.Plantables["gms_plantbush"] = "Plant BerryBush"
-
-function PANEL:Init()
-	self:SetSpacing(5)
-	self:SetPadding(5)
-	self:EnableHorizontal(false)
-	self:EnableVerticalScrollbar(true)
-
-    for cmd, txt in pairs(self.Plantables) do
-        local button = vgui.Create("gms_CommandButton", CategoryList)
-        button:SetConCommand(cmd)
-        button:SetText(txt)
-		self:AddItem(button)
-    end
-end
-
-vgui.Register("stranded_plantspawn", PANEL, "DPanelList")
-
 /* DCommandsMenu */
 local PANEL = {}
 
@@ -196,6 +169,7 @@ PANEL.SmallButs = {}
 PANEL.SmallButs["Sleep"] = "gms_sleep"
 PANEL.SmallButs["Wake up"] = "gms_wakeup"
 PANEL.SmallButs["Drop weapon"] = "gms_dropweapon"
+PANEL.SmallButs["Steal"] = "gms_steal"
 PANEL.SmallButs["Make campfire"] = "gms_makefire"
 PANEL.SmallButs["Drink bottle of water"] = "gms_drinkbottle"
 PANEL.SmallButs["Take medicine"] = "gms_takemedicine"
@@ -218,6 +192,14 @@ PANEL.BigButs["Tribe: Join"] = "gms_tribes"
 PANEL.BigButs["Tribe: Leave"] = "gms_leave"
 PANEL.BigButs["Save character"] = "gms_savecharacter"
 
+PANEL.Plantables = {}
+PANEL.Plantables["Plant Melon"] = "gms_plantmelon"
+PANEL.Plantables["Plant Banana"] = "gms_plantbanana"
+PANEL.Plantables["Plant Orange"] = "gms_plantorange"
+PANEL.Plantables["Plant Tree"] = "gms_planttree"
+PANEL.Plantables["Plant Grain"] = "gms_plantgrain"
+PANEL.Plantables["Plant BerryBush"] = "gms_plantbush"
+
 function PANEL:Init()
 	checkAdmin()
 
@@ -228,9 +210,14 @@ function PANEL:Init()
 
 	self.BigButtons = vgui.Create("DPanelList", self)
 	self.BigButtons:EnableVerticalScrollbar(false)
-	self.BigButtons:SetAutoSize(false) 
+	self.BigButtons:SetAutoSize(false)
 	self.BigButtons:SetSpacing(5)
 	self.BigButtons:SetPadding(5)
+	
+	self.Planting = vgui.Create("DPanelList", self)
+	self.Planting:EnableVerticalScrollbar(false)
+	self.Planting:SetSpacing(5)
+	self.Planting:SetPadding(5)
 	
 	for txt, cmd in SortedPairs(self.SmallButs) do
         local button = vgui.Create("gms_CommandButton")
@@ -241,10 +228,17 @@ function PANEL:Init()
 	
 	for txt, cmd in SortedPairs(self.BigButs) do
         local button = vgui.Create("gms_CommandButton")
-		button:SetSize(self.BigButtons:GetWide() - 10, 80)
+		button:SetSize(self.BigButtons:GetWide() - 10, 70)
         button:SetConCommand(cmd)
         button:SetText(txt)
 		self.BigButtons:AddItem(button)
+    end
+	
+	for txt, cmd in SortedPairs(self.Plantables) do
+        local button = vgui.Create("gms_CommandButton")
+        button:SetConCommand(cmd)
+        button:SetText(txt)
+		self.Planting:AddItem(button)
     end
 end
 
@@ -255,8 +249,12 @@ function PANEL:PerformLayout()
 	self:StretchToParent(0, 21, 0, 5)
 	self.SmallButtons:SetPos(5, 5)
 	self.SmallButtons:SetSize(self:GetWide() * 0.45, self:GetTall() - 5)
+
 	self.BigButtons:SetPos(self:GetWide() * 0.45 + 10, 5)
-	self.BigButtons:SetSize(self:GetWide() - (self:GetWide() * 0.45) - 14, self:GetTall() - 5)
+	self.BigButtons:SetSize(self:GetWide() - (self:GetWide() * 0.45) - 14, self:GetTall() / 2 - 5)
+
+	self.Planting:SetPos(self:GetWide() * 0.45 + 10, self:GetTall() / 2 + 5)
+	self.Planting:SetSize(self:GetWide() - (self:GetWide() * 0.45) - 14, self:GetTall() / 2 - 5)
 end
 
 vgui.Register("stranded_commands", PANEL, "DPanel")
@@ -425,7 +423,6 @@ function PANEL:Init()
 	self.ContentPanel = vgui.Create("DPropertySheet", self)
 	self.ContentPanel:AddSheet("Props", vgui.Create("stranded_propspawn", self.ContentPanel), "gui/silkicons/brick_add", false, false)
 	self.ContentPanel:AddSheet("Tools", vgui.Create("stranded_toolmenu", self.ContentPanel), "gui/silkicons/wrench", true, true)
-	self.ContentPanel:AddSheet("Planting", vgui.Create("stranded_plantspawn", self.ContentPanel), "gui/silkicons/box", false, false)
 	self.ContentPanel:AddSheet("Commands", vgui.Create("stranded_commands", self.ContentPanel), "gui/silkicons/application", true, true)
 	self.ContentPanel:AddSheet("Prop Protection", vgui.Create("stranded_sppmenu", self.ContentPanel), "gui/silkicons/shield", true, true)
 end
