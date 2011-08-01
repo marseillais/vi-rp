@@ -319,46 +319,6 @@ end
 
 GMS.RegisterChatCmd(CHATCMD)
 
-/* ADMIN: Set Skill */
-local CHATCMD = {}
-
-CHATCMD.Command = "setskill"
-CHATCMD.Desc = "Set skill of yourself / someone"
-CHATCMD.Syntax = "[player] <Skill> <Level>"
-
-function CHATCMD:Run(ply, ...)
-	if (!ply:IsAdmin()) then return end
-	if (#arg > 2) then
-		local pl = player.FindByName(arg[1])
-		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
-		pl:SetSkill(arg[2], tonumber(arg[3]))
-	elseif (#arg == 2) then
-		ply:SetSkill(arg[1], tonumber(arg[2]))
-	end
-end
-
-GMS.RegisterChatCmd(CHATCMD)
-
-/* ADMIN: Inc Skill */
-local CHATCMD = {}
-
-CHATCMD.Command = "incskill"
-CHATCMD.Desc = "Give skill to yourself / someone"
-CHATCMD.Syntax = "[player] <Skill> <Level>"
-
-function CHATCMD:Run(ply, ...)
-	if (!ply:IsAdmin()) then return end
-	if (#arg > 2) then
-		local pl = player.FindByName(arg[1])
-		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
-		pl:IncSkill(arg[2], tonumber(arg[3]))
-	elseif (#arg == 2) then
-		ply:IncSkill(arg[1], tonumber(arg[2]))
-	end
-end
-
-GMS.RegisterChatCmd(CHATCMD)
-
 /* Create tribe */
 local CHATCMD = {}
 
