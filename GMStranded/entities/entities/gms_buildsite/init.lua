@@ -53,7 +53,9 @@ function ENT:Finish()
     SPropProtection.PlayerMakePropOwner(ent.Player, ent)
     ent:Fadein()
  
-    self.Entity.Player.HasBuildingSite = false
+    if (self.Entity.Player) then
+		self.Entity.Player.HasBuildingSite = false
+	end
 	self.Entity:Remove()
 end
 
