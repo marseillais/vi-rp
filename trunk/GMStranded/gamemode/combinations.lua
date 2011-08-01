@@ -1309,8 +1309,8 @@ GMS.RegisterCombi(COMBI, "gms_copperworkbench")
 /* Copper Hammer */
 local COMBI = {}
 
-COMBI.Name = "Copper Hammer"
-COMBI.Description = "This copper hammer is ideal for crafting weapons."
+COMBI.Name = "Copper Knife"
+COMBI.Description = "This copper knife is ideal for crafting weapons."
 COMBI.Entity = "gms_copperworkbench"
 
 COMBI.Req = {}
