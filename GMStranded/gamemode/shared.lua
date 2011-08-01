@@ -58,6 +58,10 @@ end
 include("spp/sh_spp.lua")
 include("daytime.lua")
 
+--GM.DisablePlayerModels = true
+GM.DisableTrails = true
+--GM.DisableHats = true
+
 --Tables
 GMS_SpawnLists = {}
 GMS_SpawnLists["Wood - Tables/Desks"] = {
