@@ -343,8 +343,10 @@ end
 usermessage.Hook("gms_sendmessage", GM.SendMessage)
 
 function CheckName(ent, nametable)
-	for k, v in pairs(nametable) do
-		if (ent:GetClass() == v) then return true end		
+	if (ent != NULL) then
+		for k, v in pairs(nametable) do
+			if (ent:GetClass() == v) then return true end		
+		end
 	end
 end
 
