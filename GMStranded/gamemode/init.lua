@@ -3150,13 +3150,12 @@ function gms_addbuildsiteresourcePack(ent_resourcepack, ent_buildsite)
 
 	if (ent_resourcedrop_owner != nil and ent_buildsite_owner != nil and ply != nil and ent_resourcepack:IsPlayerHolding()) then
 		if ((SPropProtection.PlayerIsPropOwner(ply, ent_buildsite) or SPropProtection.IsBuddy(ply, ent_buildsite)) or tonumber(SPropProtection["Config"]["use"]) != 1)  then
-			
 			for res, num in pairs(ent_resourcepack.Resources) do
-				if (num > ent_buildsite.Costs[res]) then	
+				if (ent_buildsite.Costs[res] and num > ent_buildsite.Costs[res]) then	
 					ent_resourcepack.Resources[res] = num - ent_buildsite.Costs[res]
 					ent_resourcepack:SetResPackInfo(res, ent_resourcepack.Resources[res])
 					ent_buildsite.Costs[res] = nil
-				elseif (num <= ent_buildsite.Costs[res]) then
+				elseif (ent_buildsite.Costs[res] and num <= ent_buildsite.Costs[res]) then
 					ent_buildsite.Costs[res] = ent_buildsite.Costs[res] - num
 					ent_resourcepack:SetResPackInfo(res, 0)
 					ent_resourcepack.Resources[res] = nil

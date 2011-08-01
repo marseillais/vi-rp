@@ -392,3 +392,16 @@ function CHATCMD:Run(ply, ...)
 end
 
 GMS.RegisterChatCmd(CHATCMD)
+
+/* Steal */
+local CHATCMD = {}
+
+CHATCMD.Command = "steal"
+CHATCMD.Desc = "Steal a prop."
+CHATCMD.CCName = "gms_steal"
+
+function CHATCMD:Run(ply)
+	ply.ConCommand(ply, "gms_steal")
+end
+
+GMS.RegisterChatCmd(CHATCMD)
