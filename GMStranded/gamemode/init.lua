@@ -2060,7 +2060,7 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end
 	
-	timer.Simple(5, function(ply)
+	timer.Simple(5, function()
 		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
 			umsg.Start("gms_SetResourceDropInfo", ply)
 				umsg.String(v:EntIndex())
@@ -2068,9 +2068,9 @@ function GM:PlayerInitialSpawn(ply)
 				umsg.Short(v.Amount)
 			umsg.End()
 		end
-	end, ply)
+	end)
 	
-	timer.Simple(7, function(ply)
+	timer.Simple(7, function()
 		local time = 0
 		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
 			for res, num in pairs(v.Resources) do
@@ -2098,16 +2098,16 @@ function GM:PlayerInitialSpawn(ply)
 			end
 			time = time + 1
 		end
-	end, ply)
+	end)
 	
-	timer.Simple(6, function(ply)
+	timer.Simple(6, function()
 		for _, v in ipairs(ents.FindByClass("gms_food")) do
 			umsg.Start("gms_SetFoodDropInfo", ply)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(v.Name, "_", " "))
 			umsg.End()
 		end
-	end, ply)
+	end)
 end
 
 /* Send all campfires */
