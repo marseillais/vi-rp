@@ -280,7 +280,7 @@ end)
 
 hook.Add("PlayerUse", "SPropProtection.PlayerUse", function(ply, ent)
 	if(ent:IsValid() and tonumber(SPropProtection["Config"]["use"]) == 1) then
-		if (!SPropProtection.PlayerCanTouch(ply, ent) and ent:GetNetworkedString("Owner") != "World") then return false end
+		if (!SPropProtection.PlayerCanTouch(ply, ent)) then return false end
 	end
 end)
 
