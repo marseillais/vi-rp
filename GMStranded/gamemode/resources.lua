@@ -168,7 +168,6 @@ for k, v in pairs(file.Find("../materials/gui/GMS/*")) do
 	resource.AddFile("materials/gui/GMS/" .. v)
 end
 
-
 /*------------------------ Sounds ------------------------*/
 
 resource.AddFile("sound/citizen_beaten1.wav")

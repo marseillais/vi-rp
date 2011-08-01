@@ -282,8 +282,9 @@ CHATCMD.Desc = "Reset your / someone needs"
 
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	if (#arg == 1) then
+	if (#arg > 0) then
 		pl = player.FindByName(arg[1])
+		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
 		pl.Hunger = 1000
 		pl.Thirst = 1000
 		pl.Sleepiness = 1000
@@ -307,8 +308,10 @@ CHATCMD.Syntax = "[player] <Resource> <Amount>"
 
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	if (#arg == 3) then
-		player.FindByName(arg[1]):IncResource(arg[2], tonumber(arg[3]))
+	if (#arg > 2) then
+		local pl = player.FindByName(arg[1])
+		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
+		pl:IncResource(arg[2], tonumber(arg[3]))
 	elseif (#arg == 2) then
 		ply:IncResource(arg[1], tonumber(arg[2]))
 	end
@@ -325,8 +328,10 @@ CHATCMD.Syntax = "[player] <Skill> <Level>"
 
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	if (#arg == 3) then
-		player.FindByName(arg[1]):SetSkill(arg[2], tonumber(arg[3]))
+	if (#arg > 2) then
+		local pl = player.FindByName(arg[1])
+		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
+		pl:SetSkill(arg[2], tonumber(arg[3]))
 	elseif (#arg == 2) then
 		ply:SetSkill(arg[1], tonumber(arg[2]))
 	end
@@ -343,8 +348,10 @@ CHATCMD.Syntax = "[player] <Skill> <Level>"
 
 function CHATCMD:Run(ply, ...)
 	if (!ply:IsAdmin()) then return end
-	if (#arg == 3) then
-		player.FindByName(arg[1]):IncSkill(arg[2], tonumber(arg[3]))
+	if (#arg > 2) then
+		local pl = player.FindByName(arg[1])
+		if (!pl) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
+		pl:IncSkill(arg[2], tonumber(arg[3]))
 	elseif (#arg == 2) then
 		ply:IncSkill(arg[1], tonumber(arg[2]))
 	end
@@ -370,6 +377,27 @@ end
 
 GMS.RegisterChatCmd(CHATCMD)
 
+/* Invite to tribe */
+local CHATCMD = {}
+
+CHATCMD.Command = "invite"
+CHATCMD.Desc = "Invite someone to your tribe"
+CHATCMD.Syntax = "<player>"
+
+function CHATCMD:Run(ply, ...)
+	local him = player.FindByName(arg[1])
+	if (!him) then ply:SendMessage("Player not found!", 3, Color(200, 10, 10, 255)) return end
+	if (him == ply) then return end
+	local mahTribe = GAMEMODE.FindTribeByID(ply:Team())
+
+	umsg.Start("gms_invite", him)
+		umsg.String(mahTribe.name)
+		umsg.String(tostring(mahTribe.Password))
+	umsg.End()
+end
+
+GMS.RegisterChatCmd(CHATCMD)
+
 /* Join tribe */
 local CHATCMD = {}
 
@@ -388,7 +416,7 @@ end
 
 GMS.RegisterChatCmd(CHATCMD)
 
-/* Join tribe */
+/* Leave tribe */
 local CHATCMD = {}
 
 CHATCMD.Command = "leave"

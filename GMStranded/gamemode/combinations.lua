@@ -5,6 +5,8 @@ function GMS.RegisterCombi(tbl, group)
 	GMS.Combinations[group][string.Replace(tbl.Name, " ", "_")] = tbl
 end
 
+/* ------------------------ Structures ------------------------*/
+
 /* Resource Pack */
 local COMBI = {}
 
@@ -216,27 +218,14 @@ COMBI.BuildSiteModel = "models/Gibs/airboat_broken_engine.mdl"
 
 GMS.RegisterCombi(COMBI, "Structures")
 
-/* ------------------------ Furnace ------------------------*/
+/* ------------------------ Stone Furnace ------------------------*/
 
-/* Glass */
-local COMBI = {}
-
-COMBI.Name = "Glass"
-COMBI.Description = "Glass can be used for making bottles and lighting."
-
-COMBI.Req = {}
-COMBI.Req["Sand"] = 2
-
-COMBI.Results = {}
-COMBI.Results["Glass"] = 1
-
-GMS.RegisterCombi(COMBI, "gms_ironfurnace")
-
-/* Copper Ore to Copper x1 */
+/* Copper Ore to Copper*/
 local COMBI = {}
 
 COMBI.Name = "Copper"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_stonefurnace"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 1
@@ -251,6 +240,7 @@ local COMBI = {}
 
 COMBI.Name = "Copper 5x"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_stonefurnace"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 5
@@ -265,6 +255,7 @@ local COMBI = {}
 
 COMBI.Name = "Copper 10x"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_stonefurnace"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 10
@@ -279,6 +270,7 @@ local COMBI = {}
 
 COMBI.Name = "Copper 25x"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_stonefurnace"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 25
@@ -293,6 +285,7 @@ local COMBI = {}
 
 COMBI.Name = "All Copper"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_stonefurnace"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 1
@@ -305,11 +298,14 @@ COMBI.Max = 35
 
 GMS.RegisterCombi(COMBI, "gms_stonefurnace")
 
-/* Iron Ore to Iron x1 */
+/* ------------------------ Copper Furnace ------------------------*/
+
+/* Iron Ore to Iron */
 local COMBI = {}
 
 COMBI.Name = "Iron"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 1
@@ -324,6 +320,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 5x"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 5
@@ -338,6 +335,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 10x"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 10
@@ -352,6 +350,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 25x"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 25
@@ -366,6 +365,7 @@ local COMBI = {}
 
 COMBI.Name = "All Iron"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 1
@@ -378,39 +378,12 @@ COMBI.Max = 50
 
 GMS.RegisterCombi(COMBI, "gms_copperfurnace")
 
-/* Charcoal */
-local COMBI = {}
-
-COMBI.Name = "Charcoal"
-COMBI.Description = "Used in the production of gunpowder."
-
-COMBI.Req = {}
-COMBI.Req["Wood"] = 5
-
-COMBI.Results = {}
-COMBI.Results["Charcoal"] = 1
-
-GMS.RegisterCombi(COMBI, "gms_ironfurnace")
-
-/* Charcoal 10x */
-local COMBI = {}
-
-COMBI.Name = "Charcoal 10x"
-COMBI.Description = "Used in the production of gunpowder."
-
-COMBI.Req = {}
-COMBI.Req["Wood"] = 15
-
-COMBI.Results = {}
-COMBI.Results["Charcoal"] = 10
-
-GMS.RegisterCombi(COMBI, "gms_ironfurnace")
-
 /* Sulphur */
 local COMBI = {}
 
 COMBI.Name = "Sulphur 5x"
 COMBI.Description = "Used in the production of gunpowder, refine from rocks."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 10
@@ -425,6 +398,7 @@ local COMBI = {}
 
 COMBI.Name = "Sulphur 10x"
 COMBI.Description = "Used in the production of gunpowder, refine from rocks."
+COMBI.Entity = "gms_copperfurnace"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 20
@@ -434,6 +408,53 @@ COMBI.Results["Sulphur"] = 10
 
 GMS.RegisterCombi(COMBI, "gms_copperfurnace")
 
+/* ------------------------ Iron Furnace ------------------------*/
+
+/* Glass */
+local COMBI = {}
+
+COMBI.Name = "Glass"
+COMBI.Description = "Glass can be used for making bottles and lighting."
+COMBI.Entity = "gms_ironfurnace"
+
+COMBI.Req = {}
+COMBI.Req["Sand"] = 2
+
+COMBI.Results = {}
+COMBI.Results["Glass"] = 1
+
+GMS.RegisterCombi(COMBI, "gms_ironfurnace")
+
+/* Charcoal */
+local COMBI = {}
+
+COMBI.Name = "Charcoal"
+COMBI.Description = "Used in the production of gunpowder."
+COMBI.Entity = "gms_ironfurnace"
+
+COMBI.Req = {}
+COMBI.Req["Wood"] = 5
+
+COMBI.Results = {}
+COMBI.Results["Charcoal"] = 1
+
+GMS.RegisterCombi(COMBI, "gms_ironfurnace")
+
+/* Charcoal 10x */
+local COMBI = {}
+
+COMBI.Name = "Charcoal 10x"
+COMBI.Description = "Used in the production of gunpowder."
+COMBI.Entity = "gms_ironfurnace"
+
+COMBI.Req = {}
+COMBI.Req["Wood"] = 15
+
+COMBI.Results = {}
+COMBI.Results["Charcoal"] = 10
+
+GMS.RegisterCombi(COMBI, "gms_ironfurnace")
+
 /*------------------------ Factory ------------------------*/
 
 /* Glass (10) */
@@ -441,6 +462,7 @@ local COMBI = {}
 
 COMBI.Name = "Glass 10x"
 COMBI.Description = "Heats 25 sand together to form 10 glass."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Sand"] = 25
@@ -455,6 +477,7 @@ local COMBI = {}
 
 COMBI.Name = "Glass 25x"
 COMBI.Description = "Heats 50 sand together to form 25 glass."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Sand"] = 50
@@ -469,6 +492,7 @@ local COMBI = {}
 
 COMBI.Name = "Glass 50x"
 COMBI.Description = "Heats 75 sand together to form 50 glass."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Sand"] = 75
@@ -483,6 +507,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 10x"
 COMBI.Description = "Smelting together 25 stone forms 10 iron."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 25
@@ -497,6 +522,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 25x"
 COMBI.Description = "melting together 50 stone forms 25 iron."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 50
@@ -511,6 +537,7 @@ local COMBI = {}
 
 COMBI.Name = "Iron 50x"
 COMBI.Description = "Smelting together 75 stone forms 50 iron."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 75
@@ -525,6 +552,7 @@ local COMBI = {}
 
 COMBI.Name = "All Iron"
 COMBI.Description = "Iron can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Iron_Ore"] = 1
@@ -542,6 +570,7 @@ local COMBI = {}
 
 COMBI.Name = "All Copper"
 COMBI.Description = "Copper can be used to create more advanced buildings and tools."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Copper_Ore"] = 1
@@ -559,6 +588,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand 10x"
 COMBI.Description = "Crushes 10 stone to 10 sand."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 10
@@ -573,6 +603,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand 25x"
 COMBI.Description = "Crushes 20 stone to 25 sand."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 20
@@ -587,6 +618,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand 50x"
 COMBI.Description = "Crushes 30 stone to 50 sand."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 30
@@ -601,6 +633,7 @@ local COMBI = {}
 
 COMBI.Name = "Resin 5x"
 COMBI.Description = "Extracts the resin from the wood."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Wood"] = 15
@@ -616,6 +649,7 @@ local COMBI = {}
 
 COMBI.Name = "Resin 10x"
 COMBI.Description = "Extracts the resin from the wood."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Wood"] = 25
@@ -631,6 +665,7 @@ local COMBI = {}
 
 COMBI.Name = "Resin 25x"
 COMBI.Description = "Extracts the resin from the wood."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Wood"] = 50
@@ -646,6 +681,7 @@ local COMBI = {}
 
 COMBI.Name = "Plastic 10x"
 COMBI.Description = "Solidifies the Resin, creating a natural plastic."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Resin"] = 10
@@ -660,6 +696,7 @@ local COMBI = {}
 
 COMBI.Name = "Plastic 25x"
 COMBI.Description = "Solidifies the Resin, creating a natural plastic."
+COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
 COMBI.Req["Resin"] = 20
@@ -676,6 +713,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand"
 COMBI.Description = "Converts 1 stone to 1 sand."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 1
@@ -690,6 +728,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand 5x"
 COMBI.Description = "Converts 5 stone to 5 sand."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 5
@@ -704,6 +743,7 @@ local COMBI = {}
 
 COMBI.Name = "Sand10"
 COMBI.Description = "Converts 10 stone to 10 sand."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 10
@@ -718,6 +758,7 @@ local COMBI = {}
 
 COMBI.Name = "Flour"
 COMBI.Description = "Converts 2 Grain Seeds to 1 Flour."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Grain_Seeds"] = 2
@@ -732,6 +773,7 @@ local COMBI = {}
 
 COMBI.Name = "Flour 5x"
 COMBI.Description = "Converts 5 Grain Seeds to 3 Flour."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Grain_Seeds"] = 5
@@ -746,6 +788,7 @@ local COMBI = {}
 
 COMBI.Name = "Flour10"
 COMBI.Description = "Converts 10 Grain Seeds to 7 Flour."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Grain_Seeds"] = 10
@@ -760,6 +803,7 @@ local COMBI = {}
 
 COMBI.Name = "All Flour"
 COMBI.Description = "Converts Grain Seeds to Flour."
+COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}
 COMBI.Req["Grain_Seeds"] = 1
@@ -772,7 +816,7 @@ COMBI.Max = 25
 
 GMS.RegisterCombi(COMBI, "gms_grindingstone")
 
-/* ------------------------ Generic ------------------------*/
+/* ------------------------ Combinations ------------------------*/
 
 /* Flour */
 local COMBI = {}
@@ -787,6 +831,35 @@ COMBI.Req["Grain_Seeds"] = 2
 COMBI.Results = {}
 COMBI.Results["Flour"] = 1
 COMBI.Results["Stone"] = 1
+
+GMS.RegisterCombi(COMBI, "Combinations")
+
+/* Batteries */
+local COMBI = {}
+
+COMBI.Name = "Batteries"
+COMBI.Description = "These self-rechargeable batteries are used to craft stunstick, toolgun and flashlight.\nAlso the more batteries you have, the longer you can use your flashlight."
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 3
+
+COMBI.Results = {}
+COMBI.Results["Batteries"] = 1
+
+GMS.RegisterCombi(COMBI, "Combinations")
+
+/* Flashlight */
+local COMBI = {}
+
+COMBI.Name = "Flashlight"
+COMBI.Description = "Grants ability to use flashlight."
+
+COMBI.Req = {}
+COMBI.Req["Wood"] = 15
+COMBI.Req["Batteries"] = 2
+
+COMBI.Results = {}
+COMBI.Results["Flashlight"] = 1
 
 GMS.RegisterCombi(COMBI, "Combinations")
 
@@ -934,6 +1007,7 @@ local COMBI = {}
 
 COMBI.Name = "Casserole"
 COMBI.Description = "Put a little spiced trout over the fire to make this delicious casserole."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Trout"] = 1
@@ -947,6 +1021,7 @@ local COMBI = {}
 
 COMBI.Name = "Fried Meat"
 COMBI.Description = "Simple fried meat."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Meat"] = 1
@@ -960,6 +1035,7 @@ local COMBI = {}
 
 COMBI.Name = "Sushi"
 COMBI.Description = "For when you like your fish raw."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Bass"] = 2
@@ -973,6 +1049,7 @@ local COMBI = {}
 
 COMBI.Name = "Fish Soup"
 COMBI.Description = "Fish soup, pretty good!"
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Bass"] = 1
@@ -992,6 +1069,7 @@ local COMBI = {}
 
 COMBI.Name = "Meatballs"
 COMBI.Description = "Processed meat."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Meat"] = 1
@@ -1010,6 +1088,7 @@ local COMBI = {}
 
 COMBI.Name = "Fried Fish"
 COMBI.Description = "Simple fried fish."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Bass"] = 1
@@ -1022,6 +1101,7 @@ local COMBI = {}
 
 COMBI.Name = "Berry Pie"
 COMBI.Description = "Yummy, berry pie reminds me of home!"
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Dough"] = 2
@@ -1040,6 +1120,7 @@ local COMBI = {}
  
 COMBI.Name = "Rock Cake"
 COMBI.Description = "Crunchy!"
+COMBI.Entity = "gms_stove"
  
 COMBI.Req = {}
 COMBI.Req["Iron"] = 2
@@ -1053,6 +1134,7 @@ local COMBI = {}
  
 COMBI.Name = "Salad"
 COMBI.Description = "Everything for survival, I guess."
+COMBI.Entity = "gms_stove"
  
 COMBI.Req = {}
 COMBI.Req["Herbs"] = 2
@@ -1065,6 +1147,7 @@ local COMBI = {}
  
 COMBI.Name = "Meal"
 COMBI.Description = "The ultimate meal. Delicious!"
+COMBI.Entity = "gms_stove"
  
 COMBI.Req = {}
 COMBI.Req["Herbs"] = 5
@@ -1084,6 +1167,7 @@ local COMBI = {}
 
 COMBI.Name = "Shark Soup"
 COMBI.Description = "Man this is good."
+COMBI.Entity = "gms_stove"
 
 COMBI.Req = {}
 COMBI.Req["Shark"] = 2
@@ -1102,6 +1186,7 @@ local COMBI = {}
  
 COMBI.Name = "Bread"
 COMBI.Description = "Good old bread."
+COMBI.Entity = "gms_stove"
  
 COMBI.Req = {}
 COMBI.Req["Dough"] = 2
@@ -1119,6 +1204,7 @@ local COMBI = {}
  
 COMBI.Name = "Hamburger"
 COMBI.Description = "A hamburger! Yummy!"
+COMBI.Entity = "gms_stove"
  
 COMBI.Req = {}
 COMBI.Req["Dough"] = 2
@@ -1132,13 +1218,14 @@ COMBI.FoodValue = 850
  
 GMS.RegisterCombi(COMBI, "Cooking")
 
-/* ------------------------Weapons crafting ------------------------*/
+/* ------------------------ Stone Workbench ------------------------*/
 
 /* Stone Hatchet */
 local COMBI = {}
 
 COMBI.Name = "Stone Hatchet"
 COMBI.Description = "This small stone axe is ideal for chopping down trees."
+COMBI.Entity = "gms_stoneworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 5
@@ -1149,60 +1236,12 @@ COMBI.SwepClass = "gms_stonehatchet"
 
 GMS.RegisterCombi(COMBI, "gms_stoneworkbench")
 
-/* Copper Hatchet */
-local COMBI = {}
-
-COMBI.Name = "Copper Hatchet"
-COMBI.Description = "This copper axe is ideal for chopping down trees."
-
-COMBI.Req = {}
-COMBI.Req["Copper"] = 10
-COMBI.Req["Wood"] = 10
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_copperhatchet"
-
-GMS.RegisterCombi(COMBI, "gms_copperworkbench")
-
-/* Copper Knife */
-local COMBI = {}
-
-COMBI.Name = "Copper Knife"
-COMBI.Description = "This copper knife is ideal for crafting weapons."
-
-COMBI.Req = {}
-COMBI.Req["Iron"] = 5
-COMBI.Req["Copper"] = 10
-COMBI.Req["Wood"] = 5
-
-COMBI.SkillReq = {}
-COMBI.SkillReq["Weapon_Crafting"] = 5
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_copperknife"
-
-GMS.RegisterCombi(COMBI, "gms_copperworkbench")
-
-/* Iron Hatchet */
-local COMBI = {}
-
-COMBI.Name = "Iron Hatchet"
-COMBI.Description = "This iron axe is ideal for chopping down trees."
-
-COMBI.Req = {}
-COMBI.Req["Iron"] = 25
-COMBI.Req["Wood"] = 5
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_ironhatchet"
-
-GMS.RegisterCombi(COMBI, "gms_ironworkbench")
-
 /* Wooden Spoon */
 local COMBI = {}
 
 COMBI.Name = "Wooden Spoon"
 COMBI.Description = "Allows you to salvage more seeds from consumed fruit."
+COMBI.Entity = "gms_stoneworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Wood"] = 5
@@ -1220,6 +1259,7 @@ local COMBI = {}
 
 COMBI.Name = "Stone Pickaxe"
 COMBI.Description = "This stone pickaxe is used for effectively mining stone and copper ore."
+COMBI.Entity = "gms_stoneworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Stone"] = 10
@@ -1229,40 +1269,12 @@ COMBI.SwepClass = "gms_stonepickaxe"
 
 GMS.RegisterCombi(COMBI, "gms_stoneworkbench")
 
-/* Copper Pickaxe */
-local COMBI = {}
-
-COMBI.Name = "Copper Pickaxe"
-COMBI.Description = "This copper pickaxe is used for effectively mining stone, copper ore and iron ore."
-
-COMBI.Req = {}
-COMBI.Req["Copper"] = 15
-COMBI.Req["Wood"] = 5
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_copperpickaxe"
-
-GMS.RegisterCombi(COMBI, "gms_copperworkbench")
-
-/* Iron Pickaxe */
-local COMBI = {}
-
-COMBI.Name = "Iron Pickaxe"
-COMBI.Description = "This iron pickaxe is used for effectively mining stone, copper ore and iron ore."
-
-COMBI.Req = {}
-COMBI.Req["Iron"] = 25
-COMBI.Req["Wood"] = 5
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_ironpickaxe"
-
-GMS.RegisterCombi(COMBI, "gms_ironworkbench")
-
 /* Fishing rod */
 local COMBI = {}
 
 COMBI.Name = "Wooden Fishing Rod"
 COMBI.Description = "This rod of wood can be used to fish from a lake."
+COMBI.Entity = "gms_stoneworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Rope"] = 1
@@ -1276,11 +1288,66 @@ COMBI.SwepClass = "gms_woodenfishingrod"
 
 GMS.RegisterCombi(COMBI, "gms_stoneworkbench")
 
+/* ------------------------ Copper Workbench ------------------------*/
+
+/* Copper Hatchet */
+local COMBI = {}
+
+COMBI.Name = "Copper Hatchet"
+COMBI.Description = "This copper axe is ideal for chopping down trees."
+COMBI.Entity = "gms_copperworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Copper"] = 10
+COMBI.Req["Wood"] = 10
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_copperhatchet"
+
+GMS.RegisterCombi(COMBI, "gms_copperworkbench")
+
+/* Copper Hammer */
+local COMBI = {}
+
+COMBI.Name = "Copper Hammer"
+COMBI.Description = "This copper hammer is ideal for crafting weapons."
+COMBI.Entity = "gms_copperworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 5
+COMBI.Req["Copper"] = 10
+COMBI.Req["Wood"] = 5
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 5
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_copperhammer"
+
+GMS.RegisterCombi(COMBI, "gms_copperworkbench")
+
+/* Copper Pickaxe */
+local COMBI = {}
+
+COMBI.Name = "Copper Pickaxe"
+COMBI.Description = "This copper pickaxe is used for effectively mining stone, copper ore and iron ore."
+COMBI.Entity = "gms_copperworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Copper"] = 15
+COMBI.Req["Wood"] = 5
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_copperpickaxe"
+
+GMS.RegisterCombi(COMBI, "gms_copperworkbench")
+
 /* Frying pan */
 local COMBI = {}
 
 COMBI.Name = "Frying Pan"
 COMBI.Description = "This kitchen tool is used for more effective cooking."
+COMBI.Entity = "gms_copperworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Copper"] = 20
@@ -1294,47 +1361,12 @@ COMBI.SwepClass = "gms_fryingpan"
 
 GMS.RegisterCombi(COMBI, "gms_copperworkbench")
 
-/* Sickle */
-local COMBI = {}
-
-COMBI.Name = "Sickle"
-COMBI.Description = "This tool effectivizes harvesting."
-
-COMBI.Req = {}
-COMBI.Req["Iron"] = 5
-COMBI.Req["Wood"] = 15
-
-COMBI.SkillReq = {}
-COMBI.SkillReq["Weapon_Crafting"] = 7
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_sickle"
-
-GMS.RegisterCombi(COMBI, "gms_ironworkbench")
-
-/* Strainer */
-local COMBI = {}
-
-COMBI.Name = "Strainer"
-COMBI.Description = "This tool can filter the earth for resources."
-
-COMBI.Req = {}
-COMBI.Req["Iron"] = 5
-COMBI.Req["Wood"] = 5
-
-COMBI.SkillReq = {}
-COMBI.SkillReq["Weapon_Crafting"] = 10
-
-COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_strainer"
-
-GMS.RegisterCombi(COMBI, "gms_ironworkbench")
-
 /* Shovel */
 local COMBI = {}
 
 COMBI.Name = "Shovel"
 COMBI.Description = "This tool can dig up rocks, and decreases forage times."
+COMBI.Entity = "gms_copperworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Copper"] = 15
@@ -1353,6 +1385,7 @@ local COMBI = {}
 
 COMBI.Name = "Crowbar"
 COMBI.Description = "This weapon is initially a tool, but pretty useless for it's original purpose on a stranded Island."
+COMBI.Entity = "gms_copperworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Copper"] = 20
@@ -1366,11 +1399,52 @@ COMBI.SwepClass = "weapon_crowbar"
 
 GMS.RegisterCombi(COMBI, "gms_copperworkbench")
 
+/* ------------------------ Iron Workbench ------------------------*/
+
+/* Sickle */
+local COMBI = {}
+
+COMBI.Name = "Sickle"
+COMBI.Description = "This tool effectivizes harvesting."
+COMBI.Entity = "gms_ironworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 5
+COMBI.Req["Wood"] = 15
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 7
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_sickle"
+
+GMS.RegisterCombi(COMBI, "gms_ironworkbench")
+
+/* Strainer */
+local COMBI = {}
+
+COMBI.Name = "Strainer"
+COMBI.Description = "This tool can filter the earth for resources."
+COMBI.Entity = "gms_ironworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 5
+COMBI.Req["Wood"] = 5
+
+COMBI.SkillReq = {}
+COMBI.SkillReq["Weapon_Crafting"] = 10
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_strainer"
+
+GMS.RegisterCombi(COMBI, "gms_ironworkbench")
+
 /* Advanced Fishing rod */
 local COMBI = {}
 
 COMBI.Name = "Advanced Fishing rod"
 COMBI.Description = "With this Fishing rod you can catch rare fish even faster. You might even catch something big."
+COMBI.Entity = "gms_ironworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 25
@@ -1391,10 +1465,12 @@ local COMBI = {}
 
 COMBI.Name = "Toolgun"
 COMBI.Description = "Vital to long term survival, it allows you to easily build complex structures."
+COMBI.Entity = "gms_ironworkbench"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 30
 COMBI.Req["Wood"] = 20
+COMBI.Req["Batteries"] = 1
 
 COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 14
@@ -1404,13 +1480,46 @@ COMBI.SwepClass = "gmod_tool"
 
 GMS.RegisterCombi(COMBI, "gms_ironworkbench")
 
-/*------------------------ Gun crafting ------------------------*/
+/* Iron Pickaxe */
+local COMBI = {}
+
+COMBI.Name = "Iron Pickaxe"
+COMBI.Description = "This iron pickaxe is used for effectively mining stone, copper ore and iron ore."
+COMBI.Entity = "gms_ironworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 25
+COMBI.Req["Wood"] = 5
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_ironpickaxe"
+
+GMS.RegisterCombi(COMBI, "gms_ironworkbench")
+
+/* Iron Hatchet */
+local COMBI = {}
+
+COMBI.Name = "Iron Hatchet"
+COMBI.Description = "This iron axe is ideal for chopping down trees."
+COMBI.Entity = "gms_ironworkbench"
+
+COMBI.Req = {}
+COMBI.Req["Iron"] = 25
+COMBI.Req["Wood"] = 5
+
+COMBI.Texture = "weapons/swep"
+COMBI.SwepClass = "gms_ironhatchet"
+
+GMS.RegisterCombi(COMBI, "gms_ironworkbench")
+
+
+/*------------------------ Gun Lab ------------------------*/
 
 /* Smg */
 local COMBI = {}
 
 COMBI.Name = "Sub Machine Gun"
 COMBI.Description = "Will blow the head off the target"
+COMBI.Entity = "gms_gunlab"
 
 COMBI.Req = {}
 COMBI.Req["Gunslide"] = 3
@@ -1432,6 +1541,7 @@ local COMBI = {}
 
 COMBI.Name = "Pistol"
 COMBI.Description = "It's not great, but it does the job"
+COMBI.Entity = "gms_gunlab"
 
 COMBI.Req = {}
 COMBI.Req["Gunslide"] = 1
@@ -1453,6 +1563,7 @@ local COMBI = {}
 
 COMBI.Name = "Pistol ammo"
 COMBI.Description = "If you wanna keep using the pistol, you'll need this"
+COMBI.Entity = "gms_gunlab"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 5
@@ -1471,6 +1582,7 @@ local COMBI = {}
 
 COMBI.Name = "Sub Machine Gun ammo"
 COMBI.Description = "If you wanna keep using the smg, you'll need this"
+COMBI.Entity = "gms_gunlab"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 10
@@ -1489,9 +1601,11 @@ local COMBI = {}
 
 COMBI.Name = "Stunstick"
 COMBI.Description = "This highly advanced, effective melee weapon is useful for hunting down animals and fellow stranded alike."
+COMBI.Entity = "gms_gunlab"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 40
+COMBI.Req["Batteries"] = 3
 
 COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 11
@@ -1502,13 +1616,14 @@ COMBI.SwepClass = "weapon_stunstick"
 
 GMS.RegisterCombi(COMBI, "gms_gunlab")
 
-/*------------------------ Motorised Utility ------------------------*/
+/*------------------------ Gun Chunks ------------------------*/
 
 /* Gunslide */
 local COMBI = {}
 
 COMBI.Name = "Gunslide"
 COMBI.Description = "A piece of a gun"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Wood"] = 25
@@ -1526,6 +1641,7 @@ local COMBI = {}
 
 COMBI.Name = "Gunbarrel"
 COMBI.Description = "A piece of a gun"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 30
@@ -1543,6 +1659,7 @@ local COMBI = {}
 
 COMBI.Name = "Gungrip"
 COMBI.Description = "A piece of a gun"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 30
@@ -1560,6 +1677,7 @@ local COMBI = {}
 
 COMBI.Name = "Gunmagazine"
 COMBI.Description = "A piece of a gun"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Iron"] = 15
@@ -1578,6 +1696,7 @@ local COMBI = {}
 
 COMBI.Name = "Saltpetre"
 COMBI.Description = "Used in making gunpowder"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Urine_Bottles"] = 1
@@ -1592,6 +1711,7 @@ local COMBI = {}
 
 COMBI.Name = "Saltpetre 10x"
 COMBI.Description = "Used in making gunpowder"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Urine_Bottles"] = 10
@@ -1606,6 +1726,7 @@ local COMBI = {}
 
 COMBI.Name = "Gunpowder"
 COMBI.Description = "Explosive!"
+COMBI.Entity = "gms_gunchunks"
 
 COMBI.Req = {}
 COMBI.Req["Sulphur"] = 5

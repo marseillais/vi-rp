@@ -100,3 +100,20 @@ elseif (SERVER) then
 		end
 	end)
 end
+
+/*sky_overlay = ents.FindByName( 'skyoverlay*' )
+if(sky_overlay) then
+print("Skyoverlay found. Initialized.")
+end
+// setup the sky color.
+if ( sky_overlay ) then
+local brush
+for _ , brush in pairs( sky_overlay ) do
+print(brush)
+// enable the brush if it isn't already.
+brush:Fire( 'Enable' , '' , 0 )
+// turn it black.
+brush:Fire( 'Color' , '0 0 0' , 0.01 )
+end
+end
+*/

@@ -34,7 +34,7 @@ SWEP.Primary.Ammo = "none"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = false
+SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Initialize()
@@ -86,6 +86,28 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+	if (CLIENT or !self.Owner:IsAdmin()) then return end
+	self.Weapon:SetNextSecondaryFire(CurTime() + 0.7)
+	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
+	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self.Owner:EmitSound(Sound("weapons/slam/throw.wav"))
+
+    local trace = {}
+    trace.start = self.Owner:GetShootPos()
+    trace.endpos = trace.start + (self.Owner:GetAimVector() * 86)
+    trace.filter = self.Owner
+	trace.mins = self.Owner:OBBMins()
+	trace.maxs = self.Owner:OBBMaxs()
+	local tr = util.TraceHull(trace)
+
+	if (tr.Entity != NULL) then
+		if (tr.Entity:Health() > 0) then
+			tr.Entity:TakeDamage(5, self.Owner, self.Weapon)
+		end
+		self.Owner:EmitSound("Flesh.ImpactHard")
+	elseif (tr.HitWorld) then
+		self.Owner:EmitSound("Flesh.ImpactHard")
+	end
 end
 
 function SWEP:Deploy()

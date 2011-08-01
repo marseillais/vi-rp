@@ -136,7 +136,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetPos(0, 0)
-    self:SetSize(ScrW() / 6, 7 * 13 + 5)
+    self:SetSize(ScrW() / 6, 8 * 13 + 5)
     self:SetVisible(true)
 end
 
@@ -158,7 +158,7 @@ function PANEL:Paint()
     surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(5, 5, w, 8)
 
-    surface.SetDrawColor(170,0,0,255)
+    surface.SetDrawColor(176, 0, 0, 255)
 	surface.DrawRect(5, 5, h, 8)
 
 	draw.SimpleTextOutlined("Health", "DefaultSmall", self:GetWide() / 2, 9, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
@@ -168,7 +168,7 @@ function PANEL:Paint()
     surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(5, 18, w, 8)
 
-    surface.SetDrawColor(0, 170, 0, 255)
+    surface.SetDrawColor(0, 176, 0, 255)
     surface.DrawRect(5, 18, h, 8)
 
 	draw.SimpleTextOutlined("Hunger","DefaultSmall",self:GetWide() / 2, 22, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
@@ -178,7 +178,7 @@ function PANEL:Paint()
     surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(5, 31, w, 8)
 
-    surface.SetDrawColor(0, 0, 170, 255)
+    surface.SetDrawColor(0, 0, 176, 255)
     surface.DrawRect(5, 31, h, 8)
 
 	draw.SimpleTextOutlined("Thirst", "DefaultSmall", self:GetWide() / 2, 35, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
@@ -188,22 +188,34 @@ function PANEL:Paint()
     surface.SetDrawColor(0, 0, 0, 255)
     surface.DrawRect(5, 44, w, 8)
 
-    surface.SetDrawColor(170, 0, 140, 255)
+    surface.SetDrawColor(176, 0, 176, 255)
     surface.DrawRect(5, 44, h, 8)
 
 	draw.SimpleTextOutlined("Fatigue", "DefaultSmall", self:GetWide() / 2, 48, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
 	
 	//Oxygen
-	if (Oxygen < 1000) then
-		local h = math.floor((Oxygen / 1000) * w)
-		surface.SetDrawColor(0, 0, 0,255)
-		surface.DrawRect(5, 57, w, 8)
+	local h = math.floor((Oxygen / 1000) * w)
+	surface.SetDrawColor(0, 0, 0,255)
+	surface.DrawRect(5, 57, w, 8)
 
-		surface.SetDrawColor(0, 255, 255, 255)
-		surface.DrawRect(5, 57, h, 8)
+	surface.SetDrawColor(0, 176, 176, 255)
+	surface.DrawRect(5, 57, h, 8)
 
-		draw.SimpleTextOutlined("Oxygen", "DefaultSmall", self:GetWide() / 2, 61, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	draw.SimpleTextOutlined("Oxygen", "DefaultSmall", self:GetWide() / 2, 61, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
+	
+	//Power
+	local maxPower = 50
+	if (Resources['Batteries']) then
+		maxPower = math.min(maxPower + Resources['Batteries'] * 50, 500)
 	end
+	local h = math.floor((Power / maxPower) * w)
+	surface.SetDrawColor(0, 0, 0,255)
+	surface.DrawRect(5, 70, w, 8)
+
+	surface.SetDrawColor(176, 176, 0, 255)
+	surface.DrawRect(5, 70, h, 8)
+
+	draw.SimpleTextOutlined("Power (Battery)", "DefaultSmall", self:GetWide() / 2, 74, Color(255, 255, 255, 255), 1, 1, 0.5, Color(100, 100, 100, 140))
 	
 	// Time
 	local hours = tostring(math.floor(Time / 60))
@@ -211,7 +223,7 @@ function PANEL:Paint()
 	local tim = ""
 	if (string.len(hours) == 1) then tim = "0" .. hours else tim = hours end
 	if (string.len(mins) == 1) then tim = tim .. ":0" .. mins else tim = tim .. ":" .. mins end
-	draw.SimpleText(tim, "ScoreboardSub", self:GetWide() / 2, 82, Color(255, 255, 255, 255), 1, 1)
+	draw.SimpleText(tim, "ScoreboardSub", self:GetWide() / 2, 95, Color(255, 255, 255, 255), 1, 1)
 	return true
 end
 
@@ -333,7 +345,8 @@ vgui.Register("gms_SkillPanel", PANEL, "Panel")
 local PANEL = {}
 
 function PANEL:Init()
-    self:SetPos(ScrW() - (ScrW() / 6) + 1, 0)
+    //self:SetPos(ScrW() - (ScrW() / 6) + 1, 0)
+    self:SetPos(ScrW() / 6, 0)
     self:SetSize(ScrW() / 6, 34)
     self:SetVisible(true)
     self.Extended = false
@@ -350,7 +363,8 @@ function PANEL:Paint()
     surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 
     surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	//surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(self:GetWide(), 0, self:GetWide(), self:GetTall())
 	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
 	if (self.Extended) then 
 		surface.DrawLine(0, 33, self:GetWide(), 33)
@@ -395,11 +409,15 @@ function PANEL:RefreshResources()
 		self:SetSize(ScrW() / 6, 40 + ((table.Count(self.ResourceLabels) + 1) * 21)) 
     end
 	
-	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall()) end
+	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() / 6, self:GetTall()) end
 end
 
 function PANEL:ToggleExtend()
-    if (!self.Extended) then
+    self:SetExtended(!self.Extended)
+end
+
+function PANEL:SetExtended(bool)
+    if (bool) then
         self:SetSize(ScrW() / 6, 40 + ((table.Count(self.ResourceLabels) + 1) * 21))
         self.Extended = true
 		for k,v in pairs(self.ResourceLabels) do
@@ -412,7 +430,7 @@ function PANEL:ToggleExtend()
 			v:SetVisible(false)
 		end
     end
-	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() - (ScrW() / 6) + 1, self:GetTall()) end
+	if (GAMEMODE.CommandsHud) then GAMEMODE.CommandsHud:SetPos(ScrW() / 6, self:GetTall()) end
 end
 
 function PANEL:OnMousePressed(mc)
@@ -542,6 +560,7 @@ PANEL.Commands["Drop all resources"] = {cmd = "gms_dropall", clr = Color(255, 0,
 PANEL.Commands["Combinations"] = {cmd = "gms_combinations", clr = Color(255, 255, 0, 176)}
 PANEL.Commands["Structures"] = {cmd = "gms_structures", clr = Color(255, 255, 0, 176)}
 PANEL.Commands["Salvage prop"] = {cmd = "gms_salvage", clr = Color(255, 255, 0, 176)}
+PANEL.Commands["Steal"] = {cmd = "gms_steal", clr = Color(255, 255, 0, 176)}
 PANEL.Commands["Drop weapon"] = {cmd = "gms_dropweapon", clr = Color(255, 255, 0, 176)}
 
 PANEL.Commands["Help"] = {cmd = "gms_help", clr = Color(255, 64, 255, 176)}
@@ -550,16 +569,10 @@ PANEL.Commands["Tribe: Create"] = {cmd = "gms_tribemenu", clr = Color(0, 128, 0,
 PANEL.Commands["Tribe: Join"] = {cmd = "gms_tribes", clr = Color(0, 128, 0, 176)}
 PANEL.Commands["Tribe: Leave"] = {cmd = "gms_leave", clr = Color(0, 128, 0, 176)}
 PANEL.Commands["Save character"] = {cmd = "gms_savecharacter", clr = Color(0, 128, 0, 176)}
-/*
-function checkAdmin(ply)
-	if (ply:IsAdmin()) then 
-		PANEL.Commands["Admin menu"] = {cmd = "gms_admin", clr = Color(0, 128, 0, 176)}
-	end
-end*/
 
 function PANEL:Init()
-	//checkAdmin(LocalPlayer())
-    self:SetPos(ScrW() - (ScrW() / 6) + 1, 33)
+    //self:SetPos(ScrW() - (ScrW() / 6) + 1, 33)
+    self:SetPos(ScrW() / 6, 33)
     self:SetSize(ScrW() / 6, 34)
     self:SetVisible(true)
     self.Extended = false
@@ -576,7 +589,8 @@ function PANEL:Paint()
     surface.DrawRect(0, 0, self:GetWide(), self:GetTall())
 
     surface.SetDrawColor(bordcol.r, bordcol.g, bordcol.b, math.Clamp(bordcol.a - 60, 1, 255))
-	surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	//surface.DrawLine(0, 0, 0, self:GetTall()) -- Nice line instead of messy outlined rect
+	surface.DrawLine(self:GetWide(), 0, self:GetWide(), self:GetTall())
 	surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
 	if (self.Extended) then 
 		surface.DrawLine(0, 33, self:GetWide(), 33)
@@ -609,7 +623,11 @@ function PANEL:RefreshCommands()
 end
 
 function PANEL:ToggleExtend()
-    if (!self.Extended) then
+    self:SetExtended(!self.Extended)
+end
+
+function PANEL:SetExtended(bool)
+    if (bool) then
         self:SetSize(ScrW() / 6, 40 + (table.Count(self.CommandLabels) * 21))
         self.Extended = true
 		for k,v in pairs(self.CommandLabels) do
