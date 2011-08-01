@@ -1322,7 +1322,7 @@ COMBI.SkillReq = {}
 COMBI.SkillReq["Weapon_Crafting"] = 5
 
 COMBI.Texture = "weapons/swep"
-COMBI.SwepClass = "gms_copperhammer"
+COMBI.SwepClass = "gms_copperknife"
 
 GMS.RegisterCombi(COMBI, "gms_copperworkbench")
 

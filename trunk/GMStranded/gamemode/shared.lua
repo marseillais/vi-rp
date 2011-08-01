@@ -592,7 +592,7 @@ GMS.AllWeapons = {
 	"gms_stonepickaxe",
 	"gms_stonehatchet",
 	"gms_copperpickaxe",
-	"gms_copperhammer",
+	"gms_copperknife",
 	"gms_copperhatchet",
 	"gms_ironpickaxe",
 	"gms_ironhatchet",

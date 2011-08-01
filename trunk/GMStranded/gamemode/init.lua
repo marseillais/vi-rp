@@ -1614,7 +1614,7 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		data.Cost = table.Copy(tbl.Req)
 		
 		local time = 10
-		if (ply:GetActiveWeapon():GetClass() == "gms_copperhammer") then time = 7 end
+		if (ply:GetActiveWeapon():GetClass() == "gms_copperknife") then time = 7 end
 		time = math.max(time - math.floor(math.max(ply:GetSkill("Weapon_Crafting") - 8, 0) / 4), 4)
 
 		ply:DoProcess("MakeWeapon", time, data)
