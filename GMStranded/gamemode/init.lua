@@ -1139,7 +1139,7 @@ concommand.Add("gms_steal", function(ply, cmd, args)
 				elseif (cls == "gms_resourcepack" or cls == "gms_fridge") then
 					time = 0
 					for r, n in pairs(ent.Resources) do
-						time = time + (n * 0.1)
+						time = time + (n * 0.25)
 					end
 				end
 
@@ -2060,58 +2060,6 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end
 	
-	timer.Simple(5, function()
-		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
-			umsg.Start("gms_SetResourceDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Type, "_", " "))
-				umsg.Short(v.Amount)
-			umsg.End()
-		end
-	end)
-	
-	timer.Simple(7, function()
-		local time = 0
-		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function()
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end)
-				time = time + 0.5
-			end
-			time = time + 1
-		end
-		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function()
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end)
-				time = time + 0.5
-			end
-			time = time + 1
-		end
-	end)
-	
-	timer.Simple(6, function()
-		for _, v in ipairs(ents.FindByClass("gms_food")) do
-			umsg.Start("gms_SetFoodDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Name, "_", " "))
-			umsg.End()
-		end
-	end)
-end
-
-/* Send all campfires */
-hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
 	timer.Simple(3, function()
 		for i, v in pairs(GAMEMODE.CampFireProps) do
 			umsg.Start("addCampFire", ply)
@@ -2119,10 +2067,7 @@ hook.Add("PlayerInitialSpawn", "sendCampfires", function(ply)
 			umsg.End()
 		end
 	end)
-end)
-
-/* Send all tribes */
-hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
+	
 	timer.Simple(4, function()
 		for i, v in pairs(GAMEMODE.Tribes) do
 			umsg.Start("recvTribes", ply)
@@ -2139,7 +2084,56 @@ hook.Add("PlayerInitialSpawn", "getTribes", function(ply)
 			umsg.End()
 		end
 	end)
-end)
+	
+	timer.Simple(5, function()
+		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
+			umsg.Start("gms_SetResourceDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Type, "_", " "))
+				umsg.Short(v.Amount)
+			umsg.End()
+		end
+	end)
+	
+	timer.Simple(7, function()
+		local time = 0
+		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function(ply)
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end, ply)
+				time = time + 0.5
+			end
+			time = time + 1
+		end
+		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
+			for res, num in pairs(v.Resources) do
+				timer.Simple(time, function(ply)
+					umsg.Start("gms_SetResPackInfo", ply)
+					umsg.String(v:EntIndex())
+					umsg.String(string.gsub(res, "_", " "))
+					umsg.Short(num)
+					umsg.End()
+				end, ply)
+				time = time + 0.5
+			end
+			time = time + 1
+		end
+	end)
+	
+	timer.Simple(6, function()
+		for _, v in ipairs(ents.FindByClass("gms_food")) do
+			umsg.Start("gms_SetFoodDropInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(v.Name, "_", " "))
+			umsg.End()
+		end
+	end)
+end
 
 function GM:PlayerSpawn(ply)
 	SetGlobalInt("plantlimit", GetConVarNumber("gms_PlantLimit"))

@@ -204,7 +204,6 @@ end
 
 function SPropProtection.TribePP(ply) -- Set or unset player props for tribe
 	local ID = ply:Team()
-	local tribe = GAMEMODE.FindTribeByID(ID)
 	for k, v in pairs(SPropProtection["Props"]) do
 		if (v[1] == ply:SteamID() and v[2]:IsValid()) then
 			v[2]:SetNetworkedString("TribeID", ID)
