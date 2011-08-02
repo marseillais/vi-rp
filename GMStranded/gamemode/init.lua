@@ -1465,7 +1465,7 @@ function GM.TakeResource(ply, cmd, args)
 				local food = ents.Create("gms_food")
 				food:SetPos(ent:GetPos() + Vector(0, 0, ent:OBBMaxs().z + 16))
 				SPropProtection.PlayerMakePropOwner(ply, food)
-				food.Value = GMS.Combinations["Cooking"][string.Replace(res, "_", " ")].FoodValue
+				food.Value = GMS.Combinations["Cooking"][string.Replace(res, " ", "_")].FoodValue
 				food.Name = res
 				food:Spawn()
 				food:SetFoodInfo(res)
@@ -2095,35 +2095,33 @@ function GM:PlayerInitialSpawn(ply)
 		end
 	end)
 	
-	timer.Simple(7, function()
-		local time = 0
-		for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function(ply)
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end, ply)
-				time = time + 0.5
-			end
-			time = time + 1
+	local time = 7
+	for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
+		for res, num in pairs(v.Resources) do
+			timer.Simple(time, function(ply)
+				umsg.Start("gms_SetResPackInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(res, "_", " "))
+				umsg.Short(num)
+				umsg.End()
+			end, ply)
+			time = time + 0.5
 		end
-		for _, v in ipairs(ents.FindByClass("gms_fridge")) do
-			for res, num in pairs(v.Resources) do
-				timer.Simple(time, function(ply)
-					umsg.Start("gms_SetResPackInfo", ply)
-					umsg.String(v:EntIndex())
-					umsg.String(string.gsub(res, "_", " "))
-					umsg.Short(num)
-					umsg.End()
-				end, ply)
-				time = time + 0.5
-			end
-			time = time + 1
+		time = time + 1
+	end
+	for _, v in ipairs(ents.FindByClass("gms_fridge")) do
+		for res, num in pairs(v.Resources) do
+			timer.Simple(time, function(ply)
+				umsg.Start("gms_SetResPackInfo", ply)
+				umsg.String(v:EntIndex())
+				umsg.String(string.gsub(res, "_", " "))
+				umsg.Short(num)
+				umsg.End()
+			end, ply)
+			time = time + 0.5
 		end
-	end)
+		time = time + 1
+	end
 	
 	timer.Simple(6, function()
 		for _, v in ipairs(ents.FindByClass("gms_food")) do
