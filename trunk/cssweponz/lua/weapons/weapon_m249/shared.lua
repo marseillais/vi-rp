@@ -12,7 +12,7 @@ if ( CLIENT ) then
 	SWEP.PrintName			= "Para"			
 	SWEP.Author				= "Counter-Strike"
 	SWEP.Slot				= 0
-	SWEP.SlotPos			= 14
+	SWEP.SlotPos			= 1
 	SWEP.IconLetter			= "z"
 	
 	SWEP.ViewModelFlip		= false

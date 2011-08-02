@@ -12,7 +12,7 @@ if ( CLIENT ) then
 	SWEP.PrintName			= "UMP45"			
 	SWEP.Author				= "Counter-Strike"
 	SWEP.Slot				= 0
-	SWEP.SlotPos			= 5
+	SWEP.SlotPos			= 1
 	SWEP.IconLetter			= "q"
 	killicon.AddFont( "weapon_ump45", "CSKillIcons", SWEP.IconLetter, Color( 255, 80, 0, 255 ) )
 	
