@@ -35,10 +35,6 @@ function GM:OnPreRoundStart(num)
 	end
 	/* Fixes */
 
-	local OldRun = team.GetPlayers(TEAM_CT)
-	local OldDeath = team.GetPlayers(TEAM_T)
-	local NrActivePlayers = #OldRun + #OldDeath
-
 	UTIL_StripAllPlayers()
 	UTIL_SpawnAllPlayers()
 	UTIL_FreezeAllPlayers()
