@@ -1824,6 +1824,7 @@ GMS.FadingOutProps = {}
 GMS.FadingInProps = {}
 
 function EntityMeta:Fadeout(speed)
+	if (!self or !self:IsValid()) then return end
 	local speed = speed or 1
 
 	for k, v in pairs(player.GetAll()) do
@@ -2595,7 +2596,6 @@ hook.Add("KeyPress", "GMS_UseKeyHook", function(ply, key)
 					data.Entity = ent
 					ply:DoProcess("EatFruit", 2, data)
 				end
-              
 			elseif (ent:IsTreeModel()) then
 				if (!ply:HasUnlock("Sprout_Collecting")) then ply:SendMessage("You don't have enough skill.", 3, Color(200, 0, 0, 255)) return end
 				ply:DoProcess("SproutCollect", 5)

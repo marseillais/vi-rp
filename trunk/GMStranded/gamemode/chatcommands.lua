@@ -350,6 +350,7 @@ function CHATCMD:Run(ply, ...)
 	if (him == ply) then return end
 	local mahTribe = GAMEMODE.FindTribeByID(ply:Team())
 
+	if (!mahTribe) then ply:SendMessage("Something went wrong! Report this to admins: " .. ply:Team(), 3, Color(200, 10, 10, 255)) return end
 	umsg.Start("gms_invite", him)
 		umsg.String(mahTribe.name)
 		umsg.String(tostring(mahTribe.Password))
