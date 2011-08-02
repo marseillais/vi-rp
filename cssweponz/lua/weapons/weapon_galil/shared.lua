@@ -13,7 +13,7 @@ if ( CLIENT ) then
 	SWEP.PrintName			= "Galil"			
 	SWEP.Author				= "Counter-Strike"
 	SWEP.Slot				= 0
-	SWEP.SlotPos			= 7
+	SWEP.SlotPos			= 1
 	SWEP.IconLetter			= "v"
 	SWEP.ViewModelFlip		= false
 	killicon.AddFont( "weapon_galil", "CSKillIcons", SWEP.IconLetter, Color( 255, 0, 0, 255 ) )
