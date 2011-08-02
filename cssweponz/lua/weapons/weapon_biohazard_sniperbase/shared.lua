@@ -250,9 +250,14 @@ function SWEP:SetZoom( b )
 	if b == true then
 		self.Owner:SetFOV(self.OriginalFOV - self.ZoomFactor , 0.2)
 	else
-		self.Owner:SetFOV(self.OriginalFOV)
+		self.Owner:SetFOV(self.OriginalFOV, 0.2)
 	end
 end
+
+hook.Add("AdjustMouseSensitivity", "MyAdjustHook", function(default_sensitivity)
+	if (!self.Weapon:GetNetworkedBool( "Zoom", false )) then return -1 end
+    return self.OriginalFOV / self.ZoomFactor
+end)
 
 
 SWEP.NextSecondaryAttack = 0
