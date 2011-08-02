@@ -1,9 +1,9 @@
 local CLASS = {}
 
 CLASS.DisplayName = "Climber"
-CLASS.WalkSpeed = 275
-CLASS.RunSpeed = 275
-CLASS.JumpPower = 200
+CLASS.WalkSpeed = 250
+CLASS.RunSpeed = 250
+CLASS.JumpPower = 176
 CLASS.DrawTeamRing = true
 CLASS.TeammateNoCollide = true
 CLASS.AvoidPlayers = false
