@@ -41,7 +41,7 @@ SWEP.Primary.NumShots		= 1
 SWEP.Primary.Cone			= 0.025
 SWEP.Primary.ClipSize		= 50
 SWEP.Primary.Delay			= 0.066
-SWEP.Primary.DefaultClip	= 32
+SWEP.Primary.DefaultClip	= 5000
 SWEP.Primary.Automatic		= true
 SWEP.Primary.Ammo			= "smg1"
 
