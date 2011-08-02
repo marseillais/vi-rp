@@ -1,6 +1,6 @@
 "Gamemode"
 {
-	"name"		"Fun gamemode"
+	"name"		"Climb"
 	"version"	"1"
 
 	"author_name"	"Robotboy655"
@@ -13,13 +13,13 @@
 
 	"fretta_maps"
 	{
-		"1"	"^fun_"
+		"1"	"^xc_"
 	}
 	"mappattern"
 	{
-		"1"	"^fun_"
+		"1"	"^xc_"
 	}
 
 	"selectable"	"1"
-	"description"	"As a runner, try to reach the end. As a killer, try to prevert runners reach their goal."
+	"description"	"Climb to the top!"
 }

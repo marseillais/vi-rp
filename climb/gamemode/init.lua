@@ -3,25 +3,19 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("cl_init.lua")
 
 include('shared.lua')
-include('deathsounds.lua')
-include('bhop.lua')
-
-resource.AddFile("sound/music/your_team_lost.mp3")
-resource.AddFile("sound/music/your_team_win.mp3")
 
 MapEntities = {}
 
 function GM:CanStartRound()
-	if (#team.GetPlayers(TEAM_CT) > 0 and #team.GetPlayers(TEAM_T) > 0) then return true end
+	if (#team.GetPlayers(TEAM_CLIMBERS) > 0) then return true end
 	return false
 end
 
 function GM:PlayerSpray(ply)
-	return ply:Team() == TEAM_CT or ply:Team() == TEAM_T
+	return ply:Team() == TEAM_CLIMBERS
 end
 
 function GM:PlayerCanPickupWeapon(ply, wep)
-	print(ply, wep, wep.Slot)
 	if (ply:HasWeapon(wep:GetClass())) then return false end
 	return true
 end
@@ -35,10 +29,6 @@ function GM:OnPreRoundStart(num)
 	end
 	/* Fixes */
 
-	local OldRun = team.GetPlayers(TEAM_CT)
-	local OldDeath = team.GetPlayers(TEAM_T)
-	local NrActivePlayers = #OldRun + #OldDeath
-
 	UTIL_StripAllPlayers()
 	UTIL_SpawnAllPlayers()
 	UTIL_FreezeAllPlayers()
@@ -46,12 +36,6 @@ end
 
 function GM:ProcessResultText(result, resulttext)
 	if (resulttext == nil) then resulttext = "" end
-
-	if (result == TEAM_CT) then
-		resulttext = "Counter-Terrorists have won!"
-	elseif (result == TEAM_T) then
-		resulttext = "Terrorist have won!"
-	end
 
 	return resulttext
 end
