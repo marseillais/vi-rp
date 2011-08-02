@@ -27,6 +27,11 @@ function GM:PlayerSpray(ply)
 	return ply:Team() == TEAM_RUN or ply:Team() == TEAM_KILLER
 end
 
+function GM:PlayerCanPickupWeapon(ply, wep)
+	if (ply:HasWeapon(wep:GetClass())) then return false end
+	return true
+end
+
 function GM:OnPreRoundStart(num)
 	game.CleanUpMap()
 
