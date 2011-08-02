@@ -1,11 +1,11 @@
 local CLASS = {}
 
-CLASS.DisplayName = "Terrorist"
+CLASS.DisplayName = "Climber"
 CLASS.WalkSpeed = 275
 CLASS.RunSpeed = 275
 CLASS.JumpPower = 200
-CLASS.DrawTeamRing = false
-CLASS.TeammateNoCollide = false
+CLASS.DrawTeamRing = true
+CLASS.TeammateNoCollide = true
 CLASS.AvoidPlayers = false
 CLASS.DropWeaponOnDie = true
 
@@ -17,4 +17,4 @@ function CLASS:Loadout(pl)
 	pl:Give("weapon_knife")
 end
 
-player_class.Register("Terrorist", CLASS)
+player_class.Register("Climber", CLASS)
