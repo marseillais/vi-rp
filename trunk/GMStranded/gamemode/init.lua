@@ -240,7 +240,7 @@ function PlayerMeta:IncXP(skill, int)
 		self.Experience[skill] = 0
 		self:IncSkill(skill, 1)
 		if (skill == "Survival" and self.Skills[skill] > 14) then
-			self:AddProfits(500, false, true)
+			self:AddProfits(1500, false, true)
 		end
 	else
 		self.Experience[skill] = self.Experience[skill] + int
