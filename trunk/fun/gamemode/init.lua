@@ -12,7 +12,7 @@ resource.AddFile("sound/music/your_team_win.mp3")
 MapEntities = {}
 
 function GM:CanStartRound()
-	if (#team.GetPlayers(TEAM_CT) + #team.GetPlayers(TEAM_T) >= 2) then return true end
+	if (#team.GetPlayers(TEAM_CT) > 0 and #team.GetPlayers(TEAM_T) > 0) then return true end
 	return false
 end
 
@@ -21,6 +21,7 @@ function GM:PlayerSpray(ply)
 end
 
 function GM:PlayerCanPickupWeapon(ply, wep)
+	print(ply, wep, wep.Slot)
 	if (ply:HasWeapon(wep:GetClass())) then return false end
 	return true
 end
