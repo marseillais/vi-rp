@@ -108,6 +108,7 @@ function SPropProtection.IsBuddy(ply, ent)
 	for k, v in pairs(Players) do
 		if (v and v:IsValid() and v != ply) then
 	        if (SPropProtection["Props"][ent:EntIndex()][1] == v:SteamID()) then
+				if (!SPropProtection[v:SteamID()]) then return false end
                 if (table.HasValue(SPropProtection[v:SteamID()], ply:SteamID())) then
 					return true
 				else
@@ -145,25 +146,29 @@ function SPropProtection.PlayerCanTouch(ply, ent)
 	if (SPropProtection["Props"][ent:EntIndex()] != nil) then
 		if(SPropProtection["Props"][ent:EntIndex()][1] == ply:SteamID() or SPropProtection.IsBuddy(ply, ent)) then return true end
 	else
-		for k, v in pairs(g_SBoxObjects) do
-			for b, j in pairs(v) do
-				for _, e in pairs(j) do
-					if(k == ply:SteamID() and e == ent) then
-						SPropProtection.PlayerMakePropOwner(ply, ent)
-						SPropProtection.Nofity(ply, "You now own this prop")
-						return true
+		if (g_SBoxObjects != nil) then
+			for k, v in pairs(g_SBoxObjects) do
+				for b, j in pairs(v) do
+					for _, e in pairs(j) do
+						if(k == ply:SteamID() and e == ent) then
+							SPropProtection.PlayerMakePropOwner(ply, ent)
+							SPropProtection.Nofity(ply, "You now own this prop")
+							return true
+						end
 					end
 				end
 			end
 		end
 		
-		for k, v in pairs(GAMEMODE.CameraList) do
-			for b, j in pairs(v) do
-				if(j == ent) then
-					if(k == ply:SteamID() and e == ent) then
-						SPropProtection.PlayerMakePropOwner(ply, ent)
-						SPropProtection.Nofity(ply, "You now own this prop")
-						return true
+		if (GAMEMODE.CameraList != nil) then
+			for k, v in pairs(GAMEMODE.CameraList) do
+				for b, j in pairs(v) do
+					if(j == ent) then
+						if(k == ply:SteamID() and e == ent) then
+							SPropProtection.PlayerMakePropOwner(ply, ent)
+							SPropProtection.Nofity(ply, "You now own this prop")
+							return true
+						end
 					end
 				end
 			end
