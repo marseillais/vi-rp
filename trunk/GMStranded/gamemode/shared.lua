@@ -575,7 +575,7 @@ GMS.ProhibitedStools = {
 	"ignite",
 	"keepupright",
 	"magnetise",
-	"nocollide",
+	//"nocollide",
 	"physprop",
 	"spawner",
 	"thruster",
@@ -587,7 +587,7 @@ GMS.ProhibitedStools = {
 	"inflator",
 	"statue",
 	"trails",
-	//"camera",
+	"camera",
 	"paint",
 	"rtcamera"
 }
