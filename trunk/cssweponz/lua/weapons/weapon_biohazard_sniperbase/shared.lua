@@ -255,7 +255,7 @@ function SWEP:SetZoom( b )
 end
 
 hook.Add("AdjustMouseSensitivity", "MyAdjustHook", function(default_sensitivity)
-	if (!self.Weapon:GetNetworkedBool( "Zoom", false )) then return -1 end
+	if (!SWEP.Weapon:GetNetworkedBool( "Zoom", false )) then return -1 end
     return self.OriginalFOV / self.ZoomFactor
 end)
 
