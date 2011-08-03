@@ -496,9 +496,9 @@ function PANEL:DoRightClick()
 		menu:AddSpacer()
 	end
 	
-    menu:AddOption("Drop x1", function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 1") end)
-    menu:AddOption("Drop x10", function() RunConsoleCommand("say", "!drop " .. self.Resource .. " 10") end)
-    menu:AddOption("Drop All", function() RunConsoleCommand("say", "!drop " .. self.Resource) end)
+    menu:AddOption("Drop x1", function() RunConsoleCommand("gms_DropResources", self.Resource, " 1") end)
+    menu:AddOption("Drop x10", function() RunConsoleCommand("gms_DropResources", self.Resource, " 10") end)
+    menu:AddOption("Drop All", function() RunConsoleCommand("gms_DropResources", self.Resource) end)
     menu:AddOption("Cancel", function() end)
     menu:Open()
 end
@@ -1269,12 +1269,12 @@ function PANEL:SetTable(str)
     self.CombiGroupName = str		 
     self.CombiGroup = GMS.Combinations[str]
     self:Clear()
-	for name, tbl in pairs(self.CombiGroup) do
+	for name, tbl in SortedPairs(self.CombiGroup or {}) do
 		local icon = vgui.Create("GMS_CombiIcon", self.CombiList)
-        icon:SetSize(self.IconSize, self.IconSize)
-        icon:SetInfo(name, tbl)
+		icon:SetSize(self.IconSize, self.IconSize)
+		icon:SetInfo(name, tbl)
 		self.CombiList:AddItem(icon)
-        table.insert(self.CombiPanels, icon)
+		table.insert(self.CombiPanels, icon)
 	end
     self:ClearActive()
 end

@@ -302,7 +302,7 @@ GMS.RegisterChatCmd(CHATCMD)
 /* ADMIN: Give resources */
 local CHATCMD = {}
 
-CHATCMD.Command = "res"
+CHATCMD.Command = "r"
 CHATCMD.Desc = "Give resources to yourself / someone"
 CHATCMD.Syntax = "[player] <Resource> <Amount>"
 

@@ -174,7 +174,6 @@ end
 
 function PlayerMeta:GetSkill(skill)
 	skill = string.Capitalize(skill)
-	self:SetNWInt(skill, self.Skills[skill]) 
 	return self.Skills[skill] or 0	
 end
 
@@ -266,6 +265,7 @@ end
 function PlayerMeta:SetResource(resource, int)
 	resource = string.Capitalize(resource)
 	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
+	
 
 	self.Resources[resource] = int
 
@@ -305,6 +305,15 @@ function PlayerMeta:DecResource(resource, int)
 	if (!self.Resources[resource]) then self.Resources[resource] = 0 end
 	self.Resources[resource] = self.Resources[resource] - int
 
+	local r = self.Resources[resource]
+	if (resource == "Flashlight" and r < 1) then self:Flashlight(false) end
+	if (resource == "Batteries") then
+		local maxPow = 50
+		if (r) then maxPow = math.min(maxPow + r * 50, 500) end
+		self.Power = math.min(self.Power, maxPow)
+		self:UpdateNeeds()
+	end
+	
 	umsg.Start("gms_SetResource", self)
 		umsg.String(resource)
 		umsg.Short(self:GetResource(resource))
@@ -562,7 +571,7 @@ function PlayerMeta:AllSmelt(ResourceTable)
 			else
 				resourcedata.Req[k] = ResourceTable.Max
 				AmountReq = AmountReq + ResourceTable.Max
-				self:SendMessage("You can only do " .. tostring(ResourceTable.Max) .. " " .. k .. " at a time.", 3, Color(200, 0, 0, 255))
+				self:SendMessage("You can only do " .. string.Replace(tostring(ResourceTable.Max), "_", " ") .. " " .. k .. " at a time.", 3, Color(200, 0, 0, 255))
 			end
 		else
 			resourcedata.Req[k] = 1
@@ -1129,9 +1138,9 @@ concommand.Add("gms_steal", function(ply, cmd, args)
 	local ent = tr.Entity
 
 	if (ent != NULL and tr.HitNonWorld) then
-		if (IsNight) then
+		if (ply:GetSkill("Survival") > 29) then
 			local cls = ent:GetClass()
-			if (ent:GetNetworkedString("Owner", "N/A") != "World" and !ent:IsProp() and cls != "gms_buildsite" and cls != "gms_seed" and !SPropProtection.PlayerIsPropOwner(ply, ent)) then //Add: cant steal own props
+			if (ent:GetNetworkedString("Owner", "N/A") != "World" and !ent:IsProp() and cls != "gms_buildsite" and cls != "gms_seed" and !SPropProtection.PlayerIsPropOwner(ply, ent) and !SPropProtection.IsBuddy(ply, ent)) then
 				local time = math.max(ent:GetVolume(), 1)
 				
 				if (cls == "gms_resourcedrop") then
@@ -1150,7 +1159,7 @@ concommand.Add("gms_steal", function(ply, cmd, args)
 				ply:SendMessage("You can't steal this.", 3, Color(200, 0, 0, 255))
 			end
 		else
-			ply:SendMessage("You can steal only at night.", 3, Color(200, 0, 0, 255))
+			ply:SendMessage("You can only steal at survival level 30+.", 3, Color(200, 0, 0, 255))
 		end
 	else
 		ply:SendMessage("Aim at the prop to steal.", 3, Color(200, 0, 0, 255))
@@ -1602,12 +1611,19 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 		end 
 		local time = timecount * 0.3
 
+		local smelt = false
+		for r,n in pairs(data.Res) do
+			if (r == "Iron" or r == "Copper") then smelt = true end
+		end
+		
 		if (tbl.SwepClass != nil) then
 			data.Class = tbl.SwepClass
 			ply:DoProcess("MakeWeapon", time, data)
-		else		
+		elseif (smelt) then
 			time = math.max(time - math.floor(ply:GetSkill("Smelting") / 5), math.max(timecount * 0.15, 2))
 			ply:DoProcess("Smelt", time, data)
+		else
+			ply:DoProcess("Processing", time, data)
 		end
 	elseif (group == "gms_stoneworkbench" or group == "gms_copperworkbench" or group == "gms_ironworkbench") then
 		local data = {}
@@ -1693,8 +1709,19 @@ concommand.Add("gms_MakeCombination", function(ply, cmd, args)
 	elseif (group == "gms_grindingstone") then
 		local data = {}
 		data.Name = tbl.Name
-		data.Res = tbl.Results
-		data.Cost = table.Copy(tbl.Req)
+		if (tbl.AllSmelt == true) then
+			local sourcetable = ply:AllSmelt(tbl)
+
+			for r, n in pairs(sourcetable.Results) do
+				if (r == "Flour") then sourcetable.Results[r] = math.floor(n * 0.6) end
+			end
+			
+			data.Res = sourcetable.Results
+			data.Cost = table.Copy(sourcetable.Req)
+		else		
+			data.Res = tbl.Results
+			data.Cost = table.Copy(tbl.Req)
+		end
 		local timecount = 1
 		for k, v in pairs(data.Cost) do
 			timecount = timecount + v
@@ -2099,29 +2126,29 @@ function GM:PlayerInitialSpawn(ply)
 	local time = 7
 	for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
 		for res, num in pairs(v.Resources) do
-			timer.Simple(time, function(ply)
+			timer.Simple(time, function()
 				umsg.Start("gms_SetResPackInfo", ply)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(res, "_", " "))
 				umsg.Short(num)
 				umsg.End()
-			end, ply)
-			time = time + 0.5
+			end)
+			time = time + 0.25
 		end
-		time = time + 1
+		time = time + 0.5
 	end
 	for _, v in ipairs(ents.FindByClass("gms_fridge")) do
 		for res, num in pairs(v.Resources) do
-			timer.Simple(time, function(ply)
+			timer.Simple(time, function()
 				umsg.Start("gms_SetResPackInfo", ply)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(res, "_", " "))
 				umsg.Short(num)
 				umsg.End()
-			end, ply)
-			time = time + 0.5
+			end)
+			time = time + 0.25
 		end
-		time = time + 1
+		time = time + 0.5
 	end
 	
 	timer.Simple(6, function()
@@ -2154,6 +2181,7 @@ function GM:PlayerSpawn(ply)
 	ply.Thirst = 1000
 	ply.Oxygen = 1000
 	ply.Power = 50
+	if (ply.Resources['Batteries']) then ply.Power = math.min(ply.Power + ply.Resources['Batteries'] * 50, 500) end
 	ply:UpdateNeeds()
 end
 
@@ -2251,7 +2279,7 @@ function GM.SaveCharacter(ply,cmd,args)
 	end
 	
 	for k, v in pairs(ply.Resources) do
-		if v > 0  then
+		if (v > 0) then
 			tbl["resources"][k] = v
 		end
 	end
@@ -2893,9 +2921,7 @@ timer.Create("Power.Timer", 1, 0, function()
 			end
 		else
 			local maxPow = 50
-			if (v.Resources['Batteries']) then
-				maxPow = math.min(maxPow + v.Resources['Batteries'] * 50, 500)
-			end
+			if (v.Resources['Batteries']) then maxPow = math.min(maxPow + v.Resources['Batteries'] * 50, 500) end
 			if (v.Power < maxPow) then
 				v.Power = math.min(v.Power + 10, maxPow)
 				v:UpdateNeeds()
@@ -2905,7 +2931,7 @@ timer.Create("Power.Timer", 1, 0, function()
 end)
 
 function GM:PlayerSwitchFlashlight(ply, SwitchOn)
-	return (ply.Power > 25 or !SwitchOn) and (ply.Resources['Flashlight'] != nil and ply.Resources['Flashlight'] > 0)
+	return (ply.Power > 25 and ply.Resources['Flashlight'] != nil and ply.Resources['Flashlight'] > 0) or !SwitchOn
 end
 
 local AlertSounds = {"citizen_beaten1.wav", "citizen_beaten4.wav", "citizen_beaten5.wav", "cough1.wav", "cough2.wav", "cough3.wav", "cough4.wav"}

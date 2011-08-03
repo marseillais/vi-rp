@@ -296,7 +296,13 @@ usermessage.Hook("gms_togglecommandsmenu", function(um)
 end)
 
 usermessage.Hook("gms_cancelprocess", function(um)
-	RunConsoleCommand("gms_cancelprocess")
+	if (AFK) then
+		RunConsoleCommand("gms_afk")
+	elseif (Sleep) then
+		RunConsoleCommand("gms_wakeup")
+	else
+		RunConsoleCommand("gms_cancelprocess")
+	end
 end)
 
 usermessage.Hook("gms_OpenCombiMenu", function(um)
@@ -615,18 +621,20 @@ function GM.SleepOverlay()
 	surface.SetDrawColor(0, 0, 0, SleepFade)
 	surface.DrawRect(0, 0, ScrW(), ScrH())
 
-	draw.SimpleText("Use the command \"!wakeup\" to wake up.", "ScoreboardSub", ScrW() / 2, ScrH() / 2, Color(255, 255, 255, SleepFade), 1, 1)
+	draw.SimpleText("Use the command \"!wakeup\" or press F4 to wake up.", "ScoreboardSub", ScrW() / 2, ScrH() / 2, Color(255, 255, 255, SleepFade), 1, 1)
 end
 hook.Add("HUDPaint", "gms_sleepoverlay", GM.SleepOverlay)
 
 function GM.StartSleep(um)
 	SleepFadeIn = true
+	Sleep = true
 	SleepFade = 0
 end
 usermessage.Hook("gms_startsleep", GM.StartSleep)
 
 function GM.StopSleep(um)
 	SleepFadeOut = true
+	Sleep = false
 	SleepFade = 255
 end
 usermessage.Hook("gms_stopsleep", GM.StopSleep)
@@ -651,18 +659,20 @@ function GM.AFKOverlay()
 	surface.SetDrawColor(0, 0, 0, AFKFade)
 	surface.DrawRect(0, 0, ScrW(), ScrH())
 
-	draw.SimpleText("Use the command \"!afk\" to stop being afk.", "ScoreboardSub", ScrW() / 2, ScrH() / 2, Color(255, 255, 255, AFKFade), 1, 1)
+	draw.SimpleText("Use the command \"!afk\" or press F4 to stop being afk.", "ScoreboardSub", ScrW() / 2, ScrH() / 2, Color(255, 255, 255, AFKFade), 1, 1)
 end
 hook.Add("HUDPaint", "gms_afkoverlay", GM.AFKOverlay)
 
 function GM.StartAFK(um)
 	AFKFadeIn = true
+	AFK = true
 	AFKFade = 0
 end
 usermessage.Hook("gms_startafk", GM.StartAFK)
 
 function GM.StopAFK(um)
 	AFKFadeOut = true
+	AFK = false
 	AFKFade = 255
 end
 usermessage.Hook("gms_stopafk", GM.StopAFK)

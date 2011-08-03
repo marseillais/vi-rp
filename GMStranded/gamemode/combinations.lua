@@ -521,7 +521,7 @@ GMS.RegisterCombi(COMBI, "gms_factory")
 local COMBI = {}
 
 COMBI.Name = "Iron 25x"
-COMBI.Description = "melting together 50 stone forms 25 iron."
+COMBI.Description = "Smelting together 50 stone forms 25 iron."
 COMBI.Entity = "gms_factory"
 
 COMBI.Req = {}
@@ -786,7 +786,7 @@ GMS.RegisterCombi(COMBI, "gms_grindingstone")
 /* Grain to Flour x10 */
 local COMBI = {}
 
-COMBI.Name = "Flour10"
+COMBI.Name = "Flour 10x"
 COMBI.Description = "Converts 10 Grain Seeds to 7 Flour."
 COMBI.Entity = "gms_grindingstone"
 
@@ -802,7 +802,7 @@ GMS.RegisterCombi(COMBI, "gms_grindingstone")
 local COMBI = {}
 
 COMBI.Name = "All Flour"
-COMBI.Description = "Converts Grain Seeds to Flour."
+COMBI.Description = "Converts Grain Seeds to Flour (10:6)."
 COMBI.Entity = "gms_grindingstone"
 
 COMBI.Req = {}

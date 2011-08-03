@@ -1036,6 +1036,7 @@ function PROCESS:OnStop()
 	local weap = ents.Create(self.Data.Class)
 	weap:SetPos(self.Owner:TraceFromEyes(100).HitPos + Vector(0, 0, 15))
 	weap:Spawn()
+	SPropProtection.PlayerMakePropOwner(self.Owner, weap)
 
 	for k, v in pairs(self.Data.Cost) do
 		self.Owner:DecResource(k, v)
