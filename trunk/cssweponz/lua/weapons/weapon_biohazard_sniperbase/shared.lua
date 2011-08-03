@@ -256,7 +256,7 @@ end
 
 hook.Add("AdjustMouseSensitivity", "MyAdjustHook", function(default_sensitivity)
 	if (!LocalPlayer():GetActiveWeapon() and !LocalPlayer():GetActiveWeapon():GetNetworkedBool("Zoom", false)) then return -1 end
-    return LocalPlayer():GetActiveWeapon().OriginalFOV / self.ZoomFactor
+    return LocalPlayer():GetActiveWeapon().OriginalFOV / LocalPlayer():GetActiveWeapon().ZoomFactor
 end)
 
 
