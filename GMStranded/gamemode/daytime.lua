@@ -62,7 +62,7 @@ elseif (SERVER) then
 
 		if (Time == ZombieTime) then
 			local e = ents.FindByClass("gms_resourcedrop")
-			if (#e > 0)
+			if (#e > 0) then
 				for id, box in pairs(e) do
 					box:Fadeout()
 				end
