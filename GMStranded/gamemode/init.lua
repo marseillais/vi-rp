@@ -174,6 +174,7 @@ end
 
 function PlayerMeta:GetSkill(skill)
 	skill = string.Capitalize(skill)
+	if (skill == "Survival") then self:SetNWInt(skill, self.Skills[skill]) end
 	return self.Skills[skill] or 0	
 end
 
