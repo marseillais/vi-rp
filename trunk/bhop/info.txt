@@ -13,11 +13,11 @@
 
 	"fretta_maps"
 	{
-		"1"	"^xc_"
+		"1"	"^bhop_"
 	}
 	"mappattern"
 	{
-		"1"	"^xc_"
+		"1"	"^bhop_"
 	}
 
 	"selectable"	"1"
