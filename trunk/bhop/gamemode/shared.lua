@@ -33,7 +33,7 @@ function GM:CreateTeams()
 	team.SetSpawnPoint(TEAM_CT, "info_player_counterterrorist")
 	team.SetClass(TEAM_CT, {"Counter-Terrorist"})*/
 
-	team.SetUp(TEAM_BHOP, "Bhoppers", Color(200, 200, 0), true)
-	team.SetSpawnPoint(TEAM_BHOP, "info_player_counterterrorist")
-	team.SetClass(TEAM_BHOP, {"Bhopper"})
+	team.SetUp(TEAM_CLIMBERS, "Climbers", Color(200, 200, 0), true)
+	team.SetSpawnPoint(TEAM_CLIMBERS, "info_player_terrorist")
+	team.SetClass(TEAM_CLIMBERS, {"Climber"})
 end

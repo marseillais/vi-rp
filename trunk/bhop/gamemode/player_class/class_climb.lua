@@ -1,6 +1,6 @@
 local CLASS = {}
 
-CLASS.DisplayName = "Bhopper"
+CLASS.DisplayName = "Climber"
 CLASS.WalkSpeed = 250
 CLASS.RunSpeed = 250
 CLASS.JumpPower = 176
@@ -17,4 +17,4 @@ function CLASS:Loadout(pl)
 	pl:Give("weapon_knife")
 end
 
-player_class.Register("Bhopper", CLASS)
+player_class.Register("Climber", CLASS)
