@@ -7,12 +7,12 @@ include('shared.lua')
 MapEntities = {}
 
 function GM:CanStartRound()
-	if (#team.GetPlayers(TEAM_BHOP) > 0) then return true end
+	if (#team.GetPlayers(TEAM_CLIMBERS) > 0) then return true end
 	return false
 end
 
 function GM:PlayerSpray(ply)
-	return ply:Team() == TEAM_BHOP
+	return ply:Team() == TEAM_CLIMBERS
 end
 
 function GM:PlayerCanPickupWeapon(ply, wep)
