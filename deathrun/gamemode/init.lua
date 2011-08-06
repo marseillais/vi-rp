@@ -11,9 +11,7 @@ resource.AddFile("sound/music/your_team_win.mp3")
 
 GM.MapFixes = {}
 GM.MapFixes['deathrun_italy_rats_final'] = function()
-	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do
-		ent:SetKeyValue("spawnflags", 1)
-	end
+	for id, ent in pairs(ents.FindByName("Ansa_01_Este")) do ent:SetKeyValue("spawnflags", 1) end
 end
 
 MapEntities = {}
