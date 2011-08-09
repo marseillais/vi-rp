@@ -15,7 +15,7 @@ IsNight = false
 if (CLIENT) then
 	timer.Simple(5, function()
 		RunConsoleCommand('pp_sunbeams', '1')
-		RunConsoleCommand('pp_sunbeams_darken', '0.75')
+		RunConsoleCommand('pp_sunbeams_darken', '0.85')
 		RunConsoleCommand('pp_sunbeams_multiply', '1')
 		RunConsoleCommand('pp_sunbeams_sunsize', '0.25')
 	end)

@@ -1141,7 +1141,7 @@ concommand.Add("gms_steal", function(ply, cmd, args)
 	if (ent != NULL and tr.HitNonWorld) then
 		if (ply:GetSkill("Survival") > 29) then
 			local cls = ent:GetClass()
-			if (ent:GetNetworkedString("Owner", "N/A") != "World" and !ent:IsProp() and cls != "gms_buildsite" and cls != "gms_seed" and !SPropProtection.PlayerIsPropOwner(ply, ent) and !SPropProtection.IsBuddy(ply, ent)) then
+			if (ent:GetNetworkedString("Owner", "N/A") != "World" and (!ent:IsProp() or ent:IsFoodModel()) and cls != "gms_buildsite" and cls != "gms_seed" and !SPropProtection.PlayerIsPropOwner(ply, ent) and !SPropProtection.IsBuddy(ply, ent)) then
 				local time = math.max(ent:GetVolume(), 1)
 				
 				if (cls == "gms_resourcedrop") then

@@ -143,8 +143,9 @@ function SPropProtection.PlayerCanTouch(ply, ent)
 		return true
 	end
 
+	if (SPropProtection.IsBuddy(ply, ent)) then return true end
 	if (SPropProtection["Props"][ent:EntIndex()] != nil) then
-		if(SPropProtection["Props"][ent:EntIndex()][1] == ply:SteamID() or SPropProtection.IsBuddy(ply, ent)) then return true end
+		if(SPropProtection["Props"][ent:EntIndex()][1] == ply:SteamID()) then return true end
 	else
 		if (g_SBoxObjects != nil) then
 			for k, v in pairs(g_SBoxObjects) do
@@ -233,7 +234,7 @@ end)
 hook.Add("PlayerDisconnected", "SPropProtection.Disconnect", function(ply)
 	if(tonumber(SPropProtection["Config"]["dpd"]) == 1) then
 		if (ply:IsAdmin() and tonumber(SPropProtection["Config"]["dae"]) == 0) then return end
-		if (ply:Team() != 1 and GAMEMODE.FindTribeByID(ply:Team()).Password != false) then
+		if (GAMEMODE.FindTribeByID(ply:Team()).Password != false) then
 		else
 			timer.Create("SPropProtection.DRemove: " .. ply:SteamID(), tonumber(SPropProtection["Config"]["delay"]), 1, SPropProtection.DRemove, ply:SteamID(), ply:Nick())
 		end
