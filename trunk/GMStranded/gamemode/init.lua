@@ -91,7 +91,7 @@ concommand.Add("gms_cancelprocess", function(ply, cmd, args)
 	v = ply.ProcessTable
 	if (!v.Cancel) then return end
 	
-	if (v.Owner and v.Owner != NULL and v.Owner:IsValid()) then 
+	if (v.Owner and v.Owner != NULL and IsValid(v.Owner)) then 
 		v.Owner:Freeze(false)
 		v.Owner:StopProcessBar()
 		v.Owner.InProcess = false
@@ -458,7 +458,7 @@ function PlayerMeta:AddUnlock(text)
 end
 
 function PlayerMeta:HasUnlock(text)
-	if (self.FeatureUnlocks[text]) then return true end
+	if (self.FeatureUnlocks and self.FeatureUnlocks[text]) then return true end
 	return false
 end
 
@@ -630,7 +630,7 @@ end
 
 /* Model check functions */
 function EntityMeta:IsTreeModel()
-	if (!self or !self:IsValid()) then return false end
+	if (!self or !IsValid(self)) then return false end
 
 	local trees = table.Add(GMS.TreeModels, GMS.AdditionalTreeModels)
 	for k, v in pairs(trees) do
@@ -643,7 +643,7 @@ function EntityMeta:IsTreeModel()
 end
 
 function EntityMeta:IsBerryBushModel()
-	if (!self or !self:IsValid()) then return false end
+	if (!self or !IsValid(self)) then return false end
 
 	local mdl = "models/props/pi_shrub.mdl"
 	if (mdl == self:GetModel() or string.gsub(string.lower(mdl), "/", "\\") == self:GetModel()) then
@@ -654,7 +654,7 @@ function EntityMeta:IsBerryBushModel()
 end
 
 function EntityMeta:IsGrainModel()
-	if (!self or !self:IsValid()) then return false end
+	if (!self or !IsValid(self)) then return false end
 
 	local mdl = "models/props_foliage/cattails.mdl"
 	if (mdl == self:GetModel() or string.gsub(string.lower(mdl), "/", "\\") == self:GetModel()) then
@@ -665,7 +665,7 @@ function EntityMeta:IsGrainModel()
 end
 
 function EntityMeta:IsFoodModel()
-	if (!self or !self:IsValid()) then return false end
+	if (!self or !IsValid(self)) then return false end
 
 	for k, v in pairs(GMS.EdibleModels) do
 		if (string.lower(v) == self:GetModel() or string.gsub(string.lower(v), "/", "\\") == self:GetModel()) then
@@ -677,7 +677,7 @@ function EntityMeta:IsFoodModel()
 end
 
 function EntityMeta:IsRockModel()
-	if (!self or !self:IsValid()) then return false end
+	if (!self or !IsValid(self)) then return false end
 
 	local rocks = table.Add(GMS.RockModels, GMS.AdditionalRockModels)
 	for k, v in pairs(rocks) do
@@ -1147,11 +1147,13 @@ concommand.Add("gms_steal", function(ply, cmd, args)
 				if (cls == "gms_resourcedrop") then
 					time = ent.Amount * 0.5
 				elseif (cls == "gms_resourcepack" or cls == "gms_fridge") then
-					time = 0
+					if (cls == "gms_resourcepack") then time = 0 end
 					for r, n in pairs(ent.Resources) do
 						time = time + (n * 0.25)
 					end
 				end
+				
+				time = math.max(time - math.floor(ply:GetSkill("Stealing") / 3), math.max(time * 0.25, 2))
 
 				local data = {}
 				data.Ent = ent
@@ -1480,7 +1482,7 @@ function GM.TakeResource(ply, cmd, args)
 				food:Spawn()
 				food:SetFoodInfo(res)
 				
-				timer.Simple(300, function(food) if (food:IsValid()) then food:Fadeout(2) end end, food)
+				timer.Simple(300, function(food) if (IsValid(food)) then food:Fadeout(2) end end, food)
 			end
 		end
 	end
@@ -1852,7 +1854,7 @@ GMS.FadingOutProps = {}
 GMS.FadingInProps = {}
 
 function EntityMeta:Fadeout(speed)
-	if (!self or !self:IsValid()) then return end
+	if (!self or !IsValid(self)) then return end
 	local speed = speed or 1
 
 	for k, v in pairs(player.GetAll()) do
@@ -1878,7 +1880,7 @@ hook.Add("Think", "gms_FadePropsThink", function()
 	for k, ent in pairs(GMS.FadingInProps) do
 		if (!ent or ent == NULL) then
 			table.remove(GMS.FadingInProps, k)
-		elseif (!ent:IsValid()) then
+		elseif (!IsValid(ent)) then
 			table.remove(GMS.FadingInProps, k)
 		elseif (ent.AlphaFade >= 255) then
 			table.remove(GMS.FadingInProps, k)
@@ -2084,22 +2086,32 @@ function GM:PlayerInitialSpawn(ply)
 
 	ply:SetNWInt("plants", 0)
 	for k, v in pairs(ents.GetAll()) do
-		if (v and v:IsValid() and v:GetNWEntity("plantowner") and v:GetNWEntity("plantowner"):IsValid() and v:GetNWEntity("plantowner") == ply) then
+		if (v and IsValid(v) and v:GetNWEntity("plantowner") and IsValid(v:GetNWEntity("plantowner")) and v:GetNWEntity("plantowner") == ply) then
 			ply:SetNWInt("plants", ply:GetNWInt("plants") + 1)
 		end
 	end
 	
-	timer.Simple(3, function()
-		for i, v in pairs(GAMEMODE.CampFireProps) do
-			umsg.Start("addCampFire", ply)
-				umsg.Short(v:EntIndex())
-			umsg.End()
-		end
-	end)
+	local time = 2
 	
-	timer.Simple(4, function()
-		for i, v in pairs(GAMEMODE.Tribes) do
-			umsg.Start("recvTribes", ply)
+	local rp = RecipientFilter()
+	rp:AddPlayer(ply)
+
+	print("DEV SHIT (PlayerInitialSpawn): ", ply, rp)
+	
+	for i, v in pairs(GAMEMODE.CampFireProps) do
+		timer.Simple(time, function()
+			umsg.Start("addCampFire", rp)
+			umsg.Short(v:EntIndex())
+			umsg.End()
+			
+			print("DEV SHIT (GAMEMODE.CampFireProps): ", ply, rp)
+		end)
+		time = time + 0.1
+	end
+
+	for i, v in pairs(GAMEMODE.Tribes) do
+		timer.Simple(time, function()
+			umsg.Start("recvTribes", rp)
 			umsg.Short(v.id)
 			umsg.String(i)
 			umsg.Short(v.red)
@@ -2111,55 +2123,68 @@ function GM:PlayerInitialSpawn(ply)
 				umsg.Bool(true)
 			end
 			umsg.End()
-		end
-	end)
-	
-	timer.Simple(5, function()
-		for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
-			umsg.Start("gms_SetResourceDropInfo", ply)
-				umsg.String(v:EntIndex())
-				umsg.String(string.gsub(v.Type, "_", " "))
-				umsg.Short(v.Amount)
+			
+			print("DEV SHIT (GAMEMODE.Tribes): ", ply, rp)
+		end)
+		time = time + 0.1
+	end
+
+	for _, v in ipairs(ents.FindByClass("gms_resourcedrop")) do
+		timer.Simple(time, function()
+			umsg.Start("gms_SetResourceDropInfo", rp)
+			umsg.String(v:EntIndex())
+			umsg.String(string.gsub(v.Type, "_", " "))
+			umsg.Short(v.Amount)
 			umsg.End()
-		end
-	end)
-	
-	local time = 7
+			
+			print("DEV SHIT (gms_resourcedrop): ", ply, rp)
+		end)
+		time = time + 0.1
+	end
+
 	for _, v in ipairs(ents.FindByClass("gms_resourcepack")) do
 		for res, num in pairs(v.Resources) do
 			timer.Simple(time, function()
-				umsg.Start("gms_SetResPackInfo", ply)
+				umsg.Start("gms_SetResPackInfo", rp)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(res, "_", " "))
 				umsg.Short(num)
 				umsg.End()
+				
+				print("DEV SHIT (gms_resourcepack): ", ply, rp)
 			end)
-			time = time + 0.25
+			time = time + 0.1
 		end
-		time = time + 0.5
+		time = time + 0.1
 	end
+
 	for _, v in ipairs(ents.FindByClass("gms_fridge")) do
 		for res, num in pairs(v.Resources) do
 			timer.Simple(time, function()
-				umsg.Start("gms_SetResPackInfo", ply)
+				umsg.Start("gms_SetResPackInfo", rp)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(res, "_", " "))
 				umsg.Short(num)
 				umsg.End()
+				
+				print("DEV SHIT (gms_fridge): ", ply, rp)
 			end)
-			time = time + 0.25
+			time = time + 0.1
 		end
-		time = time + 0.5
+		time = time + 0.1
 	end
 	
-	timer.Simple(6, function()
-		for _, v in ipairs(ents.FindByClass("gms_food")) do
+	for _, v in ipairs(ents.FindByClass("gms_food")) do
+		timer.Simple(time, function()
 			umsg.Start("gms_SetFoodDropInfo", ply)
 				umsg.String(v:EntIndex())
 				umsg.String(string.gsub(v.Name, "_", " "))
 			umsg.End()
-		end
-	end)
+			
+			print("DEV SHIT (gms_food): ", ply, rp)
+		end)
+		time = time + 0.1
+	end
 end
 
 function GM:PlayerSpawn(ply)
@@ -2367,7 +2392,7 @@ end
 function GM:PlayerSpawnedPropDelay(ply, mdl, ent)
 	ply.CanSpawnProp = true
 	if (ply.InProcess) then return end
-	if (!ent or !ent:IsValid()) then return end
+	if (!ent or !IsValid(ent)) then return end
 	
 	--Admin only models
 	if ((ent:IsRockModel() or ent:IsTreeModel() or ent:IsFoodModel()) and !ply:IsAdmin()) then
