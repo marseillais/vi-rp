@@ -42,7 +42,9 @@ function ENT:Setup(model, resclass)
 end
 
 function ENT:Finish()
-	if (self.ResultClass) then
+	print("DEV SHIT: ", self, self.Entity, self.Entity.Player, self.Entity.Name)
+
+	if (self.ResultClass and self.Entity) then
 		local ent = ents.Create(self.ResultClass)	 
 		if (self.NormalProp == true) then ent.NormalProp = true end
 		ent:SetPos(self.Entity:GetPos())
@@ -54,11 +56,11 @@ function ENT:Finish()
 		SPropProtection.PlayerMakePropOwner(ent.Player, ent)
 		ent:Fadein()
 	end
- 
-    if (self.Entity.Player) then
+	
+	if (self.Entity) then
 		self.Entity.Player.HasBuildingSite = false
+		self.Entity:Remove()
 	end
-	self.Entity:Remove()
 end
 
 function ENT:Use(ply)
